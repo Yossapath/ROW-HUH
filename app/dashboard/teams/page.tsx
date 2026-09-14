@@ -30,7 +30,7 @@ function buildDefaultColumns(prefix: string, type: "main" | "sub", count: number
     const id = `${prefix}-${num}`;
     order.push(id);
     if (!cols[id]) {
-      cols[id] = { id, title: type === "main" ? `เธ—เธตเธก ${num}` : `เธ—เธตเธกเธฃเธญเธ ${num}`, memberIds: [null, null, null, null, null], type, locked: false };
+      cols[id] = { id, title: type === "main" ? `ทีม ${num}` : `ทีมรอง ${num}`, memberIds: [null, null, null, null, null], type, locked: false };
     }
   }
   return order;
@@ -40,7 +40,7 @@ function migrateToZones(savedData: any, cols: Record<string, Column>): Zone[] {
   if (savedData?.zones && Array.isArray(savedData.zones) && savedData.zones.length > 0) {
     const hasSub = (savedData.zones as Zone[]).some(z => z.type === "sub");
     if (!hasSub) {
-      return [...(savedData.zones as Zone[]), { id: "zone-sub-1", name: "เธชเธเธฒเธกเธฃเธญเธ", type: "sub", teamOrder: [] }];
+      return [...(savedData.zones as Zone[]), { id: "zone-sub-1", name: "สนามรอง", type: "sub", teamOrder: [] }];
     }
     return savedData.zones as Zone[];
   }
@@ -48,9 +48,9 @@ function migrateToZones(savedData: any, cols: Record<string, Column>): Zone[] {
   const z1 = savedData?.mainZone1Order ?? [];
   const z2 = savedData?.mainZone2Order ?? [];
   const sub = savedData?.subOrder ?? [];
-  zones.push({ id: "zone-main-1", name: "เนเธเธ 1", type: "main", teamOrder: z1.length > 0 ? z1 : buildDefaultColumns("main", "main", 6, 1, cols) });
-  zones.push({ id: "zone-main-2", name: "เนเธเธ 2", type: "main", teamOrder: z2.length > 0 ? z2 : buildDefaultColumns("main", "main", 6, 7, cols) });
-  zones.push({ id: "zone-sub-1", name: "เธชเธเธฒเธกเธฃเธญเธ", type: "sub", teamOrder: sub.length > 0 ? sub : buildDefaultColumns("sub", "sub", 6, 1, cols) });
+  zones.push({ id: "zone-main-1", name: "โซน 1", type: "main", teamOrder: z1.length > 0 ? z1 : buildDefaultColumns("main", "main", 6, 1, cols) });
+  zones.push({ id: "zone-main-2", name: "โซน 2", type: "main", teamOrder: z2.length > 0 ? z2 : buildDefaultColumns("main", "main", 6, 7, cols) });
+  zones.push({ id: "zone-sub-1", name: "สนามรอง", type: "sub", teamOrder: sub.length > 0 ? sub : buildDefaultColumns("sub", "sub", 6, 1, cols) });
   return zones;
 }
 
@@ -101,7 +101,7 @@ export default function TeamsPage() {
   const handleExportPNG = async () => {
     if (!exportLayoutRef.current || isExporting) return;
     if (!data) {
-      alert("เนเธกเนเธเธเธเนเธญเธกเธนเธฅเธชเธณเธซเธฃเธฑเธเธเธฒเธฃ Export");
+      alert("ไม่พบข้อมูลสำหรับการ Export");
       return;
     }
 
@@ -124,7 +124,7 @@ export default function TeamsPage() {
             assignedMemberSet.add(memId);
           }
           if (!data.members[memId]) {
-            alert(`เนเธกเนเธชเธฒเธกเธฒเธฃเธ– Export เนเธ”เน เน€เธเธทเนเธญเธเธเธฒเธเธเนเธญเธกเธนเธฅเธ—เธตเธกเนเธกเนเธชเธกเธเธนเธฃเธ“เน (เนเธกเนเธเธเธเนเธญเธกเธนเธฅเธเธนเนเน€เธฅเนเธ: ${memId})`);
+            alert(`ไม่สามารถ Export ได้ เนื่องจากข้อมูลทีมไม่สมบูรณ์ (ไม่พบข้อมูลผู้เล่น: ${memId})`);
             return;
           }
         }
@@ -132,12 +132,12 @@ export default function TeamsPage() {
     }
 
     if (totalAssignedInZones === 0) {
-      alert("เนเธกเนเธชเธฒเธกเธฒเธฃเธ– Export เนเธ”เน เน€เธเธทเนเธญเธเธเธฒเธเธขเธฑเธเนเธกเนเธกเธตเธเธฒเธฃเธเธฑเธ”เธชเธกเธฒเธเธดเธเธฅเธเนเธเธ—เธตเธก");
+      alert("ไม่สามารถ Export ได้ เนื่องจากยังไม่มีการจัดสมาชิกลงในทีม");
       return;
     }
 
     if (duplicateMembers.length > 0) {
-      alert(`เนเธกเนเธชเธฒเธกเธฒเธฃเธ– Export เนเธ”เน เน€เธเธทเนเธญเธเธเธฒเธเธเธเธชเธกเธฒเธเธดเธเธเนเธณเนเธเธซเธฅเธฒเธขเธ—เธตเธก: ${duplicateMembers.join(", ")}`);
+      alert(`ไม่สามารถ Export ได้ เนื่องจากพบสมาชิกซ้ำในหลายทีม: ${duplicateMembers.join(", ")}`);
       return;
     }
 
@@ -157,13 +157,13 @@ export default function TeamsPage() {
       const dataUrl = canvas.toDataURL("image/png");
       const link = document.createElement("a");
       // UX 5: Include tab name in filename so user can distinguish main vs sub exports
-      const tabLabel = activeTab === "sub" ? "เธชเธเธฒเธกเธฃเธญเธ" : "เธชเธเธฒเธกเธซเธฅเธฑเธ";
+      const tabLabel = activeTab === "sub" ? "สนามรอง" : "สนามหลัก";
       link.download = `GVG-${tabLabel}-${dateStr}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
       console.error("Failed to export PNG", err);
-      alert("เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเธชเธฃเนเธฒเธเธ เธฒเธ PNG");
+      alert("เกิดข้อผิดพลาดในการสร้างภาพ PNG");
     } finally {
       setIsExporting(false);
     }
@@ -235,7 +235,7 @@ export default function TeamsPage() {
             (groupsObj[teamKey] as any[]).forEach((m, idx) => {
               if (idx < 5 && m && m.name && membersMap[m.name]) { validIds[idx] = m.name; unassignedMembers.delete(m.name); }
             });
-            cols[colId] = { id: colId, title: `${type === "main" ? "เธ—เธตเธก" : "เธ—เธตเธกเธฃเธญเธ"} ${num}`, memberIds: validIds, type, locked: false };
+            cols[colId] = { id: colId, title: `${type === "main" ? "ทีม" : "ทีมรอง"} ${num}`, memberIds: validIds, type, locked: false };
             num++;
           });
           return order;
@@ -243,9 +243,9 @@ export default function TeamsPage() {
         const allMain = processGroup(savedTeams.data[0]?.teams || {}, "main", "main");
         const subOrder = processGroup(savedTeams.data[1]?.teams || {}, "sub", "sub");
         zones = [
-          { id: "zone-main-1", name: "เนเธเธ 1", type: "main", teamOrder: allMain.slice(0, 6) },
-          { id: "zone-main-2", name: "เนเธเธ 2", type: "main", teamOrder: allMain.slice(6, 12) },
-          { id: "zone-sub-1", name: "เธชเธเธฒเธกเธฃเธญเธ", type: "sub", teamOrder: subOrder },
+          { id: "zone-main-1", name: "โซน 1", type: "main", teamOrder: allMain.slice(0, 6) },
+          { id: "zone-main-2", name: "โซน 2", type: "main", teamOrder: allMain.slice(6, 12) },
+          { id: "zone-sub-1", name: "สนามรอง", type: "sub", teamOrder: subOrder },
         ];
       } else if (savedTeams && savedTeams.main && savedTeams.main.length > 0) {
         // Semi-new format
@@ -259,7 +259,7 @@ export default function TeamsPage() {
             group.forEach((m: any, mIdx: number) => {
               if (mIdx < 5 && m && m.name && membersMap[m.name]) { validIds[mIdx] = m.name; unassignedMembers.delete(m.name); }
             });
-            cols[colId] = { id: colId, title: `${type === "main" ? "เธ—เธตเธก" : "เธ—เธตเธกเธฃเธญเธ"} ${num}`, memberIds: validIds, type, locked: false };
+            cols[colId] = { id: colId, title: `${type === "main" ? "ทีม" : "ทีมรอง"} ${num}`, memberIds: validIds, type, locked: false };
           });
           return order;
         };
@@ -270,7 +270,7 @@ export default function TeamsPage() {
         zones = migrateToZones({}, cols);
       }
 
-      if (!cols["unassigned"]) cols["unassigned"] = { id: "unassigned", title: "เธขเธฑเธเนเธกเนเนเธ”เนเธเธฑเธ”เธ—เธตเธก", memberIds: [], type: "unassigned", locked: false };
+      if (!cols["unassigned"]) cols["unassigned"] = { id: "unassigned", title: "ยังไม่ได้จัดทีม", memberIds: [], type: "unassigned", locked: false };
 
       const assignedIds = new Set<string>();
       zones.forEach(z => z.teamOrder.forEach(colId => {
@@ -278,7 +278,7 @@ export default function TeamsPage() {
       }));
 
       const unassignedIds = Object.keys(membersMap).filter(id => !assignedIds.has(id) && !offlineIds.includes(id));
-      cols["unassigned"] = { id: "unassigned", title: "เธขเธฑเธเนเธกเนเนเธ”เนเธเธฑเธ”เธ—เธตเธก", memberIds: unassignedIds, type: "unassigned", locked: false };
+      cols["unassigned"] = { id: "unassigned", title: "ยังไม่ได้จัดทีม", memberIds: unassignedIds, type: "unassigned", locked: false };
 
       if (offlineIds.length > 0) {
         Object.keys(cols).forEach(colId => {
@@ -289,7 +289,7 @@ export default function TeamsPage() {
 
       setData({ members: membersMap, columns: cols, zones, offlineIds });
     } catch {
-      alert("เนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเนเธกเนเธชเธณเน€เธฃเนเธ");
+      alert("โหลดข้อมูลไม่สำเร็จ");
     } finally {
       setIsLoading(false);
     }
@@ -313,18 +313,18 @@ export default function TeamsPage() {
         offlineIds: currentData.offlineIds,
         data: [
           {
-            title: "เธชเธเธฒเธกเธซเธฅเธฑเธ",
+            title: "สนามหลัก",
             teams: mainZones.flatMap(z => z.teamOrder).reduce((acc, colId, idx) => {
               const col = currentData.columns[colId];
-              acc[`เธ—เธตเธก ${idx + 1}`] = col ? col.memberIds.map(id => id && currentData.members[id] ? currentData.members[id] : { name: "", job: "", power: 0 }) : Array(5).fill({ name: "", job: "", power: 0 });
+              acc[`ทีม ${idx + 1}`] = col ? col.memberIds.map(id => id && currentData.members[id] ? currentData.members[id] : { name: "", job: "", power: 0 }) : Array(5).fill({ name: "", job: "", power: 0 });
               return acc;
             }, {} as Record<string, any>)
           },
           {
-            title: "เธชเธเธฒเธกเธฃเธญเธ",
+            title: "สนามรอง",
             teams: subZones.flatMap(z => z.teamOrder).reduce((acc, colId, idx) => {
               const col = currentData.columns[colId];
-              acc[`เธ—เธตเธกเธฃเธญเธ ${idx + 1}`] = col ? col.memberIds.map(id => id && currentData.members[id] ? currentData.members[id] : { name: "", job: "", power: 0 }) : Array(5).fill({ name: "", job: "", power: 0 });
+              acc[`ทีมรอง ${idx + 1}`] = col ? col.memberIds.map(id => id && currentData.members[id] ? currentData.members[id] : { name: "", job: "", power: 0 }) : Array(5).fill({ name: "", job: "", power: 0 });
               return acc;
             }, {} as Record<string, any>)
           }
@@ -345,7 +345,7 @@ export default function TeamsPage() {
       if (isConflict) {
         setSaveStatus("error");
         setHasConflict(true);
-        const conflictMsg = err.response?.data?.error || "เธเนเธญเธกเธนเธฅเธ—เธตเธกเนเธเธฃเธฐเธเธเธกเธตเธเธฒเธฃเน€เธเธฅเธตเนเธขเธเนเธเธฅเธเธเธฒเธ Admin เธ—เนเธฒเธเธญเธทเนเธ เธซเธฃเธทเธญเธกเธตเธชเธกเธฒเธเธดเธเนเธเนเธเธฅเธฒ เธเธฃเธธเธ“เธฒเธฃเธตเน€เธเธฃเธเธเนเธญเธกเธนเธฅเธฅเนเธฒเธชเธธเธ”เธเนเธญเธเธ—เธณเธเธฒเธฃเนเธเนเนเธ";
+        const conflictMsg = err.response?.data?.error || "ข้อมูลทีมในระบบมีการเปลี่ยนแปลงจาก Admin ท่านอื่น หรือมีสมาชิกแจ้งลา กรุณารีเฟรชข้อมูลล่าสุดก่อนทำการแก้ไข";
         setSaveErrorMsg(conflictMsg);
         setConflictMessage(conflictMsg);
       } else {
@@ -404,12 +404,12 @@ export default function TeamsPage() {
            }, 150);
         } else if (data.offlineIds.includes(targetId)) {
            setActiveTab("leave");
-           alert(`เธเธนเนเน€เธฅเนเธ ${targetMember?.name ?? targetId} เธญเธขเธนเนเนเธเธชเธ–เธฒเธเธฐเธฅเธฒ/เธญเธญเธเนเธฅเธเน`);
+           alert(`ผู้เล่น ${targetMember?.name ?? targetId} อยู่ในสถานะลา/ออฟไลน์`);
         }
       }
       setPlayerSearchQuery(""); // clear after search
     } else {
-      alert("เนเธกเนเธเธเธเธนเนเน€เธฅเนเธเธ—เธตเนเธเนเธเธซเธฒ");
+      alert("ไม่พบผู้เล่นที่ค้นหา");
     }
   };
 
@@ -433,7 +433,7 @@ export default function TeamsPage() {
     if (!data) return;
     const id = `zone-${genId()}`;
     const zoneCount = data.zones.filter(z => z.type === type).length;
-    const name = type === "main" ? `เนเธเธ ${zoneCount + 1}` : `เธชเธเธฒเธกเธฃเธญเธ ${zoneCount + 1}`;
+    const name = type === "main" ? `โซน ${zoneCount + 1}` : `สนามรอง ${zoneCount + 1}`;
     setData({ ...data, zones: [...data.zones, { id, name, type, teamOrder: [] }] });
   };
 
@@ -471,7 +471,7 @@ export default function TeamsPage() {
     const zone = data.zones.find(z => z.id === zoneId);
     if (!zone) return;
     if (zone.teamOrder.length > 0) {
-      if (!confirm(`เนเธเธเธเธตเนเธกเธต ${zone.teamOrder.length} เธ—เธตเธก เธ•เนเธญเธเธเธฒเธฃเธฅเธเนเธเธเนเธฅเธฐเธขเนเธฒเธขเธชเธกเธฒเธเธดเธเธ—เธฑเนเธเธซเธกเธ”เธเธฅเธฑเธเนเธเธขเธฑเธเนเธกเนเนเธ”เนเธเธฑเธ” เนเธเนเธซเธฃเธทเธญเนเธกเน?`)) return;
+      if (!confirm(`โซนนี้มี ${zone.teamOrder.length} ทีม ต้องการลบโซนและย้ายสมาชิกทั้งหมดกลับไปยังไม่ได้จัด ใช่หรือไม่?`)) return;
     }
     const newData = { ...data };
     const newCols = { ...newData.columns };
@@ -494,13 +494,13 @@ export default function TeamsPage() {
     if (!data) return;
     const zone = data.zones.find(z => z.id === zoneId);
     if (!zone) return;
-    if (zone.type === "main" && !canAddMainTeam) { alert("เธชเธเธฒเธกเธซเธฅเธฑเธเธกเธตเธเธฃเธ 60 เธเธ (12 เธ—เธตเธก) เนเธฅเนเธง"); return; }
+    if (zone.type === "main" && !canAddMainTeam) { alert("สนามหลักมีครบ 60 คน (12 ทีม) แล้ว"); return; }
     const allTeamNums = Object.keys(data.columns)
       .filter(id => id.startsWith(zone.type === "main" ? "main-" : "sub-"))
       .map(id => parseInt(id.split("-")[1])).filter(n => !isNaN(n));
     const nextNum = allTeamNums.length > 0 ? Math.max(...allTeamNums) + 1 : 1;
     const colId = `${zone.type === "main" ? "main" : "sub"}-${nextNum}-${genId().slice(0, 4)}`;
-    const title = zone.type === "main" ? `เธ—เธตเธก ${nextNum}` : `เธ—เธตเธกเธฃเธญเธ ${nextNum}`;
+    const title = zone.type === "main" ? `ทีม ${nextNum}` : `ทีมรอง ${nextNum}`;
     setData({
       ...data,
       columns: { ...data.columns, [colId]: { id: colId, title, memberIds: [null, null, null, null, null], type: zone.type, locked: false } },
@@ -512,7 +512,7 @@ export default function TeamsPage() {
     if (!data) return;
     const col = data.columns[colId];
     if (!col) return;
-    if (col.locked) { alert("เธ—เธตเธกเธเธตเนเธ–เธนเธเธฅเนเธญเธเธญเธขเธนเน เธเธฅเธ”เธฅเนเธญเธเธเนเธญเธเธฅเธ"); return; }
+    if (col.locked) { alert("ทีมนี้ถูกล็อกอยู่ ปลดล็อกก่อนลบ"); return; }
     const newCols = { ...data.columns };
     const unassignedIds = [...newCols["unassigned"].memberIds] as string[];
     col.memberIds.forEach(id => { if (id) unassignedIds.push(id); });
@@ -536,7 +536,7 @@ export default function TeamsPage() {
     setAutoModalText(top60.map(m => m.name).join("\n"));
     if (priestCount < 12) {
       // Warn inline โ€” the allocator will also show a PRIEST_MISSING warning in preview
-      console.warn(`[handlePullTop60] Priest เธเนเธญเธขเธเธงเนเธฒ 12 เธเธ (เธกเธตเนเธเน ${priestCount} เธเธ) โ€” เน€เธ•เธดเธก NonPriest เธเธ”เน€เธเธข`);
+      console.warn(`[handlePullTop60] Priest น้อยกว่า 12 คน (มีแค่ ${priestCount} คน) โ€” เติม NonPriest ชดเชย`);
     }
   };
 
@@ -736,7 +736,7 @@ export default function TeamsPage() {
     setData(newData);
   };
 
-  if (!isMounted || isLoading) return <div className="flex h-screen items-center justify-center text-slate-500"><Loader2 className="animate-spin mr-2" /> เนเธซเธฅเธ”เธเนเธญเธกเธนเธฅ...</div>;
+  if (!isMounted || isLoading) return <div className="flex h-screen items-center justify-center text-slate-500"><Loader2 className="animate-spin mr-2" /> โหลดข้อมูล...</div>;
   if (!data) return null;
 
   const filteredUnassignedIds = (data.columns["unassigned"]?.memberIds as string[] || []).filter(id => {
@@ -754,57 +754,57 @@ export default function TeamsPage() {
       <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
         <div className="bg-theme-panel rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col border border-theme-border animate-in zoom-in-95 duration-200">
           <div className="p-4 border-b border-theme-border flex items-center justify-between">
-            <h3 className="font-bold text-lg text-theme-text">{previewResult ? "เธ•เธฑเธงเธญเธขเนเธฒเธเธเธฅเธเธฒเธฃเธเธฑเธ”เธ—เธตเธกเธญเธฑเธ•เนเธเธกเธฑเธ•เธด (Preview)" : "เธเธณเธซเธเธ”เธฃเธฒเธขเธเธทเนเธญเธชเธเธฒเธกเธซเธฅเธฑเธ (60 เธเธ)"}</h3>
+            <h3 className="font-bold text-lg text-theme-text">{previewResult ? "ตัวอย่างผลการจัดทีมอัตโนมัติ (Preview)" : "กำหนดรายชื่อสนามหลัก (60 คน)"}</h3>
             <button onClick={() => { setIsAutoModalOpen(false); setPreviewResult(null); }} className="text-theme-textSecondary hover:text-theme-text"><X size={20} /></button>
           </div>
           {previewResult ? (
             <div className="p-4 flex-1 flex flex-col gap-4 overflow-y-auto max-h-[70vh]">
               <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl p-4">
-                <h4 className="font-bold text-emerald-800 dark:text-emerald-300 text-sm mb-3">เธเธฅเธเธฒเธฃเธเธณเธเธงเธ“เธเธฒเธฃเธเธฑเธ”เธ—เธตเธก</h4>
+                <h4 className="font-bold text-emerald-800 dark:text-emerald-300 text-sm mb-3">ผลการคำนวณการจัดทีม</h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-white dark:bg-[#232733] p-3 rounded-lg border border-emerald-200/50 dark:border-[#2D3342]">
-                    <span className="text-slate-500 dark:text-slate-400 block text-xs">เธชเธเธฒเธกเธซเธฅเธฑเธ</span>
-                    <span className="font-bold text-xl text-slate-800 dark:text-white">{previewResult.stats.mainTotal} / 60 เธเธ</span>
-                    <span className="text-xs text-emerald-600 dark:text-emerald-400 block mt-1">เธกเธต Priest {previewResult.stats.priestFullTeams} เธ—เธตเธก</span>
+                    <span className="text-slate-500 dark:text-slate-400 block text-xs">สนามหลัก</span>
+                    <span className="font-bold text-xl text-slate-800 dark:text-white">{previewResult.stats.mainTotal} / 60 คน</span>
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400 block mt-1">มี Priest {previewResult.stats.priestFullTeams} ทีม</span>
                   </div>
                   <div className="bg-white dark:bg-[#232733] p-3 rounded-lg border border-emerald-200/50 dark:border-[#2D3342]">
-                    <span className="text-slate-500 dark:text-slate-400 block text-xs">เธชเธเธฒเธกเธฃเธญเธ</span>
-                    <span className="font-bold text-xl text-slate-800 dark:text-white">{previewResult.stats.subTotal} เธเธ</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400 block mt-1">เธเธฑเธ”เนเธ”เน {previewResult.stats.subTeams} เธ—เธตเธก</span>
+                    <span className="text-slate-500 dark:text-slate-400 block text-xs">สนามรอง</span>
+                    <span className="font-bold text-xl text-slate-800 dark:text-white">{previewResult.stats.subTotal} คน</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 block mt-1">จัดได้ {previewResult.stats.subTeams} ทีม</span>
                   </div>
                 </div>
               </div>
               {previewResult.warnings.length > 0 && (
                 <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl p-3 text-xs text-amber-800 dark:text-amber-300 space-y-1">
-                  <div className="font-bold mb-1">เธเธณเน€เธ•เธทเธญเธ:</div>
+                  <div className="font-bold mb-1">คำเตือน:</div>
                   {previewResult.warnings.map((w, i) => <div key={i}>โ€ข {w.message}</div>)}
                 </div>
               )}
-              <p className="text-xs text-slate-500">เธเธ” &quot;เธขเธทเธเธขเธฑเธเธเธณเนเธเนเธเนเธเธฒเธ&quot; เน€เธเธทเนเธญเนเธ—เธเธ—เธตเนเธเธฒเธฃเธเธฑเธ”เธ—เธตเธก (เธขเธฑเธเธชเธฒเธกเธฒเธฃเธ–เธเธฃเธฑเธเธเนเธญเธเธเธฑเธเธ—เธถเธเธเธฃเธดเธ)</p>
+              <p className="text-xs text-slate-500">กด &quot;ยืนยันนำไปใช้งาน&quot; เพื่อแทนที่การจัดทีม (ยังสามารถปรับก่อนบันทึกจริง)</p>
             </div>
           ) : (
             <div className="p-4 flex-1 flex flex-col gap-4">
-              <p className="text-sm text-theme-textSecondary">เธฃเธฐเธเธธเธฃเธฒเธขเธเธทเนเธญ 60 เธเธ เธชเธณเธซเธฃเธฑเธเธชเธเธฒเธกเธซเธฅเธฑเธ (เธเธฃเธฃเธ—เธฑเธ”เธฅเธฐ 1 เธเธทเนเธญ)</p>
+              <p className="text-sm text-theme-textSecondary">ระบุรายชื่อ 60 คน สำหรับสนามหลัก (บรรทัดละ 1 ชื่อ)</p>
               <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-lg p-3 text-sm text-[#0b3d63] dark:text-white flex items-start gap-2">
-                <span className="font-bold">เธเธณเนเธเธฐเธเธณ:</span> เธเธฐเธเธฑเธ”เน€เธฅเธทเธญเธ Priest 12 เธเธเธชเธณเธซเธฃเธฑเธเธชเธเธฒเธกเธซเธฅเธฑเธเนเธซเนเธญเธฑเธ•เนเธเธกเธฑเธ•เธด
+                <span className="font-bold">คำแนะนำ:</span> จะคัดเลือก Priest 12 คนสำหรับสนามหลักให้อัตโนมัติ
               </div>
               <div className="flex items-center justify-between">
-                <span className="font-bold text-sm text-theme-text">เธ•เธฃเธงเธเธเธ: {names.length} / 60 เธเธ</span>
-                <button onClick={handlePullTop60} className="text-[#0b3d63] dark:text-white font-bold text-sm bg-[#0b3d63]/10 dark:bg-[#3B66D1]/20 px-4 py-1.5 rounded-lg hover:bg-[#0b3d63]/20 transition-colors border border-[#0b3d63]/20">เธ”เธถเธ 60 เธเธฅเธฑเธเธชเธนเธเธชเธธเธ”</button>
+                <span className="font-bold text-sm text-theme-text">ตรวจพบ: {names.length} / 60 คน</span>
+                <button onClick={handlePullTop60} className="text-[#0b3d63] dark:text-white font-bold text-sm bg-[#0b3d63]/10 dark:bg-[#3B66D1]/20 px-4 py-1.5 rounded-lg hover:bg-[#0b3d63]/20 transition-colors border border-[#0b3d63]/20">ดึง 60 พลังสูงสุด</button>
               </div>
-              <textarea className="w-full h-[250px] bg-theme-bg border border-theme-border rounded-lg p-3 text-sm text-theme-text font-mono resize-none focus:ring-2 focus:ring-[#4D73CD] outline-none" value={autoModalText} onChange={e => setAutoModalText(e.target.value)} placeholder="เธงเธฒเธเธฃเธฒเธขเธเธทเนเธญเธ—เธตเนเธเธตเน (1 เธเธฃเธฃเธ—เธฑเธ”เธ•เนเธญ 1 เธเธทเนเธญ)" />
+              <textarea className="w-full h-[250px] bg-theme-bg border border-theme-border rounded-lg p-3 text-sm text-theme-text font-mono resize-none focus:ring-2 focus:ring-[#4D73CD] outline-none" value={autoModalText} onChange={e => setAutoModalText(e.target.value)} placeholder="วางรายชื่อที่นี่ (1 บรรทัดต่อ 1 ชื่อ)" />
             </div>
           )}
           <div className="p-4 border-t border-theme-border flex items-center justify-end gap-3 bg-theme-bg/50">
             {previewResult ? (
               <>
-                <button onClick={() => setPreviewResult(null)} className="px-5 py-2 rounded-lg font-bold text-theme-textSecondary hover:bg-theme-border/50 transition-colors border border-theme-border bg-theme-panel text-sm">เธเธฅเธฑเธเนเธเนเธเนเนเธ</button>
-                <button onClick={handleApplyAllocation} className="px-5 py-2 rounded-lg font-bold text-white bg-[#10b981] hover:bg-[#059669] transition-colors shadow-sm text-sm">เธขเธทเธเธขเธฑเธเธเธณเนเธเนเธเนเธเธฒเธ</button>
+                <button onClick={() => setPreviewResult(null)} className="px-5 py-2 rounded-lg font-bold text-theme-textSecondary hover:bg-theme-border/50 transition-colors border border-theme-border bg-theme-panel text-sm">กลับไปแก้ไข</button>
+                <button onClick={handleApplyAllocation} className="px-5 py-2 rounded-lg font-bold text-white bg-[#10b981] hover:bg-[#059669] transition-colors shadow-sm text-sm">ยืนยันนำไปใช้งาน</button>
               </>
             ) : (
               <>
-                <button onClick={() => setIsAutoModalOpen(false)} className="px-5 py-2 rounded-lg font-bold text-theme-textSecondary hover:bg-theme-border/50 transition-colors border border-theme-border bg-theme-panel text-sm">เธขเธเน€เธฅเธดเธ</button>
-                <button onClick={handleProcessAutoMatch} className="px-5 py-2 rounded-lg font-bold text-white bg-[#3B66D1] hover:bg-[#4D73CD] transition-colors shadow-sm text-sm">เธเธฃเธฐเธกเธงเธฅเธเธฅ (Preview)</button>
+                <button onClick={() => setIsAutoModalOpen(false)} className="px-5 py-2 rounded-lg font-bold text-theme-textSecondary hover:bg-theme-border/50 transition-colors border border-theme-border bg-theme-panel text-sm">ยกเลิก</button>
+                <button onClick={handleProcessAutoMatch} className="px-5 py-2 rounded-lg font-bold text-white bg-[#3B66D1] hover:bg-[#4D73CD] transition-colors shadow-sm text-sm">ประมวลผล (Preview)</button>
               </>
             )}
           </div>
@@ -828,17 +828,17 @@ export default function TeamsPage() {
         ) : (
           <h2 className="text-lg font-bold text-slate-800 dark:text-white flex-1">{zone.name}</h2>
         )}
-        <span className="text-xs bg-slate-100 dark:bg-[#272C38] text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full font-bold">{zone.teamOrder.length} เธ—เธตเธก</span>
+        <span className="text-xs bg-slate-100 dark:bg-[#272C38] text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full font-bold">{zone.teamOrder.length} ทีม</span>
         {isAdmin && !isEditing && (
-          <button onClick={() => { setEditingZoneId(zone.id); setEditingZoneName(zone.name); }} className="text-slate-400 hover:text-[#3B66D1] transition-colors" title="เนเธเนเธเธทเนเธญเนเธเธ"><Edit2 size={15} /></button>
+          <button onClick={() => { setEditingZoneId(zone.id); setEditingZoneName(zone.name); }} className="text-slate-400 hover:text-[#3B66D1] transition-colors" title="แก้ชื่อโซน"><Edit2 size={15} /></button>
         )}
         {isAdmin && (
-          <button onClick={() => addTeamToZone(zone.id)} disabled={mainCap} className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${mainCap ? "opacity-40 cursor-not-allowed bg-slate-100 dark:bg-[#272C38] text-slate-400" : "bg-[#0b3d63] dark:bg-[#3B66D1] text-white hover:bg-[#0d4b7a] dark:hover:bg-[#4D73CD]"}`} title={mainCap ? "เธชเธเธฒเธกเธซเธฅเธฑเธเน€เธ•เนเธก 60 เธเธ (12 เธ—เธตเธก)" : "เน€เธเธดเนเธกเธ—เธตเธกเนเธเนเธเธเธเธตเน"}>
-            <Plus size={13} /> เน€เธเธดเนเธกเธ—เธตเธก
+          <button onClick={() => addTeamToZone(zone.id)} disabled={mainCap} className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${mainCap ? "opacity-40 cursor-not-allowed bg-slate-100 dark:bg-[#272C38] text-slate-400" : "bg-[#0b3d63] dark:bg-[#3B66D1] text-white hover:bg-[#0d4b7a] dark:hover:bg-[#4D73CD]"}`} title={mainCap ? "สนามหลักเต็ม 60 คน (12 ทีม)" : "เพิ่มทีมในโซนนี้"}>
+            <Plus size={13} /> เพิ่มทีม
           </button>
         )}
         {isAdmin && (
-          <button onClick={() => deleteZone(zone.id)} className="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="เธฅเธเนเธเธเธเธตเน"><Trash2 size={15} /></button>
+          <button onClick={() => deleteZone(zone.id)} className="text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors" title="ลบโซนนี้"><Trash2 size={15} /></button>
         )}
       </div>
     );
@@ -854,8 +854,8 @@ export default function TeamsPage() {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#0b3d63] dark:bg-[#3B66D1] shadow-sm"><Shield className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
             <div>
-              <h1 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-white">เธเธฑเธ”เธ—เธตเธก GVG</h1>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-[#8B93A7]">{isAdmin ? "เธฅเธฒเธเนเธฅเธฐเธงเธฒเธเน€เธเธทเนเธญเธเธฑเธ”เธ—เธตเธก (เธฃเธฐเธเธเธเธฑเธเธ—เธถเธเธญเธฑเธ•เนเธเธกเธฑเธ•เธด)" : "เธฃเธฒเธขเธเธทเนเธญเนเธฅเธฐเธชเธกเธฒเธเธดเธเธ—เธตเธกเธชเธณเธซเธฃเธฑเธเธเธดเธฅเธ”เนเธงเธญเธฃเน"}</p>
+              <h1 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-white">จัดทีม GVG</h1>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-[#8B93A7]">{isAdmin ? "ลากและวางเพื่อจัดทีม (ระบบบันทึกอัตโนมัติ)" : "รายชื่อและสมาชิกทีมสำหรับกิลด์วอร์"}</p>
             </div>
           </div>
         </div>
@@ -893,22 +893,22 @@ export default function TeamsPage() {
         {isAdmin && (
           <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto justify-end flex-wrap">
             <div className="flex flex-col sm:flex-row items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-slate-50 dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] mr-2 transition-all" title={saveErrorMsg}>
-              {saveStatus === 'idle' && <span className="text-slate-500 font-bold">เธเธฃเนเธญเธกเนเธเนเธเธฒเธ</span>}
-              {saveStatus === 'saving' && <span className="text-[#3B66D1] flex items-center gap-1 font-bold"><Loader2 className="w-4 h-4 animate-spin"/> เธเธณเธฅเธฑเธเธเธฑเธเธ—เธถเธ...</span>}
-              {saveStatus === 'saved' && <span className="text-emerald-500 flex items-center gap-1 font-bold"><CheckCircle2 className="w-4 h-4"/> เธเธฑเธเธ—เธถเธเธญเธฑเธ•เนเธเธกเธฑเธ•เธดเนเธฅเนเธง</span>}
-              {saveStatus === 'error' && <span className="text-red-500 flex items-center gap-1 font-bold cursor-pointer"><X className="w-4 h-4"/> เธเธฑเธเธ—เธถเธเนเธกเนเธชเธณเน€เธฃเนเธ</span>}
+              {saveStatus === 'idle' && <span className="text-slate-500 font-bold">พร้อมใช้งาน</span>}
+              {saveStatus === 'saving' && <span className="text-[#3B66D1] flex items-center gap-1 font-bold"><Loader2 className="w-4 h-4 animate-spin"/> กำลังบันทึก...</span>}
+              {saveStatus === 'saved' && <span className="text-emerald-500 flex items-center gap-1 font-bold"><CheckCircle2 className="w-4 h-4"/> บันทึกอัตโนมัติแล้ว</span>}
+              {saveStatus === 'error' && <span className="text-red-500 flex items-center gap-1 font-bold cursor-pointer"><X className="w-4 h-4"/> บันทึกไม่สำเร็จ</span>}
               {saveStatus === 'error' && saveErrorMsg && <span className="text-xs text-red-400 truncate max-w-[150px]">({saveErrorMsg})</span>}
             </div>
             {/* UX 1: Auto-match button restored */}
             <button onClick={() => setIsAutoModalOpen(true)} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-[#272C38] text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-900/50 rounded-xl font-bold hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-colors text-xs sm:text-sm shadow-sm">
-              <Wand2 size={16} /> เธเธฑเธ”เธ—เธตเธกเธญเธฑเธ•เนเธเธกเธฑเธ•เธด
+              <Wand2 size={16} /> จัดทีมอัตโนมัติ
             </button>
             <button onClick={() => setIsClearConfirmOpen(true)} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-[#272C38] text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-xl font-bold hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-xs sm:text-sm shadow-sm">
-              <Trash2 size={16} /> เธฅเนเธฒเธเธ—เธตเธก
+              <Trash2 size={16} /> ล้างทีม
             </button>
             <button onClick={handleExportPNG} disabled={isExporting} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-[#272C38] text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50 rounded-xl font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors text-xs sm:text-sm shadow-sm disabled:opacity-50">
               {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} 
-              {isExporting ? "เธเธณเธฅเธฑเธเธญเธญเธเน€เธญเธเธชเธฒเธฃ..." : "Export PNG"}
+              {isExporting ? "กำลังออกเอกสาร..." : "Export PNG"}
             </button>
           </div>
         )}
@@ -918,7 +918,7 @@ export default function TeamsPage() {
         <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-2xl p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm shadow-sm">
           <div className="flex items-center gap-2.5 text-amber-800 dark:text-amber-300">
             <AlertCircle className="w-5 h-5 flex-shrink-0 text-amber-600" />
-            <span className="font-semibold">{conflictMessage || "เธเนเธญเธกเธนเธฅเธ—เธตเธกเนเธเธฃเธฐเธเธเธกเธตเธเธฒเธฃเน€เธเธฅเธตเนเธขเธเนเธเธฅเธเธเธฒเธ Admin เธ—เนเธฒเธเธญเธทเนเธ เธซเธฃเธทเธญเธกเธตเธชเธกเธฒเธเธดเธเนเธเนเธเธฅเธฒ เธฃเธฐเธเธเธฃเธฐเธเธฑเธเธเธฒเธฃเธเธฑเธเธ—เธถเธเธ—เธฑเธเธเธฑเนเธงเธเธฃเธฒเธงเน€เธเธทเนเธญเธเนเธญเธเธเธฑเธเธเนเธญเธกเธนเธฅเธชเธนเธเธซเธฒเธข"}</span>
+            <span className="font-semibold">{conflictMessage || "ข้อมูลทีมในระบบมีการเปลี่ยนแปลงจาก Admin ท่านอื่น หรือมีสมาชิกแจ้งลา ระบบระงับการบันทึกทับชั่วคราวเพื่อป้องกันข้อมูลสูญหาย"}</span>
           </div>
           <button
             onClick={() => {
@@ -927,7 +927,7 @@ export default function TeamsPage() {
             }}
             className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs sm:text-sm flex-shrink-0 transition-all shadow-sm flex items-center gap-1.5"
           >
-            <RefreshCw size={14} /> เธฃเธตเน€เธเธฃเธเน€เธเธทเนเธญเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธฅเนเธฒเธชเธธเธ”
+            <RefreshCw size={14} /> รีเฟรชเพื่อโหลดข้อมูลล่าสุด
           </button>
         </div>
       )}
@@ -939,14 +939,14 @@ export default function TeamsPage() {
             <div className="w-full lg:w-[260px] 2xl:w-[280px] flex-shrink-0 bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] h-[400px] lg:h-[calc(100vh-2rem)] flex flex-col lg:sticky top-4 z-20">
               <div className="p-3 border-b border-slate-100 dark:border-[#2D3342] bg-slate-50/70 dark:bg-[#272C38]/50 rounded-t-2xl">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm"><Users size={16} /> เธขเธฑเธเนเธกเนเนเธ”เนเธเธฑเธ” ({data.columns["unassigned"].memberIds.length})</h2>
+                  <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm"><Users size={16} /> ยังไม่ได้จัด ({data.columns["unassigned"].memberIds.length})</h2>
                   <button onClick={() => setIsUnassignedCollapsed(true)} className="text-slate-400 dark:text-[#8B93A7] hover:text-slate-700 bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] rounded-lg p-1"><ChevronLeft size={14} /></button>
                 </div>
                 <div className="space-y-2">
-                  <input type="text" placeholder="เธเนเธเธซเธฒเธเธทเนเธญ..." value={unassignedSearch} onChange={e => setUnassignedSearch(e.target.value)} className="w-full bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-800 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#4D73CD]" />
+                  <input type="text" placeholder="ค้นหาชื่อ..." value={unassignedSearch} onChange={e => setUnassignedSearch(e.target.value)} className="w-full bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-800 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#4D73CD]" />
                   <div className="relative" ref={jobFilterDropdownRef}>
                     <button type="button" onClick={() => setIsJobFilterOpen(prev => !prev)} className={`w-full flex items-center justify-between bg-white dark:bg-[#272C38] border ${unassignedFilterJobs.length > 0 ? "border-[#3B66D1] dark:border-[#4D73CD]" : "border-slate-200 dark:border-[#2D3342]"} rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 dark:text-white outline-none cursor-pointer hover:bg-slate-50 dark:hover:bg-[#2A2F3E]`}>
-                      <div className="flex items-center gap-1.5 truncate">{unassignedFilterJobs.length === 0 ? <span className="text-slate-600 dark:text-[#8B93A7]">เธ—เธธเธเธญเธฒเธเธตเธ ({data.columns["unassigned"].memberIds.length})</span> : <span className="truncate text-[#0b3d63] dark:text-[#82A0F5]">{unassignedFilterJobs.length === 1 ? unassignedFilterJobs[0] : `${unassignedFilterJobs.length} เธญเธฒเธเธตเธ`}</span>}</div>
+                      <div className="flex items-center gap-1.5 truncate">{unassignedFilterJobs.length === 0 ? <span className="text-slate-600 dark:text-[#8B93A7]">ทุกอาชีพ ({data.columns["unassigned"].memberIds.length})</span> : <span className="truncate text-[#0b3d63] dark:text-[#82A0F5]">{unassignedFilterJobs.length === 1 ? unassignedFilterJobs[0] : `${unassignedFilterJobs.length} อาชีพ`}</span>}</div>
                       <div className="flex items-center gap-1 shrink-0">
                         {unassignedFilterJobs.length > 0 && <span onClick={e => { e.stopPropagation(); setUnassignedFilterJobs([]); }} className="hover:text-red-500 text-slate-400 p-0.5 rounded cursor-pointer"><X size={12} /></span>}
                         <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${isJobFilterOpen ? "rotate-180" : ""}`} />
@@ -955,8 +955,8 @@ export default function TeamsPage() {
                     {isJobFilterOpen && (
                       <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-[#232733] border border-slate-200 dark:border-[#2D3342] rounded-xl shadow-xl z-50 p-2 max-h-60 overflow-y-auto space-y-1">
                         <div className="flex items-center justify-between pb-1 mb-1 border-b border-slate-100 dark:border-[#2D3342] text-[11px]">
-                          <button type="button" onClick={() => setUnassignedFilterJobs([])} className="font-bold hover:underline text-slate-500">เน€เธฅเธทเธญเธเธ—เธฑเนเธเธซเธกเธ”</button>
-                          {unassignedFilterJobs.length > 0 && <button type="button" onClick={() => setUnassignedFilterJobs([])} className="text-red-500 hover:underline text-[10px] font-bold">เธฅเนเธฒเธ</button>}
+                          <button type="button" onClick={() => setUnassignedFilterJobs([])} className="font-bold hover:underline text-slate-500">เลือกทั้งหมด</button>
+                          {unassignedFilterJobs.length > 0 && <button type="button" onClick={() => setUnassignedFilterJobs([])} className="text-red-500 hover:underline text-[10px] font-bold">ล้าง</button>}
                         </div>
                         {JOB_LIST.map(job => {
                           const isChecked = unassignedFilterJobs.includes(job);
@@ -986,7 +986,7 @@ export default function TeamsPage() {
 
           {isAdmin && isUnassignedCollapsed && (
             <div className="w-full lg:w-12 flex-shrink-0 bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] h-12 lg:h-[calc(100vh-2rem)] flex flex-row lg:flex-col items-center justify-between lg:justify-start px-4 lg:px-0 py-2 lg:py-4 sticky top-4 z-10 cursor-pointer hover:bg-slate-50 dark:hover:bg-[#2A2F3E]" onClick={() => setIsUnassignedCollapsed(false)}>
-              <div className="flex items-center gap-2"><Users size={18} className="text-slate-400" /><span className="lg:hidden font-bold text-xs text-slate-700 dark:text-slate-300">เนเธชเธ”เธเธฃเธฒเธขเธเธทเนเธญเธ—เธตเนเธขเธฑเธเนเธกเนเนเธ”เนเธเธฑเธ”</span></div>
+              <div className="flex items-center gap-2"><Users size={18} className="text-slate-400" /><span className="lg:hidden font-bold text-xs text-slate-700 dark:text-slate-300">แสดงรายชื่อที่ยังไม่ได้จัด</span></div>
               <div className="flex items-center gap-2"><span className="bg-[#0b3d63] dark:bg-[#3B66D1] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{data.columns["unassigned"].memberIds.length}</span><ChevronRight size={18} className="text-slate-400 lg:mt-4" /></div>
             </div>
           )}
@@ -995,12 +995,12 @@ export default function TeamsPage() {
             {/* Tabs */}
             <div className="flex gap-2 mb-4 bg-white dark:bg-[#232733] p-1.5 rounded-xl border border-slate-200 dark:border-[#2D3342] shadow-sm self-start overflow-x-auto max-w-full">
               <button onClick={() => setActiveTab("main")} className={`px-4 sm:px-6 py-2 rounded-lg font-bold text-xs sm:text-sm whitespace-nowrap transition-all ${activeTab === "main" ? "bg-[#0b3d63] dark:bg-[#3B66D1] text-white shadow-sm" : "text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-[#2A2F3E]"}`}>
-                เธชเธเธฒเธกเธซเธฅเธฑเธ ({mainPlayerCount}/60 เธเธ)
+                สนามหลัก ({mainPlayerCount}/60 คน)
               </button>
               <button onClick={() => setActiveTab("sub")} className={`px-4 sm:px-6 py-2 rounded-lg font-bold text-xs sm:text-sm whitespace-nowrap transition-all ${activeTab === "sub" ? "bg-[#0b3d63] dark:bg-[#3B66D1] text-white shadow-sm" : "text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-[#2A2F3E]"}`}>
-                เธชเธเธฒเธกเธฃเธญเธ ({data.zones.filter(z => z.type === "sub").flatMap(z => z.teamOrder).reduce((s, colId) => s + (data.columns[colId]?.memberIds?.filter(id => id !== null)?.length || 0), 0)} เธเธ)
+                สนามรอง ({data.zones.filter(z => z.type === "sub").flatMap(z => z.teamOrder).reduce((s, colId) => s + (data.columns[colId]?.memberIds?.filter(id => id !== null)?.length || 0), 0)} คน)
               </button>
-              {isAdmin && <button onClick={() => setActiveTab("leave")} className={`px-4 sm:px-6 py-2 rounded-lg font-bold text-xs sm:text-sm whitespace-nowrap transition-all ${activeTab === "leave" ? "bg-red-600 text-white shadow-sm" : "text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-[#2A2F3E]"}`}>เธฅเธฒ/เธญเธญเธเนเธฅเธเน</button>}
+              {isAdmin && <button onClick={() => setActiveTab("leave")} className={`px-4 sm:px-6 py-2 rounded-lg font-bold text-xs sm:text-sm whitespace-nowrap transition-all ${activeTab === "leave" ? "bg-red-600 text-white shadow-sm" : "text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-[#2A2F3E]"}`}>ลา/ออฟไลน์</button>}
             </div>
 
             <div className="flex-1">
@@ -1008,11 +1008,11 @@ export default function TeamsPage() {
                 <div className="space-y-10 pb-12 bg-[#f0f6fc] dark:bg-[#1C1F27] print-export-padding">
                   {/* 60-player progress bar */}
                   <div className="bg-white dark:bg-[#232733] rounded-xl border border-slate-200 dark:border-[#2D3342] p-3 flex items-center gap-3 shadow-sm">
-                    <span className="text-sm font-bold text-slate-700 dark:text-white whitespace-nowrap">เธชเธเธฒเธกเธซเธฅเธฑเธ {mainPlayerCount}/60 เธเธ</span>
+                    <span className="text-sm font-bold text-slate-700 dark:text-white whitespace-nowrap">สนามหลัก {mainPlayerCount}/60 คน</span>
                     <div className="flex-1 bg-slate-100 dark:bg-[#272C38] rounded-full h-2.5 overflow-hidden">
                       <div className={`h-full rounded-full transition-all ${mainPlayerCount >= 60 ? "bg-emerald-500" : mainPlayerCount >= 45 ? "bg-amber-400" : "bg-[#3B66D1]"}`} style={{ width: `${Math.min(100, (mainPlayerCount / 60) * 100)}%` }} />
                     </div>
-                    <span className={`text-xs font-bold ${mainPlayerCount >= 60 ? "text-emerald-500" : "text-slate-500"}`}>{mainPlayerCount >= 60 ? "เน€เธ•เนเธก โ“" : `เน€เธซเธฅเธทเธญ ${60 - mainPlayerCount} เธ—เธตเน`}</span>
+                    <span className={`text-xs font-bold ${mainPlayerCount >= 60 ? "text-emerald-500" : "text-slate-500"}`}>{mainPlayerCount >= 60 ? "เต็ม โ“" : `เหลือ ${60 - mainPlayerCount} ที่`}</span>
                   </div>
 
                   {data.zones.filter(z => z.type === "main").map(zone => (
@@ -1025,7 +1025,7 @@ export default function TeamsPage() {
                               <TeamCard key={colId} column={data.columns[colId]} members={data.members} index={index} toggleLock={toggleLock} clearTeam={clearTeam} removeMember={removeMember} isAdmin={isAdmin} onRemoveFromZone={isAdmin ? () => removeTeamFromZone(zone.id, colId) : undefined} renameTeam={renameTeam} />
                             ) : null)}
                             {provided.placeholder}
-                            {zone.teamOrder.length === 0 && <div className="col-span-full flex items-center justify-center h-24 rounded-xl border-2 border-dashed border-slate-200 dark:border-[#2D3342] text-slate-400 text-sm">เธขเธฑเธเนเธกเนเธกเธตเธ—เธตเธกเนเธเนเธเธเธเธตเน โ€” เธเธ” &quot;เน€เธเธดเนเธกเธ—เธตเธก&quot;</div>}
+                            {zone.teamOrder.length === 0 && <div className="col-span-full flex items-center justify-center h-24 rounded-xl border-2 border-dashed border-slate-200 dark:border-[#2D3342] text-slate-400 text-sm">ยังไม่มีทีมในโซนนี้ โ€” กด &quot;เพิ่มทีม&quot;</div>}
                           </div>
                         )}
                       </Droppable>
@@ -1034,7 +1034,7 @@ export default function TeamsPage() {
 
                   {isAdmin && (
                     <button onClick={() => addZone("main")} disabled={!canAddMainTeam} className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-colors border ${canAddMainTeam ? "border-[#3B66D1] text-[#3B66D1] dark:text-[#82A0F5] hover:bg-[#3B66D1]/10" : "border-slate-200 text-slate-400 cursor-not-allowed"}`}>
-                      <Plus size={16} /> เธชเธฃเนเธฒเธเนเธเธเนเธซเธกเน (เธชเธเธฒเธกเธซเธฅเธฑเธ)
+                      <Plus size={16} /> สร้างโซนใหม่ (สนามหลัก)
                     </button>
                   )}
                 </div>
@@ -1052,7 +1052,7 @@ export default function TeamsPage() {
                               <TeamCard key={colId} column={data.columns[colId]} members={data.members} index={index} toggleLock={toggleLock} clearTeam={clearTeam} removeMember={removeMember} isAdmin={isAdmin} onRemoveFromZone={isAdmin ? () => removeTeamFromZone(zone.id, colId) : undefined} renameTeam={renameTeam} />
                             ) : null)}
                             {provided.placeholder}
-                            {zone.teamOrder.length === 0 && <div className="col-span-full flex items-center justify-center h-24 rounded-xl border-2 border-dashed border-slate-200 dark:border-[#2D3342] text-slate-400 text-sm">เธขเธฑเธเนเธกเนเธกเธตเธ—เธตเธก โ€” เธเธ” &quot;เน€เธเธดเนเธกเธ—เธตเธก&quot;</div>}
+                            {zone.teamOrder.length === 0 && <div className="col-span-full flex items-center justify-center h-24 rounded-xl border-2 border-dashed border-slate-200 dark:border-[#2D3342] text-slate-400 text-sm">ยังไม่มีทีม โ€” กด &quot;เพิ่มทีม&quot;</div>}
                           </div>
                         )}
                       </Droppable>
@@ -1060,7 +1060,7 @@ export default function TeamsPage() {
                   ))}
                   {isAdmin && (
                     <button onClick={() => addZone("sub")} className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-colors border border-[#3B66D1] text-[#3B66D1] dark:text-[#82A0F5] hover:bg-[#3B66D1]/10">
-                      <Plus size={16} /> เธชเธฃเนเธฒเธเนเธเธเนเธซเธกเน (เธชเธเธฒเธกเธฃเธญเธ)
+                      <Plus size={16} /> สร้างโซนใหม่ (สนามรอง)
                     </button>
                   )}
                 </div>
@@ -1069,12 +1069,12 @@ export default function TeamsPage() {
               {activeTab === "leave" && (
                 <div className="pb-12 space-y-12">
                   <div>
-                    <h2 className="text-lg font-bold text-theme-danger flex items-center gap-2 mb-4"><X size={18} /> เธฃเธฒเธขเธเธทเนเธญเธเธนเนเน€เธฅเนเธเธญเธญเธเนเธฅเธเน</h2>
+                    <h2 className="text-lg font-bold text-theme-danger flex items-center gap-2 mb-4"><X size={18} /> รายชื่อผู้เล่นออฟไลน์</h2>
                     <div className="bg-theme-panel rounded-xl border border-theme-border p-6 shadow-sm">
                       <div className="flex flex-col md:flex-row gap-4 mb-6">
                         <div className="relative flex-1" ref={offlineDropdownRef}>
                           <div className="bg-theme-bg border border-theme-border rounded-lg px-4 py-2 flex items-center justify-between cursor-pointer" onClick={() => setIsOfflineDropdownOpen(true)}>
-                            <input type="text" placeholder="+ เธเนเธเธซเธฒเธเธนเนเน€เธฅเนเธเน€เธเธทเนเธญเธ—เธณเนเธซเนเธญเธญเธเนเธฅเธเน..." className="bg-transparent border-none outline-none text-sm font-bold text-theme-text w-full" value={offlineSearch} onChange={e => { setOfflineSearch(e.target.value); setIsOfflineDropdownOpen(true); }} onFocus={() => setIsOfflineDropdownOpen(true)} />
+                            <input type="text" placeholder="+ ค้นหาผู้เล่นเพื่อทำให้ออฟไลน์..." className="bg-transparent border-none outline-none text-sm font-bold text-theme-text w-full" value={offlineSearch} onChange={e => { setOfflineSearch(e.target.value); setIsOfflineDropdownOpen(true); }} onFocus={() => setIsOfflineDropdownOpen(true)} />
                           </div>
                           {isOfflineDropdownOpen && (
                             <div className="absolute z-50 w-full mt-2 bg-theme-panel border border-theme-border rounded-lg shadow-xl max-h-60 overflow-y-auto">
@@ -1087,7 +1087,7 @@ export default function TeamsPage() {
                           )}
                         </div>
                       </div>
-                      {data.offlineIds.length === 0 ? <div className="text-center py-8 text-theme-textMuted font-bold border-2 border-dashed border-theme-divider rounded-lg">เนเธกเนเธกเธตเธเธนเนเน€เธฅเนเธเธญเธญเธเนเธฅเธเน</div> : (
+                      {data.offlineIds.length === 0 ? <div className="text-center py-8 text-theme-textMuted font-bold border-2 border-dashed border-theme-divider rounded-lg">ไม่มีผู้เล่นออฟไลน์</div> : (
                         <div className="flex flex-wrap gap-3">
                           {data.offlineIds.map(id => {
                             const m = data.members[id];
@@ -1105,12 +1105,12 @@ export default function TeamsPage() {
                     </div>
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-theme-text flex items-center gap-2 mb-4"><LayoutGrid size={18} className="text-[#0b3d63]" /> เธเธฑเธเธ—เธถเธเธเธฒเธฃเธฅเธฒ</h2>
-                    {leaveRecords.length === 0 ? <div className="text-center p-12 bg-theme-panel rounded-xl text-theme-textMuted border border-theme-border font-bold">เนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเธเธฒเธฃเธฅเธฒ</div> : (
+                    <h2 className="text-lg font-bold text-theme-text flex items-center gap-2 mb-4"><LayoutGrid size={18} className="text-[#0b3d63]" /> บันทึกการลา</h2>
+                    {leaveRecords.length === 0 ? <div className="text-center p-12 bg-theme-panel rounded-xl text-theme-textMuted border border-theme-border font-bold">ไม่มีข้อมูลการลา</div> : (
                       <div className="bg-theme-panel rounded-xl border border-theme-border overflow-hidden">
                         <table className="w-full text-left">
                           <thead className="bg-theme-bg/50 border-b border-theme-divider text-xs uppercase tracking-wider text-theme-textMuted">
-                            <tr><th className="p-4 font-bold">เธเธทเนเธญเนเธเน€เธเธก</th><th className="p-4 font-bold">เธงเธฑเธเธ—เธตเนเธฅเธฒ</th><th className="p-4 font-bold">เน€เธซเธ•เธธเธเธฅ</th><th className="p-4 font-bold w-20 text-center">เธเธฑเธ”เธเธฒเธฃ</th></tr>
+                            <tr><th className="p-4 font-bold">ชื่อในเกม</th><th className="p-4 font-bold">วันที่ลา</th><th className="p-4 font-bold">เหตุผล</th><th className="p-4 font-bold w-20 text-center">จัดการ</th></tr>
                           </thead>
                           <tbody className="divide-y divide-theme-divider">
                             {leaveRecords.map((r: any, i) => (
@@ -1119,7 +1119,7 @@ export default function TeamsPage() {
                                 <td className="p-4 font-bold text-theme-textSecondary">{r.date || r.day}</td>
                                 <td className="p-4 text-sm text-theme-textMuted">{r.reason || "-"}</td>
                                 <td className="p-4 text-center">
-                                  <button onClick={async () => { if (confirm(`เธฅเธเธฃเธฒเธขเธเธฒเธฃเธฅเธฒเธเธญเธ ${r.name}?`)) { try { await axios.delete("/api/leave", { data: { id: r.id } }); setLeaveRecords(prev => prev.filter(rec => rec.id !== r.id)); } catch { alert("เธฅเธเนเธกเนเธชเธณเน€เธฃเนเธ"); } } }} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg"><X size={16} /></button>
+                                  <button onClick={async () => { if (confirm(`ลบรายการลาของ ${r.name}?`)) { try { await axios.delete("/api/leave", { data: { id: r.id } }); setLeaveRecords(prev => prev.filter(rec => rec.id !== r.id)); } catch { alert("ลบไม่สำเร็จ"); } } }} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg"><X size={16} /></button>
                                 </td>
                               </tr>
                             ))}
@@ -1144,10 +1144,10 @@ export default function TeamsPage() {
                 <AlertCircle size={32} />
               </div>
               <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                เธขเธทเธเธขเธฑเธเธเธฒเธฃเธฅเนเธฒเธเธ—เธตเธก?
+                ยืนยันการล้างทีม?
               </h3>
               <p className="text-sm text-slate-600 dark:text-[#8B93A7] leading-relaxed">
-                เธชเธกเธฒเธเธดเธเธ—เธฑเนเธเธซเธกเธ”เธเธฐเธ–เธนเธเธเธณเธญเธญเธเธเธฒเธเธเธฒเธฃเธเธฑเธ”เธ—เธตเธก เธเธธเธ“เธ•เนเธญเธเธเธฒเธฃเธ”เธณเน€เธเธดเธเธเธฒเธฃเธ•เนเธญเธซเธฃเธทเธญเนเธกเน?
+                สมาชิกทั้งหมดจะถูกนำออกจากการจัดทีม คุณต้องการดำเนินการต่อหรือไม่?
               </p>
             </div>
             <div className="p-4 bg-slate-50 dark:bg-[#272C38]/50 border-t border-slate-100 dark:border-[#2D3342] flex items-center justify-end gap-3">
@@ -1157,7 +1157,7 @@ export default function TeamsPage() {
                 onClick={() => setIsClearConfirmOpen(false)}
                 className="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#343B4B] transition-colors"
               >
-                เธขเธเน€เธฅเธดเธ
+                ยกเลิก
               </button>
               <button
                 type="button"
@@ -1166,7 +1166,7 @@ export default function TeamsPage() {
                 className="px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:opacity-50 transition-colors shadow-sm flex items-center gap-1.5"
               >
                 {isClearing ? <Loader2 size={16} className="animate-spin" /> : null}
-                {isClearing ? "เธเธณเธฅเธฑเธเธฅเนเธฒเธเธ—เธตเธก..." : "เธขเธทเธเธขเธฑเธเธฅเนเธฒเธเธ—เธตเธก"}
+                {isClearing ? "กำลังล้างทีม..." : "ยืนยันล้างทีม"}
               </button>
             </div>
           </div>
@@ -1191,7 +1191,7 @@ export default function TeamsPage() {
           zones={data.zones.filter((z) => z.type === (activeTab === "sub" ? "sub" : "main"))}
           columns={data.columns}
           members={data.members}
-          title={activeTab === "sub" ? "GVG TEAM SETUP (เธชเธเธฒเธกเธฃเธญเธ)" : "GVG TEAM SETUP"}
+          title={activeTab === "sub" ? "GVG TEAM SETUP (สนามรอง)" : "GVG TEAM SETUP"}
         />
       </div>
 
@@ -1199,8 +1199,8 @@ export default function TeamsPage() {
       {isExporting && (
         <div className="fixed inset-0 z-[99999] bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-3">
           <Loader2 className="w-10 h-10 animate-spin text-sky-400" />
-          <div className="text-lg font-bold">เธเธณเธฅเธฑเธเธชเธฃเนเธฒเธเธ เธฒเธเธชเธฃเธธเธ GVG (PNG 1 เธซเธเนเธฒเธเธฃเธฐเธ”เธฒเธฉ)...</div>
-          <div className="text-xs text-slate-400">เธเธฃเธธเธ“เธฒเธฃเธญเธชเธฑเธเธเธฃเธนเน เธฃเธฐเธเธเธเธณเธฅเธฑเธเน€เธฃเธเน€เธ”เธญเธฃเนเธ เธฒเธเธเธงเธฒเธกเธฅเธฐเน€เธญเธตเธขเธ”เธชเธนเธ</div>
+          <div className="text-lg font-bold">กำลังสร้างภาพสรุป GVG (PNG 1 หน้ากระดาษ)...</div>
+          <div className="text-xs text-slate-400">กรุณารอสักครู่ ระบบกำลังเรนเดอร์ภาพความละเอียดสูง</div>
         </div>
       )}
     </div>
@@ -1238,19 +1238,19 @@ function TeamCard({
               <span className="text-xs bg-black/20 px-2 py-0.5 rounded-md font-mono">{totalPower.toLocaleString()}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${isFull ? "bg-emerald-500 text-white" : "bg-white/20 text-white"}`}>{isFull ? "เธเธฃเธ 5/5" : `${(column?.memberIds || []).filter(id => id).length}/5`}</span>
+              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${isFull ? "bg-emerald-500 text-white" : "bg-white/20 text-white"}`}>{isFull ? "ครบ 5/5" : `${(column?.memberIds || []).filter(id => id).length}/5`}</span>
               {isAdmin && (
                 <>
-                  <button onClick={() => toggleLock(column.id)} className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold transition-colors ${column.locked ? "bg-amber-400 text-slate-900" : "bg-white/15 hover:bg-white/25 text-white"}`}>{column.locked ? <Lock size={12} /> : <Unlock size={12} />} {column.locked ? "เธฅเนเธญเธ" : "เธเธฅเธ”เธฅเนเธญเธ"}</button>
-                  <button onClick={() => clearTeam(column.id)} className="bg-red-500/80 hover:bg-red-600 text-white p-1 rounded-md transition-colors disabled:opacity-40" disabled={column.locked} title="เธฅเนเธฒเธเธ—เธตเธก"><X size={12} strokeWidth={3} /></button>
-                  {onRemoveFromZone && <button onClick={onRemoveFromZone} className="bg-white/10 hover:bg-red-500/80 text-white p-1 rounded-md transition-colors" title="เธฅเธเธ—เธตเธกเธญเธญเธเธเธฒเธเนเธเธ"><Trash2 size={12} /></button>}
+                  <button onClick={() => toggleLock(column.id)} className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold transition-colors ${column.locked ? "bg-amber-400 text-slate-900" : "bg-white/15 hover:bg-white/25 text-white"}`}>{column.locked ? <Lock size={12} /> : <Unlock size={12} />} {column.locked ? "ล็อก" : "ปลดล็อก"}</button>
+                  <button onClick={() => clearTeam(column.id)} className="bg-red-500/80 hover:bg-red-600 text-white p-1 rounded-md transition-colors disabled:opacity-40" disabled={column.locked} title="ล้างทีม"><X size={12} strokeWidth={3} /></button>
+                  {onRemoveFromZone && <button onClick={onRemoveFromZone} className="bg-white/10 hover:bg-red-500/80 text-white p-1 rounded-md transition-colors" title="ลบทีมออกจากโซน"><Trash2 size={12} /></button>}
                 </>
               )}
             </div>
           </div>
 
           <div className={`grid ${isAdmin ? "grid-cols-[30px_minmax(0,1fr)_85px_50px_22px] sm:grid-cols-[36px_minmax(0,1fr)_115px_60px_24px]" : "grid-cols-[30px_minmax(0,1fr)_85px_50px] sm:grid-cols-[36px_minmax(0,1fr)_115px_60px]"} gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 bg-slate-50 dark:bg-[#272C38]/60 border-b border-slate-100 dark:border-[#2D3342] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-[#8B93A7]`}>
-            <div></div><div>เธเธทเนเธญ</div><div className="text-center">เธญเธฒเธเธตเธ</div><div className="text-right">เธเนเธฒเธเธฅเธฑเธ</div>{isAdmin && <div></div>}
+            <div></div><div>ชื่อ</div><div className="text-center">อาชีพ</div><div className="text-right">ค่าพลัง</div>{isAdmin && <div></div>}
           </div>
 
           <div className="p-2 min-h-[220px] flex flex-col gap-1.5 relative bg-white dark:bg-[#232733]">
@@ -1261,7 +1261,7 @@ function TeamCard({
                 <Droppable key={droppableId} droppableId={droppableId} type="MEMBER" isDropDisabled={!isAdmin || column.locked}>
                   {(provided, snapshot) => (
                     <div ref={provided.innerRef} {...provided.droppableProps} className={`h-[38px] rounded-xl border ${snapshot.isDraggingOver ? "bg-blue-50 dark:bg-[#3B66D1]/25 border-[#0b3d63] dark:border-[#4D73CD]" : "border-transparent bg-slate-50/70 dark:bg-[#272C38]/40"} flex items-center relative transition-colors`}>
-                      {!memberId && !snapshot.isDraggingOver && <div className="absolute inset-0 border border-dashed border-slate-200 dark:border-[#2D3342] rounded-xl flex items-center justify-center pointer-events-none"><span className="text-[10px] text-slate-400 font-bold tracking-wider">เธงเนเธฒเธ {slotIdx + 1}</span></div>}
+                      {!memberId && !snapshot.isDraggingOver && <div className="absolute inset-0 border border-dashed border-slate-200 dark:border-[#2D3342] rounded-xl flex items-center justify-center pointer-events-none"><span className="text-[10px] text-slate-400 font-bold tracking-wider">ว่าง {slotIdx + 1}</span></div>}
                       {memberId && (
                         <Draggable draggableId={memberId} index={0} isDragDisabled={!isAdmin || column.locked}>
                           {(prov, snap) => {
@@ -1273,7 +1273,7 @@ function TeamCard({
                                 <div className="min-w-0 pr-1"><span className="text-xs font-bold text-slate-800 dark:text-white truncate block" title={m?.name}>{m ? m.name : (memberId || "Unknown")}</span></div>
                                 {m && <div className="h-[24px] sm:h-[26px] px-1.5 sm:px-3 rounded-full text-[10px] sm:text-xs font-bold text-white flex items-center justify-center gap-1 shadow-sm shrink-0 w-[85px] sm:w-[115px]" style={{ backgroundColor: color }}><span className="truncate">{m.job}</span><ChevronDown size={10} className="opacity-80 shrink-0 stroke-[2.5] hidden sm:inline-block" /></div>}
                                 {m && <div className="text-[10px] sm:text-xs font-bold text-[#0b3d63] dark:text-white text-right tabular-nums shrink-0">{(m.power || 0).toLocaleString()}</div>}
-                                {isAdmin && <button onClick={e => { e.stopPropagation(); removeMember(column.id, memberId); }} disabled={column.locked} className="text-sky-300 hover:text-red-500 dark:text-sky-400 dark:hover:text-red-400 opacity-60 hover:opacity-100 transition-opacity flex justify-center disabled:hidden p-0.5" title="เธเธณเธญเธญเธเธเธฒเธเธ—เธตเธก"><X size={14} strokeWidth={2.5} /></button>}
+                                {isAdmin && <button onClick={e => { e.stopPropagation(); removeMember(column.id, memberId); }} disabled={column.locked} className="text-sky-300 hover:text-red-500 dark:text-sky-400 dark:hover:text-red-400 opacity-60 hover:opacity-100 transition-opacity flex justify-center disabled:hidden p-0.5" title="นำออกจากทีม"><X size={14} strokeWidth={2.5} /></button>}
                               </div>
                             );
                             if (snap.isDragging && typeof document !== "undefined") return createPortal(rowContent, document.body);

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -191,7 +191,9 @@ export default function TeamsPage() {
       const rosterPayload = rosterRes.data;
       const savedTeams = teamsRes.data;
       const membersMap: Record<string, Member> = {};
-      if (leaveRes.data) setLeaveRecords(leaveRes.data.data || leaveRes.data || []);
+      const fetchedLeaves = leaveRes.data?.data || leaveRes.data || [];
+      if (leaveRes.data) setLeaveRecords(fetchedLeaves);
+      const leaveNames = new Set(fetchedLeaves.map((r: any) => r.name));
 
       if (savedTeams && typeof savedTeams.version === "number") {
         setServerVersion(savedTeams.version);
@@ -277,7 +279,7 @@ export default function TeamsPage() {
         if (cols[colId]) cols[colId].memberIds.forEach(id => { if (id) assignedIds.add(id); });
       }));
 
-      const unassignedIds = Object.keys(membersMap).filter(id => !assignedIds.has(id) && !offlineIds.includes(id));
+      const unassignedIds = Object.keys(membersMap).filter(id => !assignedIds.has(id) && !offlineIds.includes(id) && !leaveNames.has(id));
       cols["unassigned"] = { id: "unassigned", title: "ยังไม่ได้จัดทีม", memberIds: unassignedIds, type: "unassigned", locked: false };
 
       if (offlineIds.length > 0) {

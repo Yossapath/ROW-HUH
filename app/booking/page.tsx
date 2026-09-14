@@ -361,8 +361,12 @@ export default function BookingPage() {
               </p>
             </div>
 
-            <div className="flex flex-col items-start sm:items-end gap-3 flex-shrink-0">
+            <div className="flex flex-col items-start sm:items-end gap-3 flex-shrink-0 z-10">
               <StatusBadge open={bookingStatus.open} reason={bookingStatus.reason} />
+              <div className="bg-white/10 px-3 py-1.5 rounded-lg text-sm font-medium text-white flex items-center gap-2">
+                <span>จำนวนคิวทั้งหมด:</span>
+                <span className="font-bold text-blue-200">{queues.length}</span>
+              </div>
               <button
                 onClick={handleShareLink}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-sm font-medium text-blue-100"

@@ -356,14 +356,28 @@ export default function DungeonPage() {
     <div className="min-h-screen bg-[#f0f6fc] dark:bg-[#1C1F27] p-4 lg:py-8 lg:px-12 xl:px-24 2xl:px-32">
 
       {/* Header Card */}
-      <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] p-5 mb-5 flex items-center gap-3">
-        <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#0b3d63] dark:bg-[#3B66D1] shadow-sm">
-          <Swords className="w-6 h-6 text-white" />
+      <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] p-5 mb-5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#0b3d63] dark:bg-[#3B66D1] shadow-sm">
+            <Swords className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-slate-800 dark:text-white">ระบบจองดันมายา</h1>
+            <p className="text-sm text-slate-500 dark:text-[#8B93A7]">จองคิวดันเจี้ยนมายา · 5 คนต่อทีม · 1 รอบต่อคน/วัน</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-xl font-bold text-slate-800 dark:text-white">ระบบจองดันมายา</h1>
-          <p className="text-sm text-slate-500 dark:text-[#8B93A7]">จองคิวดันเจี้ยนมายา · 5 คนต่อทีม · 1 รอบต่อคน/วัน</p>
-        </div>
+        
+        {/* RIGHT SIDE (STATUS & QUEUE) */}
+        {!loading && dungeonData && (
+          <div className="flex flex-col items-end gap-1.5">
+            <div className={`px-3 py-1 rounded-full text-[11px] font-bold text-white uppercase tracking-wide ${bookingStatus.open ? 'bg-emerald-500' : 'bg-red-500'}`}>
+              {bookingStatus.open ? "เปิดจอง" : "ปิดจอง"}
+            </div>
+            <div className="text-xs font-bold text-slate-600 dark:text-[#8B93A7] bg-slate-100 dark:bg-[#2D3342] px-2.5 py-1 rounded-md">
+              จำนวนคิวทั้งหมด: <span className="text-[#0b3d63] dark:text-white text-sm">{dungeonData.queueItems?.length || 0}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-5">

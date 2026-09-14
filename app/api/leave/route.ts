@@ -25,7 +25,12 @@ export async function GET(req: Request) {
       "leaves records query",
       () => query.limit(limitParam).get()
     );
-    const records = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    // Get today's date in YYYY-MM-DD format (UTC+7 for Thailand)
+    const todayStr = new Date(Date.now() + 7 * 3600 * 1000).toISOString().split('T')[0];
+    const records = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })).filter(r => {
+        if (!r.date) return true;
+        return r.date >= todayStr;
+    });
     return ok(records);
   } catch (e: unknown) {
     return handleServerError(e, "Failed to load leave records");

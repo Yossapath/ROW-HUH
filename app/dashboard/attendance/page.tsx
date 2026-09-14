@@ -504,8 +504,8 @@ export default function AttendancePage() {
             if (day && dates[day as WarDay]) {
               setSelectedDate(dates[day as WarDay]);
             } else {
-              setSelectedDate(dates["อาทิตย์"]);
-              setSelectedDay("อาทิตย์");
+              setSelectedDate(dates["อังคาร"]);
+              setSelectedDay("อังคาร");
             }
           }}
           className="border border-slate-200 dark:border-[#2D3342] rounded-lg px-2 py-1.5 text-sm font-semibold text-slate-700 dark:text-white bg-white dark:bg-[#272C38] focus:outline-none"
@@ -513,11 +513,16 @@ export default function AttendancePage() {
           {Array.from({ length: 12 }, (_, i) => {
             const offset = -i; // 0, -1, -2, ... -11
             const dates = getWeekDates(offset);
-            const tuDate = formatDateTH(dates["อังคาร"]);
-            const sunDate = formatDateTH(dates["อาทิตย์"]);
-            const label = i === 0 ? `สัปดาห์นี้ (${tuDate} – ${sunDate})`
-                        : i === 1 ? `สัปดาห์ที่แล้ว (${tuDate} – ${sunDate})`
-                        : `${i} สัปดาห์ที่แล้ว (${tuDate} – ${sunDate})`;
+            const tuDate = formatDateTH(dates["อังคาร"]); // dd/mm/yyyy
+            const sunDate = formatDateTH(dates["อาทิตย์"]); // dd/mm/yyyy
+            
+            const [d1, m1] = tuDate.split("/");
+            const [d2, m2] = sunDate.split("/");
+            const dateRangeStr = m1 === m2 ? `${d1}-${d2} / ${m1}` : `${d1}/${m1} - ${d2}/${m2}`;
+
+            const label = i === 0 ? `สัปดาห์นี้ (${dateRangeStr})`
+                        : i === 1 ? `สัปดาห์ที่แล้ว (${dateRangeStr})`
+                        : `${i} สัปดาห์ที่แล้ว (${dateRangeStr})`;
             return (
               <option key={offset} value={offset}>{label}</option>
             );
@@ -529,7 +534,7 @@ export default function AttendancePage() {
         <span className="text-sm font-semibold text-slate-600 dark:text-white flex items-center gap-1.5">
           วัน:
         </span>
-        {(["อาทิตย์", "อังคาร", "พฤหัสบดี"] as WarDay[]).map((day) => {
+        {(["อังคาร", "พฤหัสบดี", "อาทิตย์"] as WarDay[]).map((day) => {
           const dates = getWeekDates(weekOffset);
           const dateStr = dates[day];
           const isSelected = selectedDay === day;

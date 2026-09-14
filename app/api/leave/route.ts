@@ -27,7 +27,7 @@ export async function GET(req: Request) {
     );
     // Get today's date in YYYY-MM-DD format (UTC+7 for Thailand)
     const todayStr = new Date(Date.now() + 7 * 3600 * 1000).toISOString().split('T')[0];
-    const records = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })).filter(r => {
+    const records = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })).filter((r: any) => {
         if (!r.date) return true;
         return r.date >= todayStr;
     });

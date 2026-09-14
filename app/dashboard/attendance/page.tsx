@@ -241,7 +241,15 @@ export default function AttendancePage() {
   }, [queryClient]);
 
   useEffect(() => {
-    if (!selectedDate) { setRows([]); return; }
+    if (!selectedDate) { setRows([]); setSelectedDay(""); return; }
+    
+    // Auto sync selectedDay
+    const dayIdx = new Date(selectedDate + "T12:00:00Z").getUTCDay();
+    const foundDay = WAR_DAYS.find((d) => DAY_ISO[d] === dayIdx);
+    if (foundDay && selectedDay !== foundDay) {
+      setSelectedDay(foundDay);
+    }
+
     // Save only the selected date as a UX preference — validated on next load.
     // att_day and att_week are no longer saved (they caused stale-state bugs).
     localStorage.setItem("att_date", selectedDate);
@@ -510,19 +518,12 @@ export default function AttendancePage() {
           }}
           className="border border-slate-200 dark:border-[#2D3342] rounded-lg px-2 py-1.5 text-sm font-semibold text-slate-700 dark:text-white bg-white dark:bg-[#272C38] focus:outline-none"
         >
-          {Array.from({ length: 12 }, (_, i) => {
-            const offset = -i; // 0, -1, -2, ... -11
+          {Array.from({ length: 1 }, (_, i) => {
+            const offset = -i;
             const dates = getWeekDates(offset);
-            const tuDate = formatDateTH(dates["อังคาร"]); // dd/mm/yyyy
-            const sunDate = formatDateTH(dates["อาทิตย์"]); // dd/mm/yyyy
-            
-            const [d1, m1] = tuDate.split("/");
-            const [d2, m2] = sunDate.split("/");
-            const dateRangeStr = m1 === m2 ? `${d1}-${d2} / ${m1}` : `${d1}/${m1} - ${d2}/${m2}`;
-
-            const label = i === 0 ? `สัปดาห์นี้ (${dateRangeStr})`
-                        : i === 1 ? `สัปดาห์ที่แล้ว (${dateRangeStr})`
-                        : `${i} สัปดาห์ที่แล้ว (${dateRangeStr})`;
+            const tuDate = formatDateTH(dates["อังคาร"]);
+            const sunDate = formatDateTH(dates["อาทิตย์"]);
+            const label = `สัปดาห์นี้ (${tuDate} – ${sunDate})`;
             return (
               <option key={offset} value={offset}>{label}</option>
             );
@@ -537,7 +538,7 @@ export default function AttendancePage() {
         {(["อังคาร", "พฤหัสบดี", "อาทิตย์"] as WarDay[]).map((day) => {
           const dates = getWeekDates(weekOffset);
           const dateStr = dates[day];
-          const isSelected = selectedDay === day;
+          const isSelected = selectedDay === day || (!selectedDay && selectedDate === dateStr);
           return (
             <button
               key={day}

@@ -53,6 +53,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="th" className="dark" suppressHydrationWarning>
+      <head>
+        <meta charSet="utf-8" />
+      </head>
       <body className={`min-h-screen bg-background text-foreground antialiased ${prompt.variable} font-sans`}>
         <Providers>{children}</Providers>
       </body>

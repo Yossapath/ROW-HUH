@@ -238,7 +238,7 @@ export default function RosterPage() {
            Object.keys(newRoster).forEach(job => {
                if (Array.isArray(newRoster[job])) {
                    newRoster[job].forEach((m: any) => {
-                       if (!currentMembersMap.has(m.name)) {
+                       if (!currentMembersMap.has(normalizeName(m.name))) {
                            if (!updatedRoster[job]) updatedRoster[job] = [];
                            updatedRoster[job].push(m);
                        }

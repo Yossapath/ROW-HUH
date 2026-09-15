@@ -138,17 +138,7 @@ export default function RosterPage() {
              hasChanges = true;
           } else {
              missingNames.push(playerName);
-             const job = newClass || "Unknown";
-             if (!newRoster[job]) newRoster[job] = [];
-             
-             newRoster[job].push({
-                 name: playerName,
-                 power: Number(newPower),
-                 title: newTitle || "",
-                 activity: Number(newActivity),
-                 discordId: `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-             });
-             hasChanges = true;
+             // ไม่เพิ่มคนเข้า Database หากไม่มีชื่อในเว็บไซต์ (แค่แจ้งเตือน)
           }
         });
 

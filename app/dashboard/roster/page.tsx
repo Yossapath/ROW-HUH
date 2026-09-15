@@ -22,6 +22,14 @@ export default function RosterPage() {
   const [notFoundNames, setNotFoundNames] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Edit Modal States
+  const [editingMember, setEditingMember] = useState<any>(null);
+  const [editName, setEditName] = useState("");
+  const [editJob, setEditJob] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editPower, setEditPower] = useState("");
+  const [editActivity, setEditActivity] = useState("");
+
   const { data: roster, isLoading } = useQuery({
     queryKey: ["roster"],
     queryFn: async () => (await axios.get("/api/roster")).data.data,
@@ -44,6 +52,66 @@ export default function RosterPage() {
     );
   };
 
+  const openEditModal = (member: any) => {
+    setEditingMember(member);
+    setEditName(member.name || "");
+    setEditJob(member.job || "");
+    setEditTitle(member.title || "");
+    setEditPower(member.power?.toString() || "");
+    setEditActivity(member.activity?.toString() || "");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editName || !editJob) return alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+    
+    setIsSaving(true);
+    try {
+      let newRoster = { ...roster };
+      
+      if (editingMember.job && newRoster[editingMember.job]) {
+        newRoster[editingMember.job] = newRoster[editingMember.job].filter((m: any) => m.name !== editingMember.name);
+      }
+      
+      if (!newRoster[editJob]) newRoster[editJob] = [];
+      newRoster[editJob].push({
+        ...editingMember,
+        name: editName,
+        job: editJob,
+        title: editTitle,
+        power: Number(editPower) || 0,
+        activity: Number(editActivity) || 0
+      });
+      
+      await axios.put("/api/roster", newRoster);
+      queryClient.invalidateQueries({ queryKey: ["roster"] });
+      setEditingMember(null);
+    } catch (err: any) {
+      alert("เกิดข้อผิดพลาด: " + (err.response?.data?.error || err.message));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("ยืนยันการลบสมาชิกนี้?")) return;
+    setIsSaving(true);
+    try {
+      await axios.delete("/api/roster", {
+        data: {
+          discordId: editingMember.discordId,
+          name: editingMember.name,
+          job: editingMember.job
+        }
+      });
+      queryClient.invalidateQueries({ queryKey: ["roster"] });
+      setEditingMember(null);
+    } catch (err: any) {
+      alert("เกิดข้อผิดพลาดในการลบสมาชิก");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const flatMembers = useMemo(() => {
     if (!roster) return [];
     let all: any[] = [];
@@ -55,7 +123,6 @@ export default function RosterPage() {
       }
     });
 
-    // Ensure logged-in user is always #1
     const targetUser = user?.gameUsername || user?.discordUsername || "TELLツ";
     const userIndex = all.findIndex((m) => 
       m.name === targetUser || 
@@ -63,7 +130,6 @@ export default function RosterPage() {
       m.discordId === user?.discordId
     );
     
-    // Sort others by power descending
     const others = all.filter((_, idx) => idx !== userIndex).sort((a, b) => (Number(b.power) || 0) - (Number(a.power) || 0));
     
     if (userIndex > -1) {
@@ -138,7 +204,6 @@ export default function RosterPage() {
              hasChanges = true;
           } else {
              missingNames.push(playerName);
-             // ไม่เพิ่มคนเข้า Database หากไม่มีชื่อในเว็บไซต์ (แค่แจ้งเตือน)
           }
         });
 
@@ -251,7 +316,6 @@ export default function RosterPage() {
         </div>
       </div>
 
-      {/* Filter Pills */}
       <div className="flex flex-wrap items-center gap-2.5 pb-1">
         <button 
           onClick={() => setSelectedJobs([])}
@@ -273,7 +337,7 @@ export default function RosterPage() {
 
         {JOB_LIST.map(job => {
           const count = flatMembers.filter(m => m.job === job).length;
-          if (count === 0 && searchQuery) return null; // Hide if empty during search
+          if (count === 0 && searchQuery) return null;
           const color = JOB_COLORS[job] || "#000";
           const isSelected = selectedJobs.includes(job);
 
@@ -333,6 +397,7 @@ export default function RosterPage() {
               <th className="py-3 px-4 font-bold text-left">Title</th>
               <th className="py-3 px-4 font-bold text-right">คะแนน Gear</th>
               <th className="py-3 px-4 font-bold text-right">กิจกรรมสัปดาห์</th>
+              {isAdmin && <th className="py-3 px-4 font-bold text-center w-24">จัดการ</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-[#2D3342]">
@@ -371,12 +436,22 @@ export default function RosterPage() {
                     <td className="py-3 px-4 text-right font-semibold text-green-600 dark:text-green-400">
                       {member.activity != null ? Number(member.activity).toLocaleString('en-US') : '-'}
                     </td>
+                    {isAdmin && (
+                      <td className="py-3 px-4 text-center">
+                        <button 
+                          onClick={() => openEditModal(member)}
+                          className="px-3 py-1 bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] hover:border-[#4D73CD] rounded-md text-xs font-bold text-slate-700 dark:text-white shadow-sm hover:bg-[#3B66D1] hover:text-white transition-colors"
+                        >
+                          แก้ไข
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-slate-400">ไม่พบรายชื่อ</td>
+                <td colSpan={isAdmin ? 7 : 6} className="py-8 text-center text-slate-400">ไม่พบรายชื่อ</td>
               </tr>
             )}
           </tbody>
@@ -406,6 +481,106 @@ export default function RosterPage() {
               >
                 รับทราบและปิด
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col font-prompt border border-slate-200 dark:border-[#2D3342] animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100 dark:border-[#2D3342]">
+              <h2 className="text-xl font-bold text-[#0b3d63] dark:text-white">แก้ไขข้อมูลสมาชิก</h2>
+              <button 
+                onClick={() => setEditingMember(null)}
+                className="text-slate-400 hover:bg-slate-100 dark:hover:bg-[#272C38] rounded-full p-1.5 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">ชื่อสมาชิก (ในเกม)</label>
+                <input 
+                  type="text" 
+                  value={editName}
+                  onChange={e => setEditName(e.target.value)}
+                  className="w-full border border-slate-200 dark:border-[#2D3342] rounded-xl px-4 py-3 text-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-[#4D73CD] focus:border-[#4D73CD] bg-slate-50 dark:bg-[#1C1F27] transition-all outline-none"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">อาชีพ</label>
+                <select 
+                  value={editJob}
+                  onChange={e => setEditJob(e.target.value)}
+                  className="w-full border border-slate-200 dark:border-[#2D3342] rounded-xl px-4 py-3 text-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-[#4D73CD] focus:border-[#4D73CD] bg-slate-50 dark:bg-[#1C1F27] transition-all outline-none"
+                >
+                  {JOB_LIST.map(job => (
+                    <option key={job} value={job}>{job}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Title</label>
+                <input 
+                  type="text" 
+                  value={editTitle}
+                  onChange={e => setEditTitle(e.target.value)}
+                  className="w-full border border-slate-200 dark:border-[#2D3342] rounded-xl px-4 py-3 text-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-[#4D73CD] focus:border-[#4D73CD] bg-slate-50 dark:bg-[#1C1F27] transition-all outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">ค่าพลัง (Gear)</label>
+                  <input 
+                    type="number" 
+                    value={editPower}
+                    onChange={e => setEditPower(e.target.value)}
+                    className="w-full border border-slate-200 dark:border-[#2D3342] rounded-xl px-4 py-3 text-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-[#4D73CD] focus:border-[#4D73CD] bg-slate-50 dark:bg-[#1C1F27] transition-all outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">กิจกรรมสัปดาห์</label>
+                  <input 
+                    type="number" 
+                    value={editActivity}
+                    onChange={e => setEditActivity(e.target.value)}
+                    className="w-full border border-slate-200 dark:border-[#2D3342] rounded-xl px-4 py-3 text-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-[#4D73CD] focus:border-[#4D73CD] bg-slate-50 dark:bg-[#1C1F27] transition-all outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50 dark:bg-[#1C1F27] flex items-center justify-between border-t border-slate-100 dark:border-[#2D3342]">
+              <button 
+                onClick={handleDelete}
+                disabled={isSaving}
+                className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-4 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+              >
+                ลบข้อมูล
+              </button>
+              
+              <div className="flex items-center space-x-3">
+                <button 
+                  onClick={() => setEditingMember(null)}
+                  disabled={isSaving}
+                  className="bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] text-slate-700 dark:text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-[#2A2F3E] transition-all shadow-sm disabled:opacity-50"
+                >
+                  ยกเลิก
+                </button>
+                <button 
+                  onClick={handleSaveEdit}
+                  disabled={isSaving}
+                  className="bg-[#3B66D1] hover:bg-[#4D73CD] text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow disabled:opacity-70"
+                >
+                  {isSaving ? "กำลังบันทึก..." : "บันทึก"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -116,7 +116,10 @@ export default function UsersPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-800 dark:text-white">จัดการผู้ใช้ (User Management)</h1>
-            <p className="text-sm text-slate-500 dark:text-[#8B93A7]">ตั้งค่าและจัดการสิทธิ์สมาชิกในกิลด์</p>
+            <p className="text-sm text-slate-500 dark:text-[#8B93A7]">
+              สมาชิกล็อกอินทั้งหมด <span className="font-bold text-[#0b3d63] dark:text-[#82A0F5]">{userList.length}</span> คน
+              {searchQuery && ` (ค้นพบ ${filteredUsers.length} คน)`}
+            </p>
           </div>
         </div>
         

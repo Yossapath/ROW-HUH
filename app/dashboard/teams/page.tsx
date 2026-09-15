@@ -98,75 +98,129 @@ export default function TeamsPage() {
   const exportLayoutRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
 
-  const handleExportPNG = async () => {
-    if (!exportLayoutRef.current || isExporting) return;
+  const handleExportPDF = () => {
     if (!data) {
       alert("ไม่พบข้อมูลสำหรับการ Export");
       return;
     }
 
-    // Data Consistency Check (Section 13)
     const targetZones = data.zones.filter((z) => z.type === (activeTab === "sub" ? "sub" : "main"));
-    const assignedMemberSet = new Set<string>();
-    const duplicateMembers: string[] = [];
-    let totalAssignedInZones = 0;
+    
+    let totalAssigned = 0;
+    targetZones.forEach(z => {
+       z.teamOrder.forEach(colId => {
+          const col = data.columns[colId];
+          if (col) col.memberIds.forEach(id => { if (id) totalAssigned++; });
+       });
+    });
 
-    for (const zone of targetZones) {
-      for (const colId of zone.teamOrder) {
-        const col = data.columns[colId];
-        if (!col) continue;
-        for (const memId of col.memberIds) {
-          if (!memId) continue;
-          totalAssignedInZones++;
-          if (assignedMemberSet.has(memId)) {
-            duplicateMembers.push(data.members[memId]?.name || memId);
-          } else {
-            assignedMemberSet.add(memId);
-          }
-          if (!data.members[memId]) {
-            alert(`ไม่สามารถ Export ได้ เนื่องจากข้อมูลทีมไม่สมบูรณ์ (ไม่พบข้อมูลผู้เล่น: ${memId})`);
-            return;
-          }
-        }
-      }
-    }
-
-    if (totalAssignedInZones === 0) {
+    if (totalAssigned === 0) {
       alert("ไม่สามารถ Export ได้ เนื่องจากยังไม่มีการจัดสมาชิกลงในทีม");
       return;
     }
 
-    if (duplicateMembers.length > 0) {
-      alert(`ไม่สามารถ Export ได้ เนื่องจากพบสมาชิกซ้ำในหลายทีม: ${duplicateMembers.join(", ")}`);
+    const printWin = window.open("", "_blank");
+    if (!printWin) {
+      alert("กรุณาอนุญาต Pop-up (Pop-up Blocker) สำหรับไซต์นี้ เพื่อดู PDF");
       return;
     }
 
-    setIsExporting(true);
-    try {
-      // Allow brief delay for full render
-      await new Promise((resolve) => setTimeout(resolve, 150));
-      const element = exportLayoutRef.current;
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#f8fafc",
+    let htmlContent = `
+      <html>
+        <head>
+          <title>Export PDF - ${activeTab === 'main' ? 'สนามหลัก' : 'สนามรอง'}</title>
+          <style> 
+            @media print { 
+              @page { size: landscape; margin: 10mm; } 
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
+            }
+            body { font-family: 'Sarabun', 'Prompt', sans-serif; padding: 20px; color: #333; margin: 0; }
+            h2 { text-align: center; color: #1e3a8a; font-size: 24px; margin-top: 0; margin-bottom: 20px; }
+            .container { display: flex; gap: 20px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
+            .main-team { flex: 1; min-width: 300px; border: 2px solid #2563eb; border-radius: 8px; padding: 10px; background: #f8fafc; }
+            .main-team-title { text-align: center; font-size: 18px; font-weight: bold; background: #2563eb; color: white; padding: 8px; border-radius: 6px; margin-top: 0; margin-bottom: 12px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 12px; page-break-inside: avoid; background: white; font-size: 14px; }
+            th, td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; }
+            th { background: #e2e8f0; font-weight: bold; }
+            .party-title { background: #bfdbfe; font-weight: bold; text-align: left; padding: 6px; }
+          </style>
+        </head>
+        <body>
+          <h2>รายชื่อทีม${activeTab === 'main' ? 'สนามหลัก' : 'สนามรอง'}</h2>
+          <div class="container">
+    `;
+
+    targetZones.forEach(zone => {
+      let zoneLeaderName = "-";
+      if (zone.teamOrder.length > 0) {
+        const firstCol = data.columns[zone.teamOrder[0]];
+        if (firstCol && firstCol.memberIds[0]) {
+           const member = data.members[firstCol.memberIds[0]];
+           if (member) zoneLeaderName = member.name;
+        }
+      }
+
+      let zoneMemberCount = 0;
+      zone.teamOrder.forEach(colId => {
+        const col = data.columns[colId];
+        if (col) {
+          col.memberIds.forEach(id => { if (id && data.members[id]) zoneMemberCount++; });
+        }
       });
 
-      const dateStr = new Date().toISOString().split("T")[0];
-      const dataUrl = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      // UX 5: Include tab name in filename so user can distinguish main vs sub exports
-      const tabLabel = activeTab === "sub" ? "สนามรอง" : "สนามหลัก";
-      link.download = `GVG-${tabLabel}-${dateStr}.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error("Failed to export PNG", err);
-      alert("เกิดข้อผิดพลาดในการสร้างภาพ PNG");
-    } finally {
-      setIsExporting(false);
-    }
+      if (zoneMemberCount === 0) return;
+
+      htmlContent += `<div class="main-team">
+        <h3 class="main-team-title">${zone.name} 👑 ผู้นำโซน: ${zoneLeaderName} (${zoneMemberCount} คน)</h3>`;
+      
+      zone.teamOrder.forEach(colId => {
+        const col = data.columns[colId];
+        if (!col) return;
+        
+        const hasMembers = col.memberIds.some(id => id && data.members[id]);
+        if (!hasMembers) return;
+        
+        let teamLeaderName = "-";
+        // หัวปาตี้อ้างอิงจากคนที่ 1 (Slot Index 0)
+        if (col.memberIds[0]) {
+          const member = data.members[col.memberIds[0]];
+          if (member) teamLeaderName = member.name;
+        }
+
+        htmlContent += `<table>
+          <tr><td colspan="3" class="party-title">${col.title} (👑 หัวตี้: ${teamLeaderName})</td></tr>
+          <tr><th style="width: 50px;">ลำดับ</th><th>ชื่อตัวละคร</th><th style="width: 120px;">อาชีพ</th></tr>`;
+        
+        col.memberIds.forEach((memberId, idx) => {
+          const member = memberId ? data.members[memberId] : null;
+          htmlContent += `<tr>
+            <td>${idx + 1}</td>
+            <td style="text-align: left; padding-left: 10px;">${member ? member.name : '- ว่าง -'}</td>
+            <td>${member ? member.job : '-'}</td>
+          </tr>`;
+        });
+        
+        htmlContent += `</table>`;
+      });
+      htmlContent += `</div>`;
+    });
+
+    htmlContent += `
+          </div>
+          <script>
+            window.onload = function() {
+              setTimeout(() => {
+                window.print();
+              }, 500);
+            }
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWin.document.open();
+    printWin.document.write(htmlContent);
+    printWin.document.close();
   };
 
   useEffect(() => {
@@ -908,9 +962,9 @@ export default function TeamsPage() {
             <button onClick={() => setIsClearConfirmOpen(true)} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-[#272C38] text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-xl font-bold hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-xs sm:text-sm shadow-sm">
               <Trash2 size={16} /> ล้างทีม
             </button>
-            <button onClick={handleExportPNG} disabled={isExporting} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-[#272C38] text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50 rounded-xl font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors text-xs sm:text-sm shadow-sm disabled:opacity-50">
+            <button onClick={handleExportPDF} disabled={isExporting} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-[#272C38] text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50 rounded-xl font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors text-xs sm:text-sm shadow-sm disabled:opacity-50">
               {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} 
-              {isExporting ? "กำลังออกเอกสาร..." : "Export PNG"}
+              {isExporting ? "กำลังเตรียม PDF..." : "Export PDF"}
             </button>
           </div>
         )}

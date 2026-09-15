@@ -173,10 +173,15 @@ export default function RosterPage() {
         let hasChanges = false;
 
         const currentMembersMap = new Map();
+        const normalizeName = (name: string) => {
+            return name.replace(/[^a-zA-Z0-9ก-๙]/g, "").toLowerCase();
+        };
+
         Object.keys(newRoster).forEach(job => {
             if (Array.isArray(newRoster[job])) {
                 newRoster[job].forEach((m: any) => {
-                    currentMembersMap.set(m.name, { ...m, job });
+                    // เก็บ key ด้วยชื่อแบบ fuzzy และเก็บ original name ไว้ใช้ตอนบันทึก
+                    currentMembersMap.set(normalizeName(m.name), { ...m, job, originalName: m.name });
                 });
             }
         });
@@ -185,7 +190,8 @@ export default function RosterPage() {
           const playerName = row["ชื่อผู้เล่น"] || row["Name"] || Object.values(row)[1];
           if (!playerName) return;
 
-          const existingMember = currentMembersMap.get(playerName);
+          const searchName = normalizeName(playerName);
+          const existingMember = currentMembersMap.get(searchName);
           
           const newClass = row["คลาส"] || row["Class"];
           let normalizedClass = newClass;
@@ -225,7 +231,7 @@ export default function RosterPage() {
            currentMembersMap.forEach((m) => {
                const job = m.newJob || m.job;
                if (!updatedRoster[job]) updatedRoster[job] = [];
-               const { newJob, job: oldJob, ...memberData } = m;
+               const { newJob, job: oldJob, originalName, ...memberData } = m;
                updatedRoster[job].push(memberData);
            });
 

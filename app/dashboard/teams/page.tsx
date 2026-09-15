@@ -195,7 +195,7 @@ export default function TeamsPage() {
           const member = memberId ? data.members[memberId] : null;
           htmlContent += `<tr>
             <td>${idx + 1}</td>
-            <td style="text-align: left; padding-left: 10px;">${member ? member.name : '- ว่าง -'}</td>
+            <td>${member ? member.name : '- ว่าง -'}</td>
             <td>${member ? member.job : '-'}</td>
           </tr>`;
         });

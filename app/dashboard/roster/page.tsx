@@ -195,6 +195,10 @@ export default function RosterPage() {
              else if (lowerClass === "high priest") normalizedClass = "Priest";
              else if (lowerClass === "night walker") normalizedClass = "Gunslinger";
              else if (lowerClass === "merchant" || lowerClass === "whitesmith") normalizedClass = "Whitesmith";
+             else {
+                const match = JOB_LIST.find(j => j.toLowerCase() === lowerClass);
+                if (match) normalizedClass = match;
+             }
           }
           const newTitle = row["Title"] || row["title"];
           const newPower = row["คะแนน Gear"] || row["Gear"] || row["คะแนน gear"] || 0;

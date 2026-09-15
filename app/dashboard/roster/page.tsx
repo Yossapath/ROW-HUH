@@ -188,6 +188,14 @@ export default function RosterPage() {
           const existingMember = currentMembersMap.get(playerName);
           
           const newClass = row["คลาส"] || row["Class"];
+          let normalizedClass = newClass;
+          if (normalizedClass) {
+             const lowerClass = normalizedClass.toLowerCase().trim();
+             if (lowerClass === "อาลิเทีย") normalizedClass = "Druid";
+             else if (lowerClass === "high priest") normalizedClass = "Priest";
+             else if (lowerClass === "night walker") normalizedClass = "Gunslinger";
+             else if (lowerClass === "merchant" || lowerClass === "whitesmith") normalizedClass = "Whitesmith";
+          }
           const newTitle = row["Title"] || row["title"];
           const newPower = row["คะแนน Gear"] || row["Gear"] || row["คะแนน gear"] || 0;
           const newActivity = row["กิจกรรมสัปดาห์นี้"] || row["กิจกรรมสัปดาห์"] || row["กิจกรรม"] || 0;
@@ -197,8 +205,8 @@ export default function RosterPage() {
              if (newTitle !== undefined) existingMember.title = newTitle; 
              if (newActivity !== undefined) existingMember.activity = Number(newActivity);
              
-             if (newClass && newClass !== existingMember.job) {
-                 existingMember.newJob = newClass;
+             if (normalizedClass && normalizedClass !== existingMember.job) {
+                 existingMember.newJob = normalizedClass;
              }
              
              hasChanges = true;

@@ -35,7 +35,7 @@ export type JobClass =
   | "Priest"
   | "Champion"
   | "Assassin Cross"
-  | "Merchant"
+  | "Whitesmith"
   | "Gunslinger"
   | "Druid";
 

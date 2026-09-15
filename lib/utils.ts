@@ -14,7 +14,7 @@ export const JOB_COLORS: Record<string, string> = {
   "Priest":         "#25ae62",
   "Champion":       "#15a083",
   "Assassin Cross": "#8b46af",
-  "Merchant":       "#c2185d",
+  "Whitesmith":     "#c2185d",
   "Gunslinger":     "#894517",
   "Druid":          "#41b388",
 };

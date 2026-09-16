@@ -138,8 +138,7 @@ export default function LogPage() {
   const q = search.toLowerCase();
 
   const filteredLogs = useMemo(() => {
-    // Filter out 'leave' module from the main System Log tab
-    let list = logs.filter(l => !["leave"].includes(l.module.toLowerCase()));
+    let list = logs;
     if (moduleFilter !== "all") {
       list = list.filter((l) => l.module.toLowerCase().includes(moduleFilter));
     }
@@ -200,8 +199,6 @@ export default function LogPage() {
 
   const moduleOptions = useMemo(() => {
     const mods = new Set(logs.map((l) => l.module.toLowerCase()));
-    mods.delete("leave");
-    mods.delete("teams");
     return Array.from(mods).sort();
   }, [logs]);
 

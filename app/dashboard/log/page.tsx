@@ -138,8 +138,8 @@ export default function LogPage() {
   const q = search.toLowerCase();
 
   const filteredLogs = useMemo(() => {
-    // Filter out 'leave' and 'teams' modules from the main System Log tab
-    let list = logs.filter(l => !["leave", "teams"].includes(l.module.toLowerCase()));
+    // Filter out 'leave' module from the main System Log tab
+    let list = logs.filter(l => !["leave"].includes(l.module.toLowerCase()));
     if (moduleFilter !== "all") {
       list = list.filter((l) => l.module.toLowerCase().includes(moduleFilter));
     }
@@ -175,6 +175,16 @@ export default function LogPage() {
       : leaves;
     return [...list].sort((a, b) => b.timestamp - a.timestamp);
   }, [leaves, q]);
+
+  const groupedLeavesArray = useMemo(() => {
+    const map = new Map<string, typeof filteredLeaves>();
+    for (const l of filteredLeaves) {
+      const d = l.date || "ไม่ระบุวันที่";
+      if (!map.has(d)) map.set(d, []);
+      map.get(d)!.push(l);
+    }
+    return Array.from(map.entries()).map(([date, list]) => ({ date, list }));
+  }, [filteredLeaves]);
 
   const filteredQueues = useMemo(() => {
     const list = q
@@ -359,54 +369,64 @@ export default function LogPage() {
 
           {leavesLoading ? (
             <LoadingSkeleton />
-          ) : filteredLeaves.length === 0 ? (
+          ) : groupedLeavesArray.length === 0 ? (
             <EmptyState message="ไม่มีรายการแจ้งลา" />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 dark:bg-[#272C38] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide">
-                  <tr>
-                    <th className="px-4 py-3 text-center w-10">#</th>
-                    <th className="px-4 py-3 text-left">ชื่อ</th>
-                    <th className="px-4 py-3 text-left">วันที่ลา</th>
-                    <th className="px-4 py-3 text-left">วัน</th>
-                    <th className="px-4 py-3 text-left">เหตุผล</th>
-                    <th className="px-4 py-3 text-left whitespace-nowrap">วันที่แจ้ง</th>
-                    <th className="px-4 py-3 text-left whitespace-nowrap">เวลาแจ้ง</th>
-                    {isAdmin && <th className="px-4 py-3 text-center w-16">ลบ</th>}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-[#1e3550]">
-                  {filteredLeaves.map((leave, idx) => (
-                    <tr key={leave.id} className="hover:bg-slate-50 dark:hover:bg-[#2A2F3E] transition-colors">
-                      <td className="px-4 py-3 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
-                      <td className="px-4 py-3 font-semibold text-slate-700 dark:text-white">{leave.name}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-white">{leave.date ?? "—"}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-white">{leave.day ?? "—"}</td>
-                      <td className="px-4 py-3 text-slate-500 dark:text-[#8B93A7] max-w-xs truncate" title={leave.reason}>
-                        {leave.reason ?? "—"}
-                      </td>
-                      <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
-                        {formatDateOnly(leave.timestamp)}
-                      </td>
-                      <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
-                        {formatTimeOnly(leave.timestamp)}
-                      </td>
-                      {isAdmin && (
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            onClick={() => handleDeleteLeave(leave.id)}
-                            className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors"
-                            title="ลบรายการ"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="p-6 space-y-8">
+              {groupedLeavesArray.map((group) => (
+                <div key={group.date} className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <h4 className="font-bold text-sm text-slate-800 dark:text-white bg-slate-100 dark:bg-[#2A2F3E] px-4 py-2 rounded-xl inline-flex border border-slate-200 dark:border-[#2D3342]">
+                      วันที่ {group.date}
+                    </h4>
+                    <div className="h-px bg-slate-200 dark:bg-[#2D3342] flex-1"></div>
+                  </div>
+                  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38]">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-50 dark:bg-[#2A2F3E] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide border-b border-slate-200 dark:border-[#2D3342]">
+                        <tr>
+                          <th className="px-4 py-3 text-center w-10">#</th>
+                          <th className="px-4 py-3 text-left">ชื่อ</th>
+                          <th className="px-4 py-3 text-left">วัน</th>
+                          <th className="px-4 py-3 text-left">เหตุผล</th>
+                          <th className="px-4 py-3 text-left whitespace-nowrap">วันที่แจ้ง</th>
+                          <th className="px-4 py-3 text-left whitespace-nowrap">เวลาแจ้ง</th>
+                          {isAdmin && <th className="px-4 py-3 text-center w-16">ลบ</th>}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-[#1e3550]">
+                        {group.list.map((leave, idx) => (
+                          <tr key={leave.id} className="hover:bg-slate-50 dark:hover:bg-[#323847] transition-colors">
+                            <td className="px-4 py-3 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
+                            <td className="px-4 py-3 font-semibold text-slate-700 dark:text-white">{leave.name}</td>
+                            <td className="px-4 py-3 text-slate-600 dark:text-white">{leave.day ?? "—"}</td>
+                            <td className="px-4 py-3 text-slate-500 dark:text-[#8B93A7] max-w-xs truncate" title={leave.reason}>
+                              {leave.reason ?? "—"}
+                            </td>
+                            <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
+                              {formatDateOnly(leave.timestamp)}
+                            </td>
+                            <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
+                              {formatTimeOnly(leave.timestamp)}
+                            </td>
+                            {isAdmin && (
+                              <td className="px-4 py-3 text-center">
+                                <button
+                                  onClick={() => handleDeleteLeave(leave.id)}
+                                  className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors"
+                                  title="ลบรายการ"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 

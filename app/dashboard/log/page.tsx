@@ -81,6 +81,7 @@ export default function LogPage() {
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [leavesLoading, setLeavesLoading] = useState(false);
   const [leavesFetched, setLeavesFetched] = useState(false);
+  const [leaveDateFilter, setLeaveDateFilter] = useState("");
 
   // Tab 2 — Dungeon Queue
   const [queues, setQueues] = useState<DungeonQueue[]>([]);
@@ -113,7 +114,7 @@ export default function LogPage() {
   useEffect(() => {
     if (activeTab === 2 && !queuesFetched) {
       setQueuesLoading(true);
-      fetch("/api/dungeon/queues")
+      fetch(`/api/dungeon/queues?type=${isAdmin ? 'all' : 'history'}`)
         .then((r) => r.json())
         .then((d) => { setQueues(d.data ?? []); setQueuesFetched(true); })
         .catch(() => setQueues([]))
@@ -131,6 +132,15 @@ export default function LogPage() {
         body: JSON.stringify({ id }),
       });
       setLeaves((prev) => prev.filter((l) => l.id !== id));
+    } catch { /* silently fail */ }
+  }
+
+  // ── Clear queues ─────────────────────────────────────────────
+  async function handleClearQueues() {
+    if (!window.confirm("ยืนยันลบประวัติการจองดันเจี้ยนที่สำเร็จแล้วทั้งหมด?")) return;
+    try {
+      await fetch("/api/dungeon/queues", { method: "DELETE" });
+      setQueues((prev) => prev.filter(q => q.status !== "done"));
     } catch { /* silently fail */ }
   }
 
@@ -163,17 +173,24 @@ export default function LogPage() {
   const pagedLogs = filteredLogs.slice((logPage - 1) * ROWS_PER_PAGE, logPage * ROWS_PER_PAGE);
 
   const filteredLeaves = useMemo(() => {
-    const list = q
-      ? leaves.filter(
-          (l) =>
-            l.name.toLowerCase().includes(q) ||
-            (l.reason ?? "").toLowerCase().includes(q) ||
-            (l.date ?? "").includes(q) ||
-            (l.day ?? "").toLowerCase().includes(q)
-        )
-      : leaves;
+    const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Bangkok" });
+    let list = leaves.filter(l => {
+      if (l.date && l.date > todayStr) return false;
+      if (leaveDateFilter && l.date !== leaveDateFilter) return false;
+      return true;
+    });
+
+    if (q) {
+      list = list.filter(
+        (l) =>
+          l.name.toLowerCase().includes(q) ||
+          (l.reason ?? "").toLowerCase().includes(q) ||
+          (l.date ?? "").includes(q) ||
+          (l.day ?? "").toLowerCase().includes(q)
+      );
+    }
     return [...list].sort((a, b) => b.timestamp - a.timestamp);
-  }, [leaves, q]);
+  }, [leaves, q, leaveDateFilter]);
 
   const groupedLeavesArray = useMemo(() => {
     const map = new Map<string, typeof filteredLeaves>();
@@ -182,7 +199,11 @@ export default function LogPage() {
       if (!map.has(d)) map.set(d, []);
       map.get(d)!.push(l);
     }
-    return Array.from(map.entries()).map(([date, list]) => ({ date, list }));
+    return Array.from(map.entries()).map(([date, list]) => {
+      const offlineList = list.filter(l => (l.reason ?? "").toLowerCase().includes("ออฟไลน์") || (l.reason ?? "").toLowerCase().includes("offline"));
+      const leaveList = list.filter(l => !((l.reason ?? "").toLowerCase().includes("ออฟไลน์") || (l.reason ?? "").toLowerCase().includes("offline")));
+      return { date, offlineList, leaveList };
+    });
   }, [filteredLeaves]);
 
   const filteredQueues = useMemo(() => {
@@ -262,19 +283,8 @@ export default function LogPage() {
             <LoadingSkeleton />
           ) : (
             <>
-              {/* Filter bar */}
               <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 dark:border-[#2D3342]">
-                <Filter size={16} className="text-slate-400" />
-                <select
-                  value={moduleFilter}
-                  onChange={(e) => { setModuleFilter(e.target.value); setLogPage(1); }}
-                  className="text-sm border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38] text-slate-800 dark:text-white rounded-lg px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-[#4D73CD] dark:focus:ring-[#4D73CD]"
-                >
-                  <option value="all">ทุก Module</option>
-                  {moduleOptions.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
+                <span className="font-bold text-slate-700 dark:text-white">รายการทั้งหมด</span>
                 <span className="text-sm text-slate-400 ml-auto">
                   {filteredLogs.length} รายการ
                 </span>
@@ -361,6 +371,19 @@ export default function LogPage() {
           <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-100 dark:border-[#2D3342]">
             <CalendarOff size={18} className="text-yellow-500" />
             <span className="font-bold text-slate-700 dark:text-white">รายการแจ้งลา</span>
+            
+            <div className="ml-4 flex items-center gap-2">
+              <input 
+                type="date" 
+                value={leaveDateFilter} 
+                onChange={e => setLeaveDateFilter(e.target.value)} 
+                className="border border-slate-200 dark:border-[#2D3342] rounded-lg px-2 py-1 text-sm bg-white dark:bg-[#272C38] text-slate-700 dark:text-white outline-none" 
+              />
+              {leaveDateFilter && (
+                <button onClick={() => setLeaveDateFilter("")} className="text-xs text-red-400 hover:text-red-500">ล้างตัวกรอง</button>
+              )}
+            </div>
+
             <span className="text-sm text-slate-400 ml-auto">{filteredLeaves.length} รายการ</span>
           </div>
 
@@ -378,50 +401,66 @@ export default function LogPage() {
                     </h4>
                     <div className="h-px bg-slate-200 dark:bg-[#2D3342] flex-1"></div>
                   </div>
-                  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38]">
-                    <table className="w-full text-sm">
-                      <thead className="bg-slate-50 dark:bg-[#2A2F3E] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide border-b border-slate-200 dark:border-[#2D3342]">
-                        <tr>
-                          <th className="px-4 py-3 text-center w-10">#</th>
-                          <th className="px-4 py-3 text-left">ชื่อ</th>
-                          <th className="px-4 py-3 text-left">วัน</th>
-                          <th className="px-4 py-3 text-left">เหตุผล</th>
-                          <th className="px-4 py-3 text-left whitespace-nowrap">วันที่แจ้ง</th>
-                          <th className="px-4 py-3 text-left whitespace-nowrap">เวลาแจ้ง</th>
-                          {isAdmin && <th className="px-4 py-3 text-center w-16">ลบ</th>}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-[#1e3550]">
-                        {group.list.map((leave, idx) => (
-                          <tr key={leave.id} className="hover:bg-slate-50 dark:hover:bg-[#323847] transition-colors">
-                            <td className="px-4 py-3 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
-                            <td className="px-4 py-3 font-semibold text-slate-700 dark:text-white">{leave.name}</td>
-                            <td className="px-4 py-3 text-slate-600 dark:text-white">{leave.day ?? "—"}</td>
-                            <td className="px-4 py-3 text-slate-500 dark:text-[#8B93A7] max-w-xs truncate" title={leave.reason}>
-                              {leave.reason ?? "—"}
-                            </td>
-                            <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
-                              {formatDateOnly(leave.timestamp)}
-                            </td>
-                            <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
-                              {formatTimeOnly(leave.timestamp)}
-                            </td>
-                            {isAdmin && (
-                              <td className="px-4 py-3 text-center">
-                                <button
-                                  onClick={() => handleDeleteLeave(leave.id)}
-                                  className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors"
-                                  title="ลบรายการ"
-                                >
-                                  <Trash2 size={15} />
-                                </button>
-                              </td>
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+
+                  {[
+                    { title: "แจ้งลา", data: group.leaveList, badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
+                    { title: "ออฟไลน์", data: group.offlineList, badge: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" }
+                  ].map((section, sIdx) => {
+                    if (section.data.length === 0) return null;
+                    return (
+                      <div key={sIdx} className="pl-2">
+                        <div className="mb-3">
+                          <span className={`text-xs font-bold px-3 py-1 rounded-full ${section.badge}`}>
+                            {section.title} ({section.data.length})
+                          </span>
+                        </div>
+                        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38]">
+                          <table className="w-full text-sm">
+                            <thead className="bg-slate-50 dark:bg-[#2A2F3E] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide border-b border-slate-200 dark:border-[#2D3342]">
+                              <tr>
+                                <th className="px-4 py-3 text-center w-10">#</th>
+                                <th className="px-4 py-3 text-left">ชื่อ</th>
+                                <th className="px-4 py-3 text-left">วัน</th>
+                                <th className="px-4 py-3 text-left">เหตุผล</th>
+                                <th className="px-4 py-3 text-left whitespace-nowrap">วันที่แจ้ง</th>
+                                <th className="px-4 py-3 text-left whitespace-nowrap">เวลาแจ้ง</th>
+                                {isAdmin && <th className="px-4 py-3 text-center w-16">ลบ</th>}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-[#1e3550]">
+                              {section.data.map((leave, idx) => (
+                                <tr key={leave.id} className="hover:bg-slate-50 dark:hover:bg-[#323847] transition-colors">
+                                  <td className="px-4 py-3 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
+                                  <td className="px-4 py-3 font-semibold text-slate-700 dark:text-white">{leave.name}</td>
+                                  <td className="px-4 py-3 text-slate-600 dark:text-white">{leave.day ?? "—"}</td>
+                                  <td className="px-4 py-3 text-slate-500 dark:text-[#8B93A7] max-w-xs truncate" title={leave.reason}>
+                                    {leave.reason ?? "—"}
+                                  </td>
+                                  <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
+                                    {formatDateOnly(leave.timestamp)}
+                                  </td>
+                                  <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
+                                    {formatTimeOnly(leave.timestamp)}
+                                  </td>
+                                  {isAdmin && (
+                                    <td className="px-4 py-3 text-center">
+                                      <button
+                                        onClick={() => handleDeleteLeave(leave.id)}
+                                        className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors"
+                                        title="ลบรายการ"
+                                      >
+                                        <Trash2 size={15} />
+                                      </button>
+                                    </td>
+                                  )}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               ))}
             </div>
@@ -475,6 +514,14 @@ export default function LogPage() {
           <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-100 dark:border-[#2D3342]">
             <Swords size={18} className="text-purple-500" />
             <span className="font-bold text-slate-700 dark:text-white">ประวัติการจองคิวดันเจี้ยน</span>
+            {isAdmin && (
+              <button 
+                onClick={handleClearQueues}
+                className="ml-4 px-3 py-1 bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 rounded-lg text-xs font-bold transition-colors"
+              >
+                Clear Log
+              </button>
+            )}
             <span className="text-sm text-slate-400 ml-auto">{filteredQueues.length} รายการ</span>
           </div>
 

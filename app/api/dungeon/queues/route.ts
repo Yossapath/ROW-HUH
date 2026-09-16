@@ -231,3 +231,30 @@ export async function POST(req: Request) {
     return handleServerError(e, "Failed to book dungeon queue");
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const auth = await requireAuth();
+    if (auth.errorResponse) return auth.errorResponse;
+    if (auth.user.role !== "admin" && auth.user.role !== "owner") {
+      return err("Permission denied", 403);
+    }
+    
+    const snap = await dungeonsRef().collection("queues").where("status", "==", "done").get();
+    const batch = dungeonsRef().firestore.batch();
+    snap.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    const itemsSnap = await dungeonsRef().collection("dungeon_queue_items").where("status", "==", "COMPLETED").get();
+    itemsSnap.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    await batch.commit();
+    return ok({ deletedCount: snap.size });
+  } catch (e: unknown) {
+    return handleServerError(e, "Failed to clear history");
+  }
+}
+

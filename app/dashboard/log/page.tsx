@@ -13,7 +13,7 @@ import {
   ShieldOff,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { JOB_COLORS, formatTimestamp } from "@/lib/utils";
+import { JOB_COLORS, formatTimestamp, formatDateOnly, formatTimeOnly } from "@/lib/utils";
 import type { SystemLog, LeaveRecord, DungeonQueue } from "@/types";
 
 // ── Module badge config ────────────────────────────────────────
@@ -76,35 +76,24 @@ export default function LogPage() {
   const [logsFetched, setLogsFetched] = useState(false);
   const [logPage, setLogPage] = useState(1);
   const [moduleFilter, setModuleFilter] = useState("all");
-  const [hasMoreLogs, setHasMoreLogs] = useState(true);
-  const [loadingMoreLogs, setLoadingMoreLogs] = useState(false);
 
   // Tab 1 — Leave
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [leavesLoading, setLeavesLoading] = useState(false);
   const [leavesFetched, setLeavesFetched] = useState(false);
-  const [hasMoreLeaves, setHasMoreLeaves] = useState(true);
-  const [loadingMoreLeaves, setLoadingMoreLeaves] = useState(false);
 
   // Tab 2 — Dungeon Queue
   const [queues, setQueues] = useState<DungeonQueue[]>([]);
   const [queuesLoading, setQueuesLoading] = useState(false);
   const [queuesFetched, setQueuesFetched] = useState(false);
-  const [hasMoreQueues, setHasMoreQueues] = useState(true);
-  const [loadingMoreQueues, setLoadingMoreQueues] = useState(false);
 
   // ── Fetch on tab switch ──────────────────────────────────────
   useEffect(() => {
     if (activeTab === 0 && isAdmin && !logsFetched) {
       setLogsLoading(true);
-      fetch("/api/logs?limit=50")
+      fetch("/api/logs")
         .then((r) => r.json())
-        .then((d) => {
-          const items = d.data ?? [];
-          setLogs(items);
-          setLogsFetched(true);
-          if (items.length < 50) setHasMoreLogs(false);
-        })
+        .then((d) => { setLogs(d.data ?? []); setLogsFetched(true); })
         .catch(() => setLogs([]))
         .finally(() => setLogsLoading(false));
     }
@@ -113,14 +102,9 @@ export default function LogPage() {
   useEffect(() => {
     if (activeTab === 1 && !leavesFetched) {
       setLeavesLoading(true);
-      fetch("/api/leave?limit=50")
+      fetch("/api/leave")
         .then((r) => r.json())
-        .then((d) => {
-          const items = d.data ?? [];
-          setLeaves(items);
-          setLeavesFetched(true);
-          if (items.length < 50) setHasMoreLeaves(false);
-        })
+        .then((d) => { setLeaves(d.data ?? []); setLeavesFetched(true); })
         .catch(() => setLeaves([]))
         .finally(() => setLeavesLoading(false));
     }
@@ -129,69 +113,13 @@ export default function LogPage() {
   useEffect(() => {
     if (activeTab === 2 && !queuesFetched) {
       setQueuesLoading(true);
-      fetch("/api/dungeon/queues?type=all&limit=50")
+      fetch("/api/dungeon/queues")
         .then((r) => r.json())
-        .then((d) => {
-          const items = d.data ?? [];
-          setQueues(items);
-          setQueuesFetched(true);
-          if (items.length < 50) setHasMoreQueues(false);
-        })
+        .then((d) => { setQueues(d.data ?? []); setQueuesFetched(true); })
         .catch(() => setQueues([]))
         .finally(() => setQueuesLoading(false));
     }
   }, [activeTab, queuesFetched]);
-
-  async function loadMoreLogs() {
-    if (logs.length === 0 || loadingMoreLogs) return;
-    const lastTimestamp = logs[logs.length - 1].timestamp;
-    setLoadingMoreLogs(true);
-    try {
-      const res = await fetch(`/api/logs?limit=50&before=${lastTimestamp}`);
-      const d = await res.json();
-      const newItems: SystemLog[] = d.data ?? [];
-      if (newItems.length < 50) setHasMoreLogs(false);
-      setLogs((prev) => [...prev, ...newItems]);
-    } catch {
-      // silently fail
-    } finally {
-      setLoadingMoreLogs(false);
-    }
-  }
-
-  async function loadMoreLeaves() {
-    if (leaves.length === 0 || loadingMoreLeaves) return;
-    const lastTimestamp = leaves[leaves.length - 1].timestamp;
-    setLoadingMoreLeaves(true);
-    try {
-      const res = await fetch(`/api/leave?limit=50&before=${lastTimestamp}`);
-      const d = await res.json();
-      const newItems: LeaveRecord[] = d.data ?? [];
-      if (newItems.length < 50) setHasMoreLeaves(false);
-      setLeaves((prev) => [...prev, ...newItems]);
-    } catch {
-      // silently fail
-    } finally {
-      setLoadingMoreLeaves(false);
-    }
-  }
-
-  async function loadMoreQueues() {
-    if (queues.length === 0 || loadingMoreQueues) return;
-    const lastTimestamp = queues[queues.length - 1].timestamp;
-    setLoadingMoreQueues(true);
-    try {
-      const res = await fetch(`/api/dungeon/queues?type=all&limit=50&before=${lastTimestamp}`);
-      const d = await res.json();
-      const newItems: DungeonQueue[] = d.data ?? [];
-      if (newItems.length < 50) setHasMoreQueues(false);
-      setQueues((prev) => [...prev, ...newItems]);
-    } catch {
-      // silently fail
-    } finally {
-      setLoadingMoreQueues(false);
-    }
-  }
 
   // ── Delete leave ─────────────────────────────────────────────
   async function handleDeleteLeave(id: string) {
@@ -210,7 +138,8 @@ export default function LogPage() {
   const q = search.toLowerCase();
 
   const filteredLogs = useMemo(() => {
-    let list = logs;
+    // Filter out 'leave' and 'teams' modules from the main System Log tab
+    let list = logs.filter(l => !["leave", "teams"].includes(l.module.toLowerCase()));
     if (moduleFilter !== "all") {
       list = list.filter((l) => l.module.toLowerCase().includes(moduleFilter));
     }
@@ -226,6 +155,10 @@ export default function LogPage() {
     }
     return [...list].sort((a, b) => b.timestamp - a.timestamp);
   }, [logs, q, moduleFilter]);
+
+  const leaveLogs = useMemo(() => {
+    return logs.filter(l => l.module.toLowerCase() === "leave").sort((a, b) => b.timestamp - a.timestamp);
+  }, [logs]);
 
   const totalLogPages = Math.max(1, Math.ceil(filteredLogs.length / ROWS_PER_PAGE));
   const pagedLogs = filteredLogs.slice((logPage - 1) * ROWS_PER_PAGE, logPage * ROWS_PER_PAGE);
@@ -257,6 +190,8 @@ export default function LogPage() {
 
   const moduleOptions = useMemo(() => {
     const mods = new Set(logs.map((l) => l.module.toLowerCase()));
+    mods.delete("leave");
+    mods.delete("teams");
     return Array.from(mods).sort();
   }, [logs]);
 
@@ -265,6 +200,7 @@ export default function LogPage() {
   return (
     <div
       className="space-y-6 bg-[#f0f6fc] dark:bg-[#1C1F27] min-h-screen p-4 lg:py-8 lg:px-12 xl:px-24 2xl:px-32 relative"
+      style={{ zoom: 0.85 }}
     >
       {/* ── Header Card ──────────────────────────────────────── */}
       <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] p-5 mb-5 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -345,7 +281,8 @@ export default function LogPage() {
                     <table className="w-full text-sm">
                       <thead className="bg-slate-50 dark:bg-[#272C38] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide">
                         <tr>
-                          <th className="px-4 py-3 text-left whitespace-nowrap">วันเวลา</th>
+                          <th className="px-4 py-3 text-left whitespace-nowrap">วันที่</th>
+                          <th className="px-4 py-3 text-left whitespace-nowrap">เวลา</th>
                           <th className="px-4 py-3 text-left">Module</th>
                           <th className="px-4 py-3 text-left">Action</th>
                           <th className="px-4 py-3 text-left">ผู้ทำ</th>
@@ -357,7 +294,10 @@ export default function LogPage() {
                         {pagedLogs.map((log) => (
                           <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-[#2A2F3E] transition-colors">
                             <td className="px-4 py-3 whitespace-nowrap text-slate-500 dark:text-[#8B93A7] font-mono text-xs">
-                              {formatTimestamp(log.timestamp)}
+                              {formatDateOnly(log.timestamp)}
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap text-slate-500 dark:text-[#8B93A7] font-mono text-xs">
+                              {formatTimeOnly(log.timestamp)}
                             </td>
                             <td className="px-4 py-3">
                               <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${moduleBadgeClass(log.module)}`}>
@@ -401,18 +341,6 @@ export default function LogPage() {
                       </div>
                     </div>
                   )}
-
-                  {hasMoreLogs && (
-                    <div className="text-center py-3 border-t border-slate-100 dark:border-[#2D3342]">
-                      <button
-                        onClick={loadMoreLogs}
-                        disabled={loadingMoreLogs}
-                        className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-[#272C38] dark:hover:bg-[#2A2F3E] text-slate-700 dark:text-slate-200 transition-colors disabled:opacity-50"
-                      >
-                        {loadingMoreLogs ? "กำลังโหลด..." : "โหลดประวัติก่อนหน้าเพิ่มเติม (+50)"}
-                      </button>
-                    </div>
-                  )}
                 </>
               )}
             </>
@@ -434,8 +362,7 @@ export default function LogPage() {
           ) : filteredLeaves.length === 0 ? (
             <EmptyState message="ไม่มีรายการแจ้งลา" />
           ) : (
-            <>
-              <div className="overflow-x-auto">
+            <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 dark:bg-[#272C38] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide">
                   <tr>
@@ -444,6 +371,7 @@ export default function LogPage() {
                     <th className="px-4 py-3 text-left">วันที่ลา</th>
                     <th className="px-4 py-3 text-left">วัน</th>
                     <th className="px-4 py-3 text-left">เหตุผล</th>
+                    <th className="px-4 py-3 text-left whitespace-nowrap">วันที่แจ้ง</th>
                     <th className="px-4 py-3 text-left whitespace-nowrap">เวลาแจ้ง</th>
                     {isAdmin && <th className="px-4 py-3 text-center w-16">ลบ</th>}
                   </tr>
@@ -459,7 +387,10 @@ export default function LogPage() {
                         {leave.reason ?? "—"}
                       </td>
                       <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
-                        {formatTimestamp(leave.timestamp)}
+                        {formatDateOnly(leave.timestamp)}
+                      </td>
+                      <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
+                        {formatTimeOnly(leave.timestamp)}
                       </td>
                       {isAdmin && (
                         <td className="px-4 py-3 text-center">
@@ -477,19 +408,46 @@ export default function LogPage() {
                 </tbody>
               </table>
             </div>
+          )}
 
-              {hasMoreLeaves && (
-                <div className="text-center py-3 border-t border-slate-100 dark:border-[#2D3342]">
-                  <button
-                    onClick={loadMoreLeaves}
-                    disabled={loadingMoreLeaves}
-                    className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-[#272C38] dark:hover:bg-[#2A2F3E] text-slate-700 dark:text-slate-200 transition-colors disabled:opacity-50"
-                  >
-                    {loadingMoreLeaves ? "กำลังโหลด..." : "โหลดรายการลาเพิ่มเติม (+50)"}
-                  </button>
-                </div>
-              )}
-            </>
+          {isAdmin && leaveLogs.length > 0 && (
+            <div className="mt-8 border-t border-slate-100 dark:border-[#2D3342] pt-6 px-6 pb-6">
+              <h3 className="font-bold text-slate-700 dark:text-white mb-4">ประวัติการจัดการ (System Log - Leave)</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 dark:bg-[#272C38] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide">
+                    <tr>
+                      <th className="px-4 py-3 text-left whitespace-nowrap">วันที่</th>
+                      <th className="px-4 py-3 text-left whitespace-nowrap">เวลา</th>
+                      <th className="px-4 py-3 text-left">Action</th>
+                      <th className="px-4 py-3 text-left">ผู้ทำ</th>
+                      <th className="px-4 py-3 text-left">Target</th>
+                      <th className="px-4 py-3 text-left">รายละเอียด</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-[#1e3550]">
+                    {leaveLogs.map((log) => (
+                      <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-[#2A2F3E] transition-colors">
+                        <td className="px-4 py-3 whitespace-nowrap text-slate-500 dark:text-[#8B93A7] font-mono text-xs">
+                          {formatDateOnly(log.timestamp)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-slate-500 dark:text-[#8B93A7] font-mono text-xs">
+                          {formatTimeOnly(log.timestamp)}
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-slate-700 dark:text-white whitespace-nowrap">
+                          {log.action}
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-white whitespace-nowrap">{log.actor}</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-white whitespace-nowrap">{log.target}</td>
+                        <td className="px-4 py-3 text-slate-500 dark:text-[#8B93A7] max-w-xs truncate" title={log.detail}>
+                          {log.detail}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -508,8 +466,7 @@ export default function LogPage() {
           ) : filteredQueues.length === 0 ? (
             <EmptyState message="ไม่มีรายการจองคิว" />
           ) : (
-            <>
-              <div className="overflow-x-auto">
+            <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 dark:bg-[#272C38] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide">
                   <tr>
@@ -519,6 +476,7 @@ export default function LogPage() {
                     <th className="px-4 py-3 text-right">พลัง</th>
                     <th className="px-4 py-3 text-center">รอบ</th>
                     <th className="px-4 py-3 text-center">สถานะ</th>
+                    <th className="px-4 py-3 text-left whitespace-nowrap">วันที่จอง</th>
                     <th className="px-4 py-3 text-left whitespace-nowrap">เวลาจอง</th>
                   </tr>
                 </thead>
@@ -552,29 +510,19 @@ export default function LogPage() {
                         <QueueStatusBadge status={qr.status} />
                       </td>
                       <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
-                        {formatTimestamp(qr.timestamp)}
+                        {formatDateOnly(qr.timestamp)}
+                      </td>
+                      <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
+                        {formatTimeOnly(qr.timestamp)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-
-            {hasMoreQueues && (
-              <div className="text-center py-3 border-t border-slate-100 dark:border-[#2D3342]">
-                <button
-                  onClick={loadMoreQueues}
-                  disabled={loadingMoreQueues}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-[#272C38] dark:hover:bg-[#2A2F3E] text-slate-700 dark:text-slate-200 transition-colors disabled:opacity-50"
-                >
-                  {loadingMoreQueues ? "กำลังโหลด..." : "โหลดประวัติคิวดันเพิ่มเติม (+50)"}
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    )}
+          )}
+        </div>
+      )}
     </div>
   );
 }

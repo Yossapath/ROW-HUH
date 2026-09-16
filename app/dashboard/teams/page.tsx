@@ -900,6 +900,18 @@ export default function TeamsPage() {
     );
   };
 
+  const globalTeamIndexMap: Record<string, number> = {};
+  if (data) {
+    let mainCounter = 1;
+    data.zones.filter(z => z.type === "main").forEach(z => {
+      z.teamOrder.forEach(id => { globalTeamIndexMap[id] = mainCounter++; });
+    });
+    let subCounter = 1;
+    data.zones.filter(z => z.type === "sub").forEach(z => {
+      z.teamOrder.forEach(id => { globalTeamIndexMap[id] = subCounter++; });
+    });
+  }
+
   return (
     <div className="space-y-6 bg-[#f0f6fc] dark:bg-[#1C1F27] min-h-screen p-3 sm:p-4 lg:py-6 lg:px-6 2xl:px-8 relative">
       <AutoMatchModal />
@@ -1078,7 +1090,19 @@ export default function TeamsPage() {
                         {(provided) => (
                           <div ref={provided.innerRef} {...provided.droppableProps} className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 xl:gap-6 min-h-[100px]">
                             {zone.teamOrder.map((colId, index) => data.columns[colId] ? (
-                              <TeamCard key={colId} column={data.columns[colId]} members={data.members} index={index} toggleLock={toggleLock} clearTeam={clearTeam} removeMember={removeMember} isAdmin={isAdmin} onRemoveFromZone={isAdmin ? () => removeTeamFromZone(zone.id, colId) : undefined} renameTeam={renameTeam} />
+                              <TeamCard 
+                                key={colId} 
+                                column={data.columns[colId]} 
+                                members={data.members} 
+                                index={index} 
+                                toggleLock={toggleLock} 
+                                clearTeam={clearTeam} 
+                                removeMember={removeMember} 
+                                isAdmin={isAdmin} 
+                                onRemoveFromZone={isAdmin ? () => removeTeamFromZone(zone.id, colId) : undefined} 
+                                renameTeam={renameTeam}
+                                computedTitle={/^ทีม \d+$/.test(data.columns[colId]?.title || "") ? `ทีม ${globalTeamIndexMap[colId]}` : undefined}
+                              />
                             ) : null)}
                             {provided.placeholder}
                             {zone.teamOrder.length === 0 && <div className="col-span-full flex items-center justify-center h-24 rounded-xl border-2 border-dashed border-slate-200 dark:border-[#2D3342] text-slate-400 text-sm">ยังไม่มีทีมในโซนนี้ โ€” กด &quot;เพิ่มทีม&quot;</div>}
@@ -1105,7 +1129,19 @@ export default function TeamsPage() {
                         {(provided) => (
                           <div ref={provided.innerRef} {...provided.droppableProps} className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 xl:gap-6 min-h-[100px]">
                             {zone.teamOrder.map((colId, index) => data.columns[colId] ? (
-                              <TeamCard key={colId} column={data.columns[colId]} members={data.members} index={index} toggleLock={toggleLock} clearTeam={clearTeam} removeMember={removeMember} isAdmin={isAdmin} onRemoveFromZone={isAdmin ? () => removeTeamFromZone(zone.id, colId) : undefined} renameTeam={renameTeam} />
+                              <TeamCard 
+                                key={colId} 
+                                column={data.columns[colId]} 
+                                members={data.members} 
+                                index={index} 
+                                toggleLock={toggleLock} 
+                                clearTeam={clearTeam} 
+                                removeMember={removeMember} 
+                                isAdmin={isAdmin} 
+                                onRemoveFromZone={isAdmin ? () => removeTeamFromZone(zone.id, colId) : undefined} 
+                                renameTeam={renameTeam}
+                                computedTitle={/^ทีมรอง \d+$/.test(data.columns[colId]?.title || "") ? `ทีมรอง ${globalTeamIndexMap[colId]}` : undefined}
+                              />
                             ) : null)}
                             {provided.placeholder}
                             {zone.teamOrder.length === 0 && <div className="col-span-full flex items-center justify-center h-24 rounded-xl border-2 border-dashed border-slate-200 dark:border-[#2D3342] text-slate-400 text-sm">ยังไม่มีทีม โ€” กด &quot;เพิ่มทีม&quot;</div>}
@@ -1264,14 +1300,16 @@ export default function TeamsPage() {
 }
 
 function TeamCard({
-  column, members, index, toggleLock, clearTeam, removeMember, isAdmin = false, onRemoveFromZone, renameTeam}: {
+  column, members, index, toggleLock, clearTeam, removeMember, isAdmin = false, onRemoveFromZone, renameTeam, computedTitle}: {
   column: Column; members: Record<string, Member>; index: number;
   toggleLock: (id: string) => void; clearTeam: (id: string) => void;
   removeMember: (colId: string, memId: string) => void;
-  isAdmin?: boolean; onRemoveFromZone?: () => void; renameTeam?: (id: string, t: string) => void;}) {
+  isAdmin?: boolean; onRemoveFromZone?: () => void; renameTeam?: (id: string, t: string) => void; computedTitle?: string;}) {
   const isFull = (column?.memberIds || []).filter(id => id).length === 5;
   const totalPower = (column?.memberIds || []).reduce((sum, id) => sum + (id ? (members[id]?.power || 0) : 0), 0);
   const isSub = column?.type === "sub";
+  
+  const displayTitle = computedTitle || column?.title;
 
   return (
     <Draggable draggableId={column.id} index={index} isDragDisabled={!isAdmin}>
@@ -1289,7 +1327,7 @@ function TeamCard({
                 }}
                 title={isAdmin ? "คลิกเพื่อเปลี่ยนชื่อทีม" : ""}
               >
-                {column.title} {isAdmin && <Edit2 size={12} className="opacity-40" />}
+                {displayTitle} {isAdmin && <Edit2 size={12} className="opacity-40" />}
               </h3>
               <span className="text-xs bg-black/20 px-2 py-0.5 rounded-md font-mono">{totalPower.toLocaleString()}</span>
             </div>

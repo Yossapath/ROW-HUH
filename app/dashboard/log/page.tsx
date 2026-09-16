@@ -103,7 +103,7 @@ export default function LogPage() {
   useEffect(() => {
     if (activeTab === 1 && !leavesFetched) {
       setLeavesLoading(true);
-      fetch("/api/leave")
+      fetch("/api/leave?type=all")
         .then((r) => r.json())
         .then((d) => { setLeaves(d.data ?? []); setLeavesFetched(true); })
         .catch(() => setLeaves([]))
@@ -370,7 +370,7 @@ export default function LogPage() {
         <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] overflow-hidden">
           <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-100 dark:border-[#2D3342]">
             <CalendarOff size={18} className="text-yellow-500" />
-            <span className="font-bold text-slate-700 dark:text-white">รายการแจ้งลา</span>
+            <span className="font-bold text-slate-700 dark:text-white">ออฟไลน์</span>
             
             <div className="ml-4 flex items-center gap-2">
               <input 
@@ -390,7 +390,7 @@ export default function LogPage() {
           {leavesLoading ? (
             <LoadingSkeleton />
           ) : groupedLeavesArray.length === 0 ? (
-            <EmptyState message="ไม่มีรายการแจ้งลา" />
+            <EmptyState message="ไม่มีรายการออฟไลน์" />
           ) : (
             <div className="p-6 space-y-8">
               {groupedLeavesArray.map((group) => (
@@ -466,45 +466,7 @@ export default function LogPage() {
             </div>
           )}
 
-          {isAdmin && leaveLogs.length > 0 && (
-            <div className="mt-8 border-t border-slate-100 dark:border-[#2D3342] pt-6 px-6 pb-6">
-              <h3 className="font-bold text-slate-700 dark:text-white mb-4">ประวัติการจัดการ (System Log - Leave)</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-slate-50 dark:bg-[#272C38] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide">
-                    <tr>
-                      <th className="px-4 py-3 text-left whitespace-nowrap">วันที่</th>
-                      <th className="px-4 py-3 text-left whitespace-nowrap">เวลา</th>
-                      <th className="px-4 py-3 text-left">Action</th>
-                      <th className="px-4 py-3 text-left">ผู้ทำ</th>
-                      <th className="px-4 py-3 text-left">Target</th>
-                      <th className="px-4 py-3 text-left">รายละเอียด</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-[#1e3550]">
-                    {leaveLogs.map((log) => (
-                      <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-[#2A2F3E] transition-colors">
-                        <td className="px-4 py-3 whitespace-nowrap text-slate-500 dark:text-[#8B93A7] font-mono text-xs">
-                          {formatDateOnly(log.timestamp)}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-slate-500 dark:text-[#8B93A7] font-mono text-xs">
-                          {formatTimeOnly(log.timestamp)}
-                        </td>
-                        <td className="px-4 py-3 font-semibold text-slate-700 dark:text-white whitespace-nowrap">
-                          {log.action}
-                        </td>
-                        <td className="px-4 py-3 text-slate-600 dark:text-white whitespace-nowrap">{log.actor}</td>
-                        <td className="px-4 py-3 text-slate-600 dark:text-white whitespace-nowrap">{log.target}</td>
-                        <td className="px-4 py-3 text-slate-500 dark:text-[#8B93A7] max-w-xs truncate" title={log.detail}>
-                          {log.detail}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+
         </div>
       )}
 

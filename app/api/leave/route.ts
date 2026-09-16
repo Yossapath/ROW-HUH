@@ -12,8 +12,9 @@ export async function GET(req: Request) {
     if (auth.errorResponse) return auth.errorResponse;
 
     const { searchParams } = new URL(req.url);
-    const limitParam = Math.min(Math.max(Number(searchParams.get("limit")) || 50, 1), 100);
+    const limitParam = Math.min(Math.max(Number(searchParams.get("limit")) || 100, 1), 300);
     const before = Number(searchParams.get("before"));
+    const type = searchParams.get("type"); // "all" to get everything, else future/today
 
     let query = leaveRef().collection("records").orderBy("timestamp", "desc");
     if (!isNaN(before) && before > 0) {
@@ -28,6 +29,7 @@ export async function GET(req: Request) {
     // Get today's date in YYYY-MM-DD format (UTC+7 for Thailand)
     const todayStr = new Date(Date.now() + 7 * 3600 * 1000).toISOString().split('T')[0];
     const records = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })).filter((r: any) => {
+        if (type === "all") return true;
         if (!r.date) return true;
         return r.date >= todayStr;
     });

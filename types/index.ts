@@ -37,7 +37,10 @@ export type JobClass =
   | "Assassin Cross"
   | "Merchant"
   | "Gunslinger"
-  | "Druid";
+  | "Druid"
+  | "Biosmith"
+  | "Bard"
+  | "Dancer";
 
 export interface Member {
   name: string;

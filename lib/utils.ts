@@ -17,6 +17,9 @@ export const JOB_COLORS: Record<string, string> = {
   "Merchant":       "#c2185d",
   "Gunslinger":     "#894517",
   "Druid":          "#41b388",
+  "Biosmith":       "#607d8b",
+  "Bard":           "#ff9800",
+  "Dancer":         "#e91e63",
 };
 
 export const JOB_LIST = Object.keys(JOB_COLORS);

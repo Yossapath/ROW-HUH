@@ -478,6 +478,24 @@ export default function TeamsPage() {
       return sum + (col ? col.memberIds.filter(id => id !== null).length : 0);
     }, 0);
 
+  const mainJobCounts = !data ? ({} as Record<string, number>) : data.zones
+    .filter(z => z.type === "main")
+    .flatMap(z => z.teamOrder)
+    .reduce((counts, colId) => {
+      const col = data.columns[colId];
+      if (col) {
+        col.memberIds.forEach(id => {
+          if (id !== null) {
+            const member = data.members[id];
+            if (member && member.job) {
+               counts[member.job] = (counts[member.job] || 0) + 1;
+            }
+          }
+        });
+      }
+      return counts;
+    }, {} as Record<string, number>);
+
   const mainTeamCount = !data ? 0 : data.zones
     .filter(z => z.type === "main")
     .reduce((sum, z) => sum + z.teamOrder.length, 0);
@@ -1075,12 +1093,31 @@ export default function TeamsPage() {
               {activeTab === "main" && (
                 <div className="space-y-10 pb-12 bg-[#f0f6fc] dark:bg-[#1C1F27] print-export-padding">
                   {/* 60-player progress bar */}
-                  <div className="bg-white dark:bg-[#232733] rounded-xl border border-slate-200 dark:border-[#2D3342] p-3 flex items-center gap-3 shadow-sm">
-                    <span className="text-sm font-bold text-slate-700 dark:text-white whitespace-nowrap">สนามหลัก {mainPlayerCount}/60 คน</span>
-                    <div className="flex-1 bg-slate-100 dark:bg-[#272C38] rounded-full h-2.5 overflow-hidden">
-                      <div className={`h-full rounded-full transition-all ${mainPlayerCount >= 60 ? "bg-emerald-500" : mainPlayerCount >= 45 ? "bg-amber-400" : "bg-[#3B66D1]"}`} style={{ width: `${Math.min(100, (mainPlayerCount / 60) * 100)}%` }} />
+                  <div className="bg-white dark:bg-[#232733] rounded-xl border border-slate-200 dark:border-[#2D3342] p-3 flex flex-col gap-3 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-bold text-slate-700 dark:text-white whitespace-nowrap">สนามหลัก {mainPlayerCount}/60 คน</span>
+                      <div className="flex-1 bg-slate-100 dark:bg-[#272C38] rounded-full h-2.5 overflow-hidden">
+                        <div className={`h-full rounded-full transition-all ${mainPlayerCount >= 60 ? "bg-emerald-500" : mainPlayerCount >= 45 ? "bg-amber-400" : "bg-[#3B66D1]"}`} style={{ width: `${Math.min(100, (mainPlayerCount / 60) * 100)}%` }} />
+                      </div>
+                      <span className={`text-xs font-bold ${mainPlayerCount >= 60 ? "text-emerald-500" : "text-slate-500"}`}>{mainPlayerCount >= 60 ? "เต็ม ✓" : `เหลือ ${60 - mainPlayerCount} ที่`}</span>
                     </div>
-                    <span className={`text-xs font-bold ${mainPlayerCount >= 60 ? "text-emerald-500" : "text-slate-500"}`}>{mainPlayerCount >= 60 ? "เต็ม โ“" : `เหลือ ${60 - mainPlayerCount} ที่`}</span>
+                    
+                    {/* Job breakdown for 60 main players */}
+                    {mainPlayerCount > 0 && (
+                      <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-[#2D3342]">
+                        {JOB_LIST.map(job => {
+                          const count = mainJobCounts[job] || 0;
+                          if (count === 0) return null;
+                          return (
+                            <div key={job} className="flex items-center gap-1.5 px-2 py-1 bg-slate-50 dark:bg-[#1C1F27] border border-slate-200 dark:border-[#2D3342] rounded-lg shadow-sm text-xs">
+                              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: JOB_COLORS[job] || "#ccc" }} />
+                              <span className="text-slate-600 dark:text-slate-300 font-medium">{job}</span>
+                              <span className="font-bold text-[#0b3d63] dark:text-[#82A0F5] bg-white dark:bg-[#2A2F3E] px-1.5 rounded text-[10px] min-w-[1.25rem] text-center">{count}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {data.zones.filter(z => z.type === "main").map(zone => (

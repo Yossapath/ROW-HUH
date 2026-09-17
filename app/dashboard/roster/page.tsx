@@ -160,8 +160,9 @@ export default function RosterPage() {
     const reader = new FileReader();
     reader.onload = async (evt) => {
       try {
-        const bstr = evt.target?.result;
-        const wb = XLSX.read(bstr, { type: "binary" });
+        const arrayBuffer = evt.target?.result as ArrayBuffer;
+        const data = new Uint8Array(arrayBuffer);
+        const wb = XLSX.read(data, { type: "array" });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
         const jsonData = XLSX.utils.sheet_to_json<any>(ws);
@@ -275,7 +276,7 @@ export default function RosterPage() {
       if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   };
 
   if (isLoading) return <div className="flex h-screen items-center justify-center font-bold text-gray-500">กำลังโหลดรายชื่อ...</div>;

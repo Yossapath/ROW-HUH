@@ -1,7 +1,8 @@
-import { getDb, COLL_USER, rosterRef } from "@/lib/firebase-admin";
+import { getDb, COLL_USER, rosterRef, teamsRef } from "@/lib/firebase-admin";
 import { requireAuth, signToken, authCookie } from "@/lib/auth";
 import { ok, err, handleServerError } from "@/lib/server-utils";
 import { completeProfileSchema, validateBody } from "@/lib/validations";
+import { updateMemberNameInTeamsData } from "@/lib/team-sync";
 
 export async function POST(req: Request) {
   try {
@@ -20,15 +21,22 @@ export async function POST(req: Request) {
     const db = getDb();
     const userRef = db.collection(COLL_USER).doc(user.discordId);
     const rosterDocRef = rosterRef();
+    const tRef = teamsRef();
 
     await db.runTransaction(async (t) => {
-      const [userDoc, rosterDoc] = await Promise.all([
+      const [userDoc, rosterDoc, tDoc] = await Promise.all([
         t.get(userRef),
         t.get(rosterDocRef),
+        t.get(tRef),
       ]);
 
       let rosterData = rosterDoc.exists ? (rosterDoc.data() || {}) : {};
       if (rosterData.data) rosterData = rosterData.data;
+      
+      let oldName: string | null = null;
+      if (userDoc.exists) {
+        oldName = userDoc.data()?.gameUsername;
+      }
 
       // Remove this member from every job bucket first (they may be changing
       // class or name), so switching jobs can't leave a stale duplicate entry behind
@@ -71,6 +79,15 @@ export async function POST(req: Request) {
       }
 
       t.set(rosterDocRef, rosterData);
+      
+      if (oldName && oldName !== gameUsername && tDoc.exists) {
+        const tData = tDoc.data();
+        const { changed, updatedData } = updateMemberNameInTeamsData(tData, oldName, gameUsername);
+        if (changed) {
+          const nextVersion = typeof tData?.version === "number" ? tData.version + 1 : 1;
+          t.set(tRef, { ...updatedData, version: nextVersion, updatedAt: Date.now() }, { merge: true });
+        }
+      }
     });
 
     const payload = {

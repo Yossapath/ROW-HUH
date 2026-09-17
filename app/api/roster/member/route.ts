@@ -1,8 +1,9 @@
 export const dynamic = "force-dynamic";
-import { getDb, COLL_USER, rosterRef } from "@/lib/firebase-admin";
+import { getDb, COLL_USER, rosterRef, teamsRef } from "@/lib/firebase-admin";
 import { requireAuth, requireAdmin } from "@/lib/auth";
 import { ok, err, forbidden, handleServerError } from "@/lib/server-utils";
 import { rosterMemberUpdateSchema, rosterMemberAddSchema, validateBody } from "@/lib/validations";
+import { updateMemberNameInTeamsData } from "@/lib/team-sync";
 
 // Admin only: Add single member atomically to roster
 export async function POST(req: Request) {
@@ -83,12 +84,14 @@ export async function PUT(req: Request) {
     const db = getDb();
     const userDocRef = db.collection(COLL_USER).doc(targetDiscordId);
     const rRef = rosterRef();
+    const tRef = teamsRef();
 
     // Update user document and roster in a single atomic transaction
     await db.runTransaction(async (t) => {
-      const [userDoc, rDoc] = await Promise.all([
+      const [userDoc, rDoc, tDoc] = await Promise.all([
         t.get(userDocRef),
         t.get(rRef),
+        t.get(tRef),
       ]);
 
       let rosterData = rDoc.exists ? rDoc.data() as any : {};
@@ -100,6 +103,7 @@ export async function PUT(req: Request) {
       // Retain existing role if not admin
       let existingWarRole = "อิสระ (ให้ระบบจัดให้)";
       let previousJob: string | null = null;
+      let actualOriginalName: string | null = null;
 
       for (const j of Object.keys(rosterData)) {
         if (Array.isArray(rosterData[j])) {
@@ -107,6 +111,7 @@ export async function PUT(req: Request) {
           if (idx !== -1) {
             existingWarRole = rosterData[j][idx].role || existingWarRole;
             previousJob = j;
+            actualOriginalName = rosterData[j][idx].name;
             rosterData[j].splice(idx, 1);
             break;
           }
@@ -137,6 +142,17 @@ export async function PUT(req: Request) {
           patch[previousJob] = rosterData[previousJob];
         }
         t.set(rRef, patch, { merge: true });
+      }
+
+      // Cascade name change to teams if name changed
+      const oldName = actualOriginalName || originalName;
+      if (oldName && oldName !== name && tDoc.exists) {
+        const tData = tDoc.data();
+        const { changed, updatedData } = updateMemberNameInTeamsData(tData, oldName, name);
+        if (changed) {
+          const nextVersion = typeof tData?.version === "number" ? tData.version + 1 : 1;
+          t.set(tRef, { ...updatedData, version: nextVersion, updatedAt: Date.now() }, { merge: true });
+        }
       }
     });
 

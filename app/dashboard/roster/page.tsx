@@ -200,7 +200,7 @@ export default function RosterPage() {
              if (lowerClass === "อาลิเทีย") normalizedClass = "Druid";
              else if (lowerClass === "high priest") normalizedClass = "Priest";
              else if (lowerClass === "night walker") normalizedClass = "Gunslinger";
-             else if (lowerClass === "merchant" || lowerClass === "whitesmith") normalizedClass = "Whitesmith";
+             else if (lowerClass === "merchant" || lowerClass === "whitesmith") normalizedClass = "Merchant";
              else {
                 const match = JOB_LIST.find(j => j.toLowerCase() === lowerClass);
                 if (match) normalizedClass = match;

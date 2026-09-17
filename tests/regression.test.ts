@@ -2235,7 +2235,7 @@ test('STEP 13: Roster Firebase Write Optimization - Targeted Field Writes & Payl
   // Simulate 12 classes with 8 members each (~96 total members)
   const classes = [
     "Sniper", "Priest", "Lord Knight", "Assassin Cross",
-    "High Wizard", "Whitesmith", "Champion", "Paladin",
+    "High Wizard", "Merchant", "Champion", "Paladin",
     "Professor", "Clown", "Gypsy", "Creator"
   ];
 

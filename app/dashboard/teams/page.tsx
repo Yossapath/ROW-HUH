@@ -79,6 +79,7 @@ export default function TeamsPage() {
   const [previewResult, setPreviewResult] = useState<AllocatorResult | null>(null);
   const [leaveRecords, setLeaveRecords] = useState<any[]>([]);
   const [unassignedSearch, setUnassignedSearch] = useState("");
+  const [unassignedPowerFilter, setUnassignedPowerFilter] = useState<number | "">("");
   const [offlineSearch, setOfflineSearch] = useState("");
   const [isOfflineDropdownOpen, setIsOfflineDropdownOpen] = useState(false);
   const offlineDropdownRef = useRef<HTMLDivElement>(null);
@@ -817,6 +818,7 @@ export default function TeamsPage() {
     if (!id || !data.members[id]) return false;
     if (unassignedFilterJobs.length > 0 && !unassignedFilterJobs.includes(data.members[id]?.job)) return false;
     if (unassignedSearch && !data.members[id]?.name?.toLowerCase().includes(unassignedSearch.toLowerCase())) return false;
+    if (unassignedPowerFilter !== "" && (data.members[id]?.power || 0) < unassignedPowerFilter) return false;
     return true;
   });
 
@@ -1030,6 +1032,15 @@ export default function TeamsPage() {
                 </div>
                 <div className="space-y-2">
                   <input type="text" placeholder="ค้นหาชื่อ..." value={unassignedSearch} onChange={e => setUnassignedSearch(e.target.value)} className="w-full bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-800 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#4D73CD]" />
+                  <div className="flex gap-1.5">
+                    <input type="number" placeholder="พลังขั้นต่ำ..." value={unassignedPowerFilter} onChange={e => setUnassignedPowerFilter(e.target.value ? Number(e.target.value) : "")} className="w-full bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] rounded-lg px-2.5 py-1 text-xs font-medium text-slate-800 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-[#4D73CD]" />
+                    <select value={unassignedPowerFilter} onChange={e => setUnassignedPowerFilter(e.target.value ? Number(e.target.value) : "")} className="w-16 shrink-0 bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] rounded-lg px-1 text-[10px] font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-[#4D73CD]">
+                      <option value="">ทั้งหมด</option>
+                      <option value="40000">40k+</option>
+                      <option value="50000">50k+</option>
+                      <option value="60000">60k+</option>
+                    </select>
+                  </div>
                   <div className="relative" ref={jobFilterDropdownRef}>
                     <button type="button" onClick={() => setIsJobFilterOpen(prev => !prev)} className={`w-full flex items-center justify-between bg-white dark:bg-[#272C38] border ${unassignedFilterJobs.length > 0 ? "border-[#3B66D1] dark:border-[#4D73CD]" : "border-slate-200 dark:border-[#2D3342]"} rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 dark:text-white outline-none cursor-pointer hover:bg-slate-50 dark:hover:bg-[#2A2F3E]`}>
                       <div className="flex items-center gap-1.5 truncate">{unassignedFilterJobs.length === 0 ? <span className="text-slate-600 dark:text-[#8B93A7]">ทุกอาชีพ ({data.columns["unassigned"].memberIds.length})</span> : <span className="truncate text-[#0b3d63] dark:text-[#82A0F5]">{unassignedFilterJobs.length === 1 ? unassignedFilterJobs[0] : `${unassignedFilterJobs.length} อาชีพ`}</span>}</div>

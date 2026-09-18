@@ -1226,7 +1226,11 @@ export default function TeamsPage() {
                             <div className="absolute z-50 w-full mt-2 bg-theme-panel border border-theme-border rounded-lg shadow-xl max-h-60 overflow-y-auto">
                               {Object.values(data.members).filter(m => !data.offlineIds.includes(m.id)).filter(m => m.name.toLowerCase().includes(offlineSearch.toLowerCase()) || m.job.toLowerCase().includes(offlineSearch.toLowerCase())).sort((a, b) => a.name.localeCompare(b.name)).map(m => (
                                 <div key={m.id} className="px-4 py-2.5 hover:bg-theme-bg cursor-pointer text-sm font-bold text-theme-text flex justify-between items-center border-b border-theme-divider last:border-0" onClick={() => { markAsOffline(m.id); setOfflineSearch(""); setIsOfflineDropdownOpen(false); }}>
-                                  <span>{m.name}</span><span className="text-[10px] text-white px-2 py-0.5 rounded-full" style={{ backgroundColor: JOB_COLORS[m.job] || "#475569" }}>{m.job}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span>{m.name}</span>
+                                    {m.power > 0 && <span className="text-xs text-amber-500">{m.power.toLocaleString()}</span>}
+                                  </div>
+                                  <span className="text-[10px] text-white px-2 py-0.5 rounded-full" style={{ backgroundColor: JOB_COLORS[m.job] || "#475569" }}>{m.job}</span>
                                 </div>
                               ))}
                             </div>
@@ -1242,6 +1246,7 @@ export default function TeamsPage() {
                               <div key={id} className="flex items-center gap-2 bg-theme-bg/80 border border-theme-border rounded-full py-1.5 pl-3 pr-1.5 shadow-sm">
                                 <span className="text-sm font-bold text-theme-text">{m.name}</span>
                                 <span className="text-[10px] font-bold text-white px-2 py-0.5 rounded-full" style={{ backgroundColor: JOB_COLORS[m.job] || "#475569" }}>{m.job}</span>
+                                {m.power > 0 && <span className="text-[11px] font-bold text-amber-500">{m.power.toLocaleString()}</span>}
                                 <button onClick={() => removeFromOffline(id)} className="p-1 hover:bg-theme-danger hover:text-white rounded-full text-theme-textSecondary transition-colors"><X size={14} /></button>
                               </div>
                             );

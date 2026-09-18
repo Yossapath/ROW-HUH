@@ -89,6 +89,8 @@ export default function LogPage() {
   const [queuesLoading, setQueuesLoading] = useState(false);
   const [queuesFetched, setQueuesFetched] = useState(false);
 
+  const [rosterMembers, setRosterMembers] = useState<{name:string, power?:number}[]>([]);
+
   // ── Fetch on tab switch ──────────────────────────────────────
   useEffect(() => {
     if (activeTab === 0 && isAdmin && !logsFetched) {
@@ -104,9 +106,22 @@ export default function LogPage() {
   useEffect(() => {
     if (activeTab === 1 && !leavesFetched) {
       setLeavesLoading(true);
-      fetch("/api/leave?type=all")
-        .then((r) => r.json())
-        .then((d) => { setLeaves(d.data ?? []); setLeavesFetched(true); })
+      Promise.all([
+        fetch("/api/leave?type=all").then((r) => r.json()),
+        fetch("/api/roster").then((r) => r.json())
+      ])
+        .then(([leavesRes, rosterRes]) => {
+          setLeaves(leavesRes.data ?? []);
+          setLeavesFetched(true);
+          
+          if (rosterRes.data) {
+            const members: {name:string, power?:number}[] = [];
+            Object.values(rosterRes.data as Record<string, {name:string, power?:number}[]>).forEach(arr => {
+              if (Array.isArray(arr)) arr.forEach(m => members.push({ name: m.name, power: m.power }));
+            });
+            setRosterMembers(members);
+          }
+        })
         .catch(() => setLeaves([]))
         .finally(() => setLeavesLoading(false));
     }
@@ -442,33 +457,39 @@ export default function LogPage() {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 dark:divide-[#1e3550]">
-                            {targetList.map((leave, idx) => (
-                              <tr key={leave.id} className="hover:bg-slate-50 dark:hover:bg-[#323847] transition-colors">
-                                <td className="px-4 py-3 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
-                                <td className="px-4 py-3 font-semibold text-slate-700 dark:text-white">{leave.name}</td>
-                                <td className="px-4 py-3 text-slate-600 dark:text-white">{leave.day ?? "—"}</td>
-                                <td className="px-4 py-3 text-slate-500 dark:text-[#8B93A7] max-w-xs truncate" title={leave.reason}>
-                                  {leave.reason ?? "—"}
-                                </td>
-                                <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
-                                  {formatDateOnly(leave.timestamp)}
-                                </td>
-                                <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
-                                  {formatTimeOnly(leave.timestamp)}
-                                </td>
-                                {isAdmin && (
-                                  <td className="px-4 py-3 text-center">
-                                    <button
-                                      onClick={() => handleDeleteLeave(leave.id)}
-                                      className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors"
-                                      title="ลบรายการ"
-                                    >
-                                      <Trash2 size={15} />
-                                    </button>
+                              {targetList.map((leave, idx) => {
+                                const power = rosterMembers.find(m => m.name === leave.name)?.power;
+                                return (
+                                <tr key={leave.id} className="hover:bg-slate-50 dark:hover:bg-[#323847] transition-colors">
+                                  <td className="px-4 py-3 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
+                                  <td className="px-4 py-3 font-semibold text-slate-700 dark:text-white">
+                                    <div className="flex items-center gap-2">
+                                      <span>{leave.name}</span>
+                                      {(power && power > 0) ? <span className="text-[11px] text-amber-500 font-bold">{power.toLocaleString()}</span> : null}
+                                    </div>
                                   </td>
-                                )}
-                              </tr>
-                            ))}
+                                  <td className="px-4 py-3 text-slate-600 dark:text-white">
+                                    {leave.job ? <span className="text-[11px] text-white px-2 py-0.5 rounded-full font-bold" style={{ backgroundColor: JOB_COLORS[leave.job] || "#475569" }}>{leave.job}</span> : leave.day ?? "—"}
+                                  </td>
+                                  <td className="px-4 py-3 text-slate-500 dark:text-[#8B93A7] max-w-xs truncate" title={leave.reason}>
+                                    {leave.reason ?? "—"}
+                                  </td>
+                                  <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
+                                    {formatDateOnly(leave.timestamp)}
+                                  </td>
+                                  <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
+                                    {formatTimeOnly(leave.timestamp)}
+                                  </td>
+                                  {isAdmin && (
+                                    <td className="px-4 py-3 text-right">
+                                      <button onClick={() => handleDeleteLeave(leave.id)} className="text-red-400 hover:text-red-500 p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </td>
+                                  )}
+                                </tr>
+                                )
+                              })}
                           </tbody>
                         </table>
                       </div>

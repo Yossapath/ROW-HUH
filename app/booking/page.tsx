@@ -669,6 +669,15 @@ export default function BookingPage() {
                               />
                               {q.job}
                             </span>
+                            {(q.power && q.power > 0) ? (
+                              <>
+                                <span className="text-slate-300 dark:text-[#4B5563] mx-1">|</span>
+                                <span className="text-xs text-slate-400 dark:text-[#8B93A7] font-medium">power :</span>
+                                <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                                  {q.power.toLocaleString()}
+                                </span>
+                              </>
+                            ) : null}
                           </div>
 
                           {/* Round badge */}

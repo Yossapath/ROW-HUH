@@ -120,12 +120,19 @@ export function QueueBoard({ queueItems, teams = [], isLoading, onRefresh, onAss
                     </span>
 
                     {/* Job Badge */}
-                    <span
-                      className="text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0"
-                      style={{ backgroundColor: jc + "22", color: jc, border: `1px solid ${jc}44` }}
-                    >
-                      {q.job}
-                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span
+                        className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: jc + "22", color: jc, border: `1px solid ${jc}44` }}
+                      >
+                        {q.job}
+                      </span>
+                      {(q.power && q.power > 0) ? (
+                        <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/40">
+                          {q.power.toLocaleString()}
+                        </span>
+                      ) : null}
+                    </div>
 
                     {/* Round Badge */}
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium shrink-0 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">

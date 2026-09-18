@@ -5,6 +5,7 @@ import { CalendarOff, Trash2, Calendar } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import type { LeaveRecord } from "@/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { JOB_COLORS } from "@/lib/utils";
 
 type WarDay = "อังคาร" | "พฤหัสบดี" | "อาทิตย์";
 
@@ -34,7 +35,7 @@ export default function LeavePage() {
   const user = useAuthStore((s) => s.user);
   const isAdmin = user?.role === "admin" || user?.role === "owner";
 
-  const [rosterMembers, setRosterMembers] = useState<{ name: string; job: string }[]>([]);
+  const [rosterMembers, setRosterMembers] = useState<{ name: string; job: string; power?: number }[]>([]);
   const [name, setName] = useState("");
   const [job, setJob] = useState("Priest");
   const [leaveDay, setLeaveDay] = useState<WarDay>("อังคาร");
@@ -52,8 +53,7 @@ export default function LeavePage() {
       const json = await res.json();
       return json.data ?? json;
     },
-    staleTime: 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5,
   });
 
   // Load leaves with React Query — deduplicates in-flight and mounts
@@ -66,18 +66,17 @@ export default function LeavePage() {
       const arr: LeaveRecord[] = Array.isArray(data) ? data : [];
       return arr.sort((a, b) => b.timestamp - a.timestamp);
     },
-    staleTime: 30 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
   });
 
   const allRecords = leavesData ?? [];
 
   useEffect(() => {
     if (rosterData && typeof rosterData === "object") {
-      const members: { name: string; job: string }[] = [];
-      for (const [j, arr] of Object.entries(rosterData as Record<string, { name: string }[]>)) {
+      const members: { name: string; job: string; power?: number }[] = [];
+      for (const [j, arr] of Object.entries(rosterData as Record<string, { name: string; power?: number }[]>)) {
         if (Array.isArray(arr)) {
-          for (const m of arr) members.push({ name: m.name, job: j });
+          for (const m of arr) members.push({ name: m.name, job: j, power: m.power });
         }
       }
       setRosterMembers(members.sort((a, b) => a.name.localeCompare(b.name)));
@@ -280,6 +279,7 @@ export default function LeavePage() {
                 {allRecords.map((rec) => {
                   const dayName = rec.day || getDayName(rec.date ?? "");
                   const isDeleting = deletingId === rec.id;
+                  const power = rosterMembers.find(m => m.name === rec.name)?.power;
                   return (
                     <tr key={rec.id} className="hover:bg-slate-50 dark:hover:bg-[#2A2F3E] transition-colors">
                       <td className="px-5 py-3.5 font-semibold text-slate-700 dark:text-white whitespace-nowrap">
@@ -290,10 +290,15 @@ export default function LeavePage() {
                           {dayName}
                         </span>
                       </td>
-                      <td className="px-5 py-3.5 font-bold text-slate-800 dark:text-white">{rec.name}</td>
+                      <td className="px-5 py-3.5 font-bold text-slate-800 dark:text-white">
+                        <div className="flex items-center gap-2">
+                          <span>{rec.name}</span>
+                          {(power && power > 0) ? <span className="text-xs text-amber-500">{power.toLocaleString()}</span> : null}
+                        </div>
+                      </td>
                       <td className="px-5 py-3.5">
                         {rec.job
-                          ? <span className="px-2 py-0.5 bg-slate-100 dark:bg-[#333333] text-slate-600 dark:text-white rounded text-xs font-semibold border border-slate-200 dark:border-[#2D3342]">{rec.job}</span>
+                          ? <span className="px-2 py-0.5 text-white rounded text-xs font-semibold" style={{ backgroundColor: JOB_COLORS[rec.job] || "#475569" }}>{rec.job}</span>
                           : <span className="text-slate-300 dark:text-slate-600">—</span>}
                       </td>
                       <td className="px-5 py-3.5 text-slate-500 text-xs">{rec.name}</td>

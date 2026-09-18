@@ -98,12 +98,12 @@ export default function DungeonPage() {
         isClosed: false,
       };
 
-      const rosterMembers: { name: string; job: string }[] = [];
+      const rosterMembers: { name: string; job: string; power?: number }[] = [];
       const sourceRoster = rosterData || (jsonR?.ok ? jsonR.data : null);
       if (sourceRoster) {
-        for (const [job, arr] of Object.entries(sourceRoster as Record<string, { name: string }[]>)) {
+        for (const [job, arr] of Object.entries(sourceRoster as Record<string, { name: string; power?: number }[]>)) {
           for (const m of arr) {
-            rosterMembers.push({ name: m.name, job });
+            rosterMembers.push({ name: m.name, job, power: m.power });
           }
         }
       }
@@ -116,7 +116,7 @@ export default function DungeonPage() {
 
   const teams = dungeonData?.teams ?? [];
   const queueItems = dungeonData?.queueItems ?? [];
-  const rosterMembers = useMemo<{ name: string; job: string }[]>(
+  const rosterMembers = useMemo<{ name: string; job: string; power?: number }[]>(
     () => dungeonData?.rosterMembers ?? [],
     [dungeonData?.rosterMembers]
   );
@@ -449,7 +449,10 @@ export default function DungeonPage() {
                             setFormJob(m.job);
                           }}
                         >
-                          <span className="font-medium">{m.name}</span>
+                          <span className="font-medium flex items-center gap-2">
+                            {m.name}
+                            {((m as any).power && (m as any).power > 0) ? <span className="text-[11px] text-amber-500 font-bold">{((m as any).power).toLocaleString()}</span> : null}
+                          </span>
                           <span className="text-xs opacity-60 flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: JOB_COLORS[m.job] || '#888' }} />
                             {m.job}

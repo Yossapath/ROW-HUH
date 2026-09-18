@@ -11,7 +11,7 @@ import { Droppable } from "@hello-pangea/dnd";
 interface TeamBoardProps {
   teams: DungeonTeamResource[];
   isLoading: boolean;
-  rosterMembers: { name: string; job: string }[];
+  rosterMembers: { name: string; job: string; power?: number }[];
 }
 
 export function TeamBoard({ teams, isLoading, rosterMembers }: TeamBoardProps) {
@@ -141,12 +141,15 @@ function TeamCard({
             <div className="text-xs text-slate-400 italic py-1">ยังไม่มีคนแบก</div>
           ) : (
             team.carriers.map((c, i) => {
-              const job = rosterMembers.find((m) => m.name === c)?.job || "Unknown";
+              const m = rosterMembers.find((m) => m.name === c);
+              const job = m?.job || "Unknown";
+              const power = (m as any)?.power;
               return (
                 <div key={i} className="flex justify-between items-center text-xs bg-slate-50 dark:bg-[#1E212B] px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800">
                   <span className="font-semibold flex items-center gap-1.5 text-slate-700 dark:text-slate-200">
                     <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: JOB_COLORS[job] || "#888" }} />
                     {c}
+                    {(power && power > 0) ? <span className="ml-1 text-[10px] text-amber-500 font-bold">{power.toLocaleString()}</span> : null}
                   </span>
                   <div className="flex items-center gap-1">
                     <span className="text-[10px] text-slate-500 dark:text-slate-400">{job}</span>
@@ -182,7 +185,10 @@ function TeamCard({
               <div id={`cd-${index}`} className="hidden absolute z-50 w-full mt-0.5 bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] rounded-lg shadow-lg max-h-36 overflow-auto">
                 {rosterMembers.filter(m => newCarrier === "" || m.name.toLowerCase().includes(newCarrier.toLowerCase())).filter(m => !(team.carriers || []).includes(m.name)).map(m => (
                   <div key={m.name} className="px-3 py-1 text-xs cursor-pointer hover:bg-slate-100 dark:hover:bg-[#323847] flex justify-between items-center" onClick={() => setNewCarrier(m.name)}>
-                    <span className="font-medium">{m.name}</span>
+                    <span className="font-medium flex items-center gap-1.5">
+                      {m.name}
+                      {((m as any).power && (m as any).power > 0) ? <span className="text-[10px] text-amber-500 font-bold">{((m as any).power).toLocaleString()}</span> : null}
+                    </span>
                     <span className="text-[10px] text-slate-400 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: JOB_COLORS[m.job] || "#888" }} />{m.job}
                     </span>

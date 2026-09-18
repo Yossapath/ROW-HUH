@@ -647,7 +647,7 @@ export default function TeamsPage() {
     setIsAutoModalOpen(false);
   };
 
-  const handleConfirmClearAll = () => {
+  const handleConfirmClearAll = (mode: "main" | "sub" | "all") => {
     if (!data || isClearing) return;
     setIsClearing(true);
     try {
@@ -655,6 +655,12 @@ export default function TeamsPage() {
       const unassignedIds = [...newData.columns["unassigned"].memberIds] as string[];
       Object.keys(newData.columns).forEach(colId => {
         if (colId === "unassigned" || newData.columns[colId].locked) return;
+        
+        // Check if we should clear this column based on mode
+        const colType = newData.columns[colId].type;
+        if (mode === "main" && colType !== "main") return;
+        if (mode === "sub" && colType !== "sub") return;
+
         newData.columns[colId].memberIds.forEach(id => { if (id) unassignedIds.push(id); });
         newData.columns[colId] = { ...newData.columns[colId], memberIds: [null, null, null, null, null] };
       });
@@ -1284,29 +1290,34 @@ export default function TeamsPage() {
                 <AlertCircle size={32} />
               </div>
               <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                ยืนยันการล้างทีม?
+                เลือกล้างทีม
               </h3>
-              <p className="text-sm text-slate-600 dark:text-[#8B93A7] leading-relaxed">
-                สมาชิกทั้งหมดจะถูกนำออกจากการจัดทีม คุณต้องการดำเนินการต่อหรือไม่?
+              <p className="text-sm text-slate-600 dark:text-[#8B93A7] leading-relaxed mb-4">
+                เลือกโซนที่คุณต้องการล้างทีม สมาชิกในโซนที่เลือกจะถูกนำกลับไปที่รายชื่อรอจัดทีม
               </p>
+              <div className="flex flex-col gap-2 w-full">
+                <button type="button" disabled={isClearing} onClick={() => handleConfirmClearAll("main")} className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 transition-colors shadow-sm flex items-center justify-center gap-2">
+                  {isClearing ? <Loader2 size={16} className="animate-spin" /> : null}
+                  ล้างเฉพาะสนามหลัก
+                </button>
+                <button type="button" disabled={isClearing} onClick={() => handleConfirmClearAll("sub")} className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 transition-colors shadow-sm flex items-center justify-center gap-2">
+                  {isClearing ? <Loader2 size={16} className="animate-spin" /> : null}
+                  ล้างเฉพาะสนามรอง
+                </button>
+                <button type="button" disabled={isClearing} onClick={() => handleConfirmClearAll("all")} className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:opacity-50 transition-colors shadow-sm flex items-center justify-center gap-2 mt-2">
+                  {isClearing ? <Loader2 size={16} className="animate-spin" /> : null}
+                  ล้างทั้งหมด (ทุกสนาม)
+                </button>
+              </div>
             </div>
-            <div className="p-4 bg-slate-50 dark:bg-[#272C38]/50 border-t border-slate-100 dark:border-[#2D3342] flex items-center justify-end gap-3">
+            <div className="p-4 bg-slate-50 dark:bg-[#272C38]/50 border-t border-slate-100 dark:border-[#2D3342] flex items-center justify-center">
               <button
                 type="button"
                 disabled={isClearing}
                 onClick={() => setIsClearConfirmOpen(false)}
-                className="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#343B4B] transition-colors"
+                className="px-6 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#343B4B] transition-colors"
               >
                 ยกเลิก
-              </button>
-              <button
-                type="button"
-                disabled={isClearing}
-                onClick={handleConfirmClearAll}
-                className="px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:opacity-50 transition-colors shadow-sm flex items-center gap-1.5"
-              >
-                {isClearing ? <Loader2 size={16} className="animate-spin" /> : null}
-                {isClearing ? "กำลังล้างทีม..." : "ยืนยันล้างทีม"}
               </button>
             </div>
           </div>

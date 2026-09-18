@@ -7,7 +7,7 @@ export const teamColumnSchema = z.object({
   id: z.string().trim().min(1).max(50),
   title: z.string().trim().max(100),
   type: z.enum(["main", "sub", "unassigned"]),
-  memberIds: z.array(teamMemberSchema).max(100),
+  memberIds: z.array(teamMemberSchema).max(300),
   locked: z.boolean().optional(),
 });
 

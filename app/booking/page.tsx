@@ -88,30 +88,35 @@ export default function BookingPage() {
   // Form fields
   const [name, setName] = useState("");
   const [job, setJob] = useState(JOB_LIST[0]);
+  const [rosterMembers, setRosterMembers] = useState<{name:string, job: string, power?:number}[]>([]);
 
   // Auto set name from user
+  useEffect(() => {
+    // Always fetch roster to display power in the queue
+    fetch("/api/roster")
+      .then(res => res.json())
+      .then(json => {
+        if (json.ok && json.data) {
+          const members: {name:string, job: string, power?:number}[] = [];
+          Object.entries(json.data as Record<string, {name:string, power?:number}[]>).forEach(([jobKey, arr]) => {
+            if (Array.isArray(arr)) arr.forEach(m => members.push({ name: m.name, job: jobKey, power: m.power }));
+          });
+          setRosterMembers(members);
+        }
+      }).catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (user?.gameUsername) {
       setName(user.gameUsername);
       if (user.class && JOB_LIST.includes(user.class)) {
         setJob(user.class);
-      } else {
-        // Fallback: fetch roster only if job class is missing from user session
-        fetch("/api/roster")
-          .then(res => res.json())
-          .then(json => {
-            if (json.ok && json.data) {
-              for (const [jobKey, arr] of Object.entries(json.data as Record<string, {name:string}[]>)) {
-                if (arr.some(m => m.name === user.gameUsername)) {
-                  setJob(jobKey);
-                  break;
-                }
-              }
-            }
-          }).catch(() => {});
+      } else if (rosterMembers.length > 0) {
+        const found = rosterMembers.find(m => m.name === user.gameUsername);
+        if (found && JOB_LIST.includes(found.job as any)) setJob(found.job as any);
       }
     }
-  }, [user]);
+  }, [user, rosterMembers]);
 
   // Submission state
   const [loading, setLoading] = useState(false);
@@ -625,6 +630,7 @@ export default function BookingPage() {
                   const jobColor = JOB_COLORS[q.job] ?? "#888";
                   const isMe = !!user?.gameUsername && user.gameUsername.trim().toLowerCase() === q.name.trim().toLowerCase();
                   const isSkipped = q.status === "skipped";
+                  const realPower = rosterMembers.find(m => m.name === q.name)?.power || q.power;
 
                   return (
                     <div
@@ -641,7 +647,7 @@ export default function BookingPage() {
                     >
                       {/* Number */}
                       <span className={`font-bold text-sm w-7 shrink-0 ${isMe ? "text-blue-600 dark:text-white" : "text-slate-400 dark:text-[#6B7280]"}`}>
-                        {idx}.
+                        #{idx}
                       </span>
 
                       {/* Main info */}
@@ -669,12 +675,12 @@ export default function BookingPage() {
                               />
                               {q.job}
                             </span>
-                            {(q.power && q.power > 0) ? (
+                            {(realPower && realPower > 0) ? (
                               <>
                                 <span className="text-slate-300 dark:text-[#4B5563] mx-1">|</span>
                                 <span className="text-xs text-slate-400 dark:text-[#8B93A7] font-medium">power :</span>
                                 <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                                  {q.power.toLocaleString()}
+                                  {realPower.toLocaleString()}
                                 </span>
                               </>
                             ) : null}
@@ -701,9 +707,9 @@ export default function BookingPage() {
                       
                       {/* Power + timestamp (right aligned on desktop) */}
                       <div className="flex items-center gap-3 shrink-0 sm:flex-col sm:items-end sm:gap-1">
-                        {q.power > 0 && (
+                        {realPower > 0 && (
                           <span className="text-xs text-slate-500 dark:text-[#8B93A7] bg-slate-100 dark:bg-[#232733] px-2 py-0.5 rounded-lg border border-transparent dark:border-[#2D3342]">
-                            พลัง <span className="font-bold text-slate-700 dark:text-white">{q.power.toLocaleString()}</span>
+                            พลัง <span className="font-bold text-slate-700 dark:text-white">{realPower.toLocaleString()}</span>
                           </span>
                         )}
                         <span className="text-xs text-slate-400 dark:text-[#6B7280] flex items-center gap-1">

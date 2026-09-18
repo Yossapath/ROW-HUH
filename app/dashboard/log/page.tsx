@@ -445,31 +445,34 @@ export default function LogPage() {
                       </div>
                       <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38]">
                         <table className="w-full text-sm">
-                          <thead className="bg-slate-50 dark:bg-[#2A2F3E] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide border-b border-slate-200 dark:border-[#2D3342]">
-                            <tr>
-                              <th className="px-4 py-3 text-center w-10">#</th>
-                              <th className="px-4 py-3 text-left">ชื่อ</th>
-                              <th className="px-4 py-3 text-left">วัน</th>
-                              <th className="px-4 py-3 text-left">เหตุผล</th>
-                              <th className="px-4 py-3 text-left whitespace-nowrap">วันที่แจ้ง</th>
-                              <th className="px-4 py-3 text-left whitespace-nowrap">เวลาแจ้ง</th>
-                              {isAdmin && <th className="px-4 py-3 text-center w-16">ลบ</th>}
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 dark:divide-[#1e3550]">
+                            <thead className="bg-slate-50 dark:bg-[#2A2F3E] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide border-b border-slate-200 dark:border-[#2D3342]">
+                              <tr>
+                                <th className="px-4 py-3 text-center w-10">#</th>
+                                <th className="px-4 py-3 text-left">ชื่อ</th>
+                                <th className="px-4 py-3 text-left">ค่าพลัง</th>
+                                <th className="px-4 py-3 text-left">อาชีพ</th>
+                                <th className="px-4 py-3 text-left">วัน</th>
+                                <th className="px-4 py-3 text-left">เหตุผล</th>
+                                <th className="px-4 py-3 text-left whitespace-nowrap">วันที่แจ้ง</th>
+                                <th className="px-4 py-3 text-left whitespace-nowrap">เวลาแจ้ง</th>
+                                {isAdmin && <th className="px-4 py-3 text-center w-16">ลบ</th>}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-[#1e3550]">
                               {targetList.map((leave, idx) => {
                                 const power = rosterMembers.find(m => m.name === leave.name)?.power;
                                 return (
                                 <tr key={leave.id} className="hover:bg-slate-50 dark:hover:bg-[#323847] transition-colors">
                                   <td className="px-4 py-3 text-center text-slate-400 font-mono text-xs">{idx + 1}</td>
-                                  <td className="px-4 py-3 font-semibold text-slate-700 dark:text-white">
-                                    <div className="flex items-center gap-2">
-                                      <span>{leave.name}</span>
-                                      {(power && power > 0) ? <span className="text-[11px] text-amber-500 font-bold">{power.toLocaleString()}</span> : null}
-                                    </div>
+                                  <td className="px-4 py-3 font-semibold text-slate-700 dark:text-white">{leave.name}</td>
+                                  <td className="px-4 py-3">
+                                    {(power && power > 0) ? <span className="text-xs font-bold text-amber-500">{power.toLocaleString()}</span> : <span className="text-slate-300 dark:text-slate-600">—</span>}
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    {leave.job ? <span className="text-[11px] text-white px-2 py-0.5 rounded-full font-bold" style={{ backgroundColor: JOB_COLORS[leave.job] || "#475569" }}>{leave.job}</span> : <span className="text-slate-300 dark:text-slate-600">—</span>}
                                   </td>
                                   <td className="px-4 py-3 text-slate-600 dark:text-white">
-                                    {leave.job ? <span className="text-[11px] text-white px-2 py-0.5 rounded-full font-bold" style={{ backgroundColor: JOB_COLORS[leave.job] || "#475569" }}>{leave.job}</span> : leave.day ?? "—"}
+                                    {leave.day ?? "—"}
                                   </td>
                                   <td className="px-4 py-3 text-slate-500 dark:text-[#8B93A7] max-w-xs truncate" title={leave.reason}>
                                     {leave.reason ?? "—"}

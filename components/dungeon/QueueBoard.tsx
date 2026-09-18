@@ -11,12 +11,13 @@ import { Droppable, Draggable } from "@hello-pangea/dnd";
 interface QueueBoardProps {
   queueItems: DungeonQueueItem[];
   teams?: DungeonTeamResource[];
+  rosterMembers?: { name: string; power?: number }[];
   isLoading: boolean;
   onRefresh?: () => void;
   onAssign?: (teamId: string, queueItemId: string) => void;
 }
 
-export function QueueBoard({ queueItems, teams = [], isLoading, onRefresh, onAssign }: QueueBoardProps) {
+export function QueueBoard({ queueItems, teams = [], rosterMembers = [], isLoading, onRefresh, onAssign }: QueueBoardProps) {
   const [search, setSearch] = useState("");
   const user = useAuthStore((s) => s.user);
   const isAdmin = user?.role === "admin" || user?.role === "owner";
@@ -127,11 +128,14 @@ export function QueueBoard({ queueItems, teams = [], isLoading, onRefresh, onAss
                       >
                         {q.job}
                       </span>
-                      {(q.power && q.power > 0) ? (
-                        <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/40">
-                          {q.power.toLocaleString()}
-                        </span>
-                      ) : null}
+                      {(() => {
+                        const realPower = rosterMembers?.find(m => m.name === q.name)?.power || q.power;
+                        return (realPower && realPower > 0) ? (
+                          <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/40">
+                            {realPower.toLocaleString()}
+                          </span>
+                        ) : null;
+                      })()}
                     </div>
 
                     {/* Round Badge */}

@@ -269,6 +269,7 @@ export default function LeavePage() {
                   <th className="px-5 py-3 text-left">วันที่ลา</th>
                   <th className="px-5 py-3 text-left">วัน</th>
                   <th className="px-5 py-3 text-left">ชื่อตัวละคร</th>
+                  <th className="px-5 py-3 text-left">ค่าพลัง</th>
                   <th className="px-5 py-3 text-left">อาชีพ</th>
                   <th className="px-5 py-3 text-left">ผู้แจ้งลา</th>
                   <th className="px-5 py-3 text-left">เหตุผล</th>
@@ -291,10 +292,10 @@ export default function LeavePage() {
                         </span>
                       </td>
                       <td className="px-5 py-3.5 font-bold text-slate-800 dark:text-white">
-                        <div className="flex items-center gap-2">
-                          <span>{rec.name}</span>
-                          {(power && power > 0) ? <span className="text-xs text-amber-500">{power.toLocaleString()}</span> : null}
-                        </div>
+                        {rec.name}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        {(power && power > 0) ? <span className="text-xs font-bold text-amber-500">{power.toLocaleString()}</span> : <span className="text-slate-300 dark:text-slate-600">—</span>}
                       </td>
                       <td className="px-5 py-3.5">
                         {rec.job

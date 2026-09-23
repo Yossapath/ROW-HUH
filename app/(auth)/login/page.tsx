@@ -71,7 +71,7 @@ export default function LoginPage() {
           <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-[#0b3d63] text-white shadow-lg">
             <Layers size={40} />
           </div>
-          <h1 className="text-5xl font-black tracking-tight text-slate-900 dark:text-white mb-2">TOPGUILD</h1>
+          <h1 className="text-5xl font-black tracking-tight text-slate-900 dark:text-white mb-2">HUH?</h1>
           <h2 className="text-4xl font-black text-blue-600 dark:text-white leading-tight">
             RAGNAROK <br />
             THE NEW WORLD

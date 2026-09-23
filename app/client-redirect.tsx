@@ -40,7 +40,7 @@ export default function ClientRedirect() {
         <div className="w-16 h-16 rounded-2xl bg-brand-primary/20 border border-brand-primary/40 flex items-center justify-center text-brand-secondary mb-4">
           <Shield className="w-8 h-8" />
         </div>
-        <h1 className="text-2xl font-bold text-theme-textHi mb-2">TopGuild</h1>
+        <h1 className="text-2xl font-bold text-theme-textHi mb-2">HUH?</h1>
         <p className="text-sm text-theme-textLo mb-6">
           ระบบจัดการสมาชิกกิลด์ จัดทีมสนามหลัก-สนามรอง จองคิวดันเจี้ยน
         </p>

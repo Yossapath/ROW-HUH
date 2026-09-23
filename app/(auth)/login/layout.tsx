@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://row-topguild.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://row-huh.vercel.app";
 
 export const metadata: Metadata = {
   title: "เข้าสู่ระบบ",
-  description: "ระบบจัดการกิลด์ TopGuild เข้าสู่ระบบสำหรับสมาชิกและผู้ดูแล",
+  description: "ระบบจัดการกิลด์ HUH? เข้าสู่ระบบสำหรับสมาชิกและผู้ดูแล",
   openGraph: {
-    title: "เข้าสู่ระบบ | TopGuild",
-    description: "ระบบจัดการกิลด์ TopGuild เข้าสู่ระบบสำหรับสมาชิกและผู้ดูแล",
+    title: "เข้าสู่ระบบ | HUH?",
+    description: "ระบบจัดการกิลด์ HUH? เข้าสู่ระบบสำหรับสมาชิกและผู้ดูแล",
     url: `${siteUrl}/login`,
-    siteName: "TopGuild",
+    siteName: "HUH?",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "TopGuild Login",
-        type: "image/png",
+        alt: "HUH? Login",
+        type: "image/jpeg",
       },
     ],
     locale: "th_TH",
@@ -24,9 +24,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "เข้าสู่ระบบ | TopGuild",
-    description: "ระบบจัดการกิลด์ TopGuild เข้าสู่ระบบสำหรับสมาชิกและผู้ดูแล",
-    images: ["/og-image.png"],
+    title: "เข้าสู่ระบบ | HUH?",
+    description: "ระบบจัดการกิลด์ HUH? เข้าสู่ระบบสำหรับสมาชิกและผู้ดูแล",
+    images: ["/og-image.jpg"],
   },
 };
 

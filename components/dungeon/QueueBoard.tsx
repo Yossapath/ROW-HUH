@@ -20,7 +20,7 @@ interface QueueBoardProps {
 export function QueueBoard({ queueItems, teams = [], rosterMembers = [], isLoading, onRefresh, onAssign }: QueueBoardProps) {
   const [search, setSearch] = useState("");
   const user = useAuthStore((s) => s.user);
-  const isAdmin = user?.role === "admin" || user?.role === "owner";
+  const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.role === "dev";
   const queryClient = useQueryClient();
 
   const actionMutation = useMutation({

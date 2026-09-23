@@ -65,7 +65,7 @@ const ROWS_PER_PAGE = 50;
 
 export default function LogPage() {
   const user = useAuthStore((s) => s.user);
-  const isAdmin = user?.role === "admin" || user?.role === "owner";
+  const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.role === "dev";
 
   const [activeTab, setActiveTab] = useState<0 | 1 | 2>(0);
   const [search, setSearch] = useState("");

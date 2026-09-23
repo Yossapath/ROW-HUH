@@ -56,7 +56,7 @@ function migrateToZones(savedData: any, cols: Record<string, Column>): Zone[] {
 
 export default function TeamsPage() {
   const { user } = useAuthStore();
-  const isAdmin = user?.role === "admin" || user?.role === "owner";
+  const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.role === "dev";
 
   const [data, setData] = useState<DataState | null>(null);
   const [isLoading, setIsLoading] = useState(true);

@@ -4,7 +4,7 @@
 // ============================================================
 
 // ── User / Auth ──────────────────────────────────────────────
-export type UserRole = "admin" | "owner" | "member";
+export type UserRole = "admin" | "owner" | "dev" | "member";
 
 export interface GuildUser {
   discordId: string;

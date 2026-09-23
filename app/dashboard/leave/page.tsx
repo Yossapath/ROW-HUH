@@ -33,7 +33,7 @@ function getDayName(dateStr: string): string {
 export default function LeavePage() {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
-  const isAdmin = user?.role === "admin" || user?.role === "owner";
+  const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.role === "dev";
 
   const [rosterMembers, setRosterMembers] = useState<{ name: string; job: string; power?: number }[]>([]);
   const [name, setName] = useState("");

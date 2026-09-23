@@ -38,7 +38,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const qData = snap.data() as { name?: string };
     
     // Check permission
-    const isAdmin = auth.user.role === "admin" || auth.user.role === "owner";
+    const isAdmin = auth.user.role === "admin" || auth.user.role === "owner" || auth.user.role === "dev";
     if (!isAdmin) {
       if (action !== "updateRounds" || auth.user.gameUsername !== qData.name) {
         return err("Permission denied", 403);
@@ -63,7 +63,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       // สมาชิกแก้ไขจำนวนรอบของคิว "ตัวเอง" ได้ หรือแอดมินก็แก้ได้
       const auth = await requireAuth();
       if (auth.errorResponse) return auth.errorResponse;
-      const isAdminCheck = auth.user.role === "admin" || auth.user.role === "owner";
+      const isAdminCheck = auth.user.role === "admin" || auth.user.role === "owner" || auth.user.role === "dev";
       if (!isAdminCheck && (!auth.user.gameUsername || auth.user.gameUsername.trim() !== (data.name ?? "").trim())) {
         return err("คุณไม่มีสิทธิ์แก้ไขคิวนี้", 403);
       }
@@ -212,7 +212,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     const qData = snap.data() as any;
     
     // Check permission
-    const isAdmin = auth.user.role === "admin" || auth.user.role === "owner";
+    const isAdmin = auth.user.role === "admin" || auth.user.role === "owner" || auth.user.role === "dev";
     if (!isAdmin && auth.user.gameUsername !== qData.name) {
       return err("Permission denied", 403);
     }

@@ -17,7 +17,7 @@ interface TeamBoardProps {
 export function TeamBoard({ teams, isLoading, rosterMembers }: TeamBoardProps) {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
-  const isAdmin = user?.role === "admin" || user?.role === "owner";
+  const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.role === "dev";
 
   const actionMutation = useMutation({
     mutationFn: async ({ teamId, action, payload }: { teamId: string; action: string; payload?: any }) => {

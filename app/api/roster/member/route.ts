@@ -118,14 +118,14 @@ export async function PUT(req: Request) {
         }
       }
 
-      memberObj.role = (user.role === "admin" || user.role === "owner") && warRole ? warRole : existingWarRole;
+      memberObj.role = (user.role === "admin" || user.role === "owner" || user.role === "dev") && warRole ? warRole : existingWarRole;
 
       if (!rosterData[job]) rosterData[job] = [];
       rosterData[job].push(memberObj);
 
       if (userDoc.exists) {
         const updateData: any = { gameUsername: name, class: job, power: Number(power) };
-        if ((user.role === "admin" || user.role === "owner") && warRole) {
+        if ((user.role === "admin" || user.role === "owner" || user.role === "dev") && warRole) {
           updateData.warRole = warRole;
         }
         t.update(userDocRef, updateData);

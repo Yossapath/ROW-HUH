@@ -101,7 +101,7 @@ function flattenRoster(roster: Record<string, { name: string; power?: number }[]
 export default function AttendancePage() {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
-  const isAdmin = user?.role === "admin" || user?.role === "owner";
+  const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.role === "dev";
 
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedDay, setSelectedDay] = useState<WarDay | "">("");

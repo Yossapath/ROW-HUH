@@ -29,7 +29,7 @@ import { QueueBoard } from "@/components/dungeon/QueueBoard";
 // ────────────────────────────────────────────────────────────
 export default function DungeonPage() {
   const user = useAuthStore((s) => s.user);
-  const isAdmin = user?.role === "admin" || user?.role === "owner";
+  const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.role === "dev";
   const queryClient = useQueryClient();
 
   const assignMutation = useMutation({

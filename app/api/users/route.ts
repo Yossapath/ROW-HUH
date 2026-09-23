@@ -62,8 +62,8 @@ export async function PUT(req: Request) {
       if (currentTargetRole === "owner") {
         return err("แอดมินไม่สามารถแก้ไขบทบาทของผู้ใช้งานระดับ Owner ได้", 403);
       }
-      if (currentTargetRole === "admin") {
-        return err("แอดมินไม่สามารถแก้ไขบทบาทของ Admin คนอื่นได้ (เฉพาะ Owner เท่านั้น)", 403);
+      if (currentTargetRole === "admin" || currentTargetRole === "dev") {
+        return err("แอดมินไม่สามารถแก้ไขบทบาทของ Admin/Dev คนอื่นได้ (เฉพาะ Owner เท่านั้น)", 403);
       }
     }
 
@@ -126,8 +126,8 @@ export async function DELETE(req: Request) {
       if (targetRole === "owner") {
         return err("แอดมินไม่สามารถลบผู้ใช้งานระดับ Owner ได้", 403);
       }
-      if (targetRole === "admin") {
-        return err("แอดมินไม่สามารถลบผู้ใช้งานระดับ Admin ได้ (เฉพาะ Owner เท่านั้น)", 403);
+      if (targetRole === "admin" || targetRole === "dev") {
+        return err("แอดมินไม่สามารถลบผู้ใช้งานระดับ Admin/Dev ได้ (เฉพาะ Owner เท่านั้น)", 403);
       }
     }
 

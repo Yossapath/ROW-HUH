@@ -94,7 +94,7 @@ export async function POST(req: Request) {
     const validData = validation.data;
 
     // 0.5 สมาชิกทั่วไปจองได้เฉพาะชื่อของตัวเอง ส่วนแอดมิน/หัวกิลด์จองแทนใครก็ได้
-    const isAdminOrOwner = auth.user.role === "admin" || auth.user.role === "owner";
+    const isAdminOrOwner = auth.user.role === "admin" || auth.user.role === "owner" || auth.user.role === "dev";
     if (!isAdminOrOwner) {
       if (!auth.user.gameUsername || auth.user.gameUsername.trim() !== validData.name.trim()) {
         return err("คุณสามารถจองคิวในชื่อของตัวเองเท่านั้น", 403);

@@ -19,7 +19,7 @@ type UserData = {
 export default function UsersPage() {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
-  const isAdmin = user?.role === "admin" || user?.role === "owner";
+  const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.role === "dev";
   const isOwner = user?.role === "owner";
 
   const { data: users = [], isLoading, isError } = useQuery<UserData[]>({
@@ -97,8 +97,8 @@ export default function UsersPage() {
 
   const sortedUsers = [...filteredUsers].sort((a, b) => {
     if (!a || !b) return 0;
-    if (a.role === "admin" && b.role !== "admin") return -1;
-    if (a.role !== "admin" && b.role === "admin") return 1;
+    if ((a.role === "admin" || a.role === "dev") && (b.role !== "admin" && b.role !== "dev")) return -1;
+      if ((a.role !== "admin" && a.role !== "dev") && (b.role === "admin" || b.role === "dev")) return 1;
     const nameA = a.gameUsername || a.discordUsername || "";
     const nameB = b.gameUsername || b.discordUsername || "";
     return nameA.localeCompare(nameB);
@@ -171,10 +171,10 @@ export default function UsersPage() {
                   </tr>
                 ) : (
                   sortedUsers.map((u, index) => (
-                    <tr key={u.discordId || `user-${index}`} className={`hover:bg-slate-50/70 dark:hover:bg-[#2A2F3E] transition-colors ${u.role === 'admin' ? 'bg-blue-50/50 dark:bg-[#3B66D1]/20' : ''}`}>
+                    <tr key={u.discordId || `user-${index}`} className={`hover:bg-slate-50/70 dark:hover:bg-[#2A2F3E] transition-colors ${(u.role === 'admin' || u.role === 'dev') ? 'bg-blue-50/50 dark:bg-[#3B66D1]/20' : ''}`}>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm text-white ${u.role === 'admin' ? 'bg-theme-warning' : 'bg-slate-400'}`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm text-white ${(u.role === 'admin' || u.role === 'dev') ? 'bg-theme-warning' : 'bg-slate-400'}`}>
                             {u.discordUsername ? u.discordUsername.charAt(0).toUpperCase() : "U"}
                           </div>
                           <span className="font-bold text-slate-800 dark:text-white">{u.discordUsername || "Unknown"}</span>
@@ -195,19 +195,19 @@ export default function UsersPage() {
                             <span className={`px-3 py-1 rounded-lg font-bold text-xs border ${
                               u.role === 'owner'
                                 ? 'bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
-                                : u.role === 'admin'
-                                ? 'bg-theme-warning/10 text-theme-warning border-theme-warning/30'
+                                : (u.role === 'admin' || u.role === 'dev')
+                                  ? 'bg-theme-warning/10 text-theme-warning border-theme-warning/30'
                                 : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-[#272C38] dark:text-white dark:border-[#2D3342]'
                             }`}>
-                              {u.role === 'owner' ? 'Owner' : u.role === 'admin' ? 'Admin' : 'Member'}
+                              {u.role === 'owner' ? 'Owner' : (u.role === 'admin' || u.role === 'dev') ? (u.role === 'dev' ? 'Dev' : 'Admin') : 'Member'}
                             </span>
-                          ) : !isOwner && (u.role === 'owner' || u.role === 'admin') ? (
+                          ) : !isOwner && (u.role === 'owner' || u.role === 'admin' || u.role === 'dev') ? (
                             <span className={`px-3 py-1 rounded-lg font-bold text-xs border ${
                               u.role === 'owner'
                                 ? 'bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
                                 : 'bg-theme-warning/10 text-theme-warning border-theme-warning/30'
                             }`}>
-                              {u.role === 'owner' ? 'Owner' : 'Admin'}
+                              {u.role === 'owner' ? 'Owner' : (u.role === 'dev' ? 'Dev' : 'Admin')}
                             </span>
                           ) : (
                             <select
@@ -221,13 +221,14 @@ export default function UsersPage() {
                               className={`px-3 py-1.5 rounded-lg font-bold text-sm border-2 outline-none cursor-pointer transition-colors ${
                                 u.role === 'owner'
                                   ? 'bg-purple-100 text-purple-700 border-purple-300 hover:border-purple-500 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
-                                  : u.role === 'admin' 
-                                  ? 'bg-theme-warning/10 text-theme-warning border-theme-warning/30 hover:border-theme-warning' 
+                                  : (u.role === 'admin' || u.role === 'dev') 
+                                    ? 'bg-theme-warning/10 text-theme-warning border-theme-warning/30 hover:border-theme-warning' 
                                   : 'bg-slate-100 text-slate-600 border-slate-200 hover:border-slate-300 dark:bg-[#272C38] dark:text-white dark:border-[#2D3342]'
                               }`}
                             >
                               {isOwner && <option value="owner">Owner</option>}
                               <option value="admin">Admin</option>
+                              <option value="dev">Dev</option>
                               <option value="member">Member</option>
                             </select>
                           )}
@@ -239,7 +240,7 @@ export default function UsersPage() {
                             <span className="text-xs font-semibold text-slate-400 dark:text-[#8B93A7] bg-slate-100 dark:bg-[#272C38] px-2.5 py-1 rounded-md">
                               คุณเอง
                             </span>
-                          ) : !isOwner && (u.role === 'owner' || u.role === 'admin') ? (
+                          ) : !isOwner && (u.role === 'owner' || u.role === 'admin' || u.role === 'dev') ? (
                             <span className="text-xs text-slate-400 dark:text-[#6B7280]">
                               -
                             </span>

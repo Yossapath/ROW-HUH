@@ -13,7 +13,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const requestedName = searchParams.get("name")?.trim();
 
-    const isAdminOrOwner = auth.user.role === "admin" || auth.user.role === "owner";
+    const isAdminOrOwner = auth.user.role === "admin" || auth.user.role === "owner" || auth.user.role === "dev";
 
     // 1. Regular members MUST have a registered gameUsername:
     // Unregistered members cannot query any player quota

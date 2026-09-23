@@ -30,6 +30,7 @@ export function isBookingOpen(schedule?: {
   openTime?: string;
   closeTime?: string;
   carryTeamsCount?: number;
+  isClosed?: boolean;
 } | null): { open: boolean; reason?: string } {
   // No schedule configured yet (or none of openDate/openTime/closeTime
   // set) means the admin hasn't restricted booking at all — default to

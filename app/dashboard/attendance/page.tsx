@@ -382,7 +382,7 @@ export default function AttendancePage() {
 
       // Update initial status map with newly saved values
       changedRecords.forEach((rec) => {
-        initialStatusMapRef.current.set(rec.name, rec.status);
+        initialStatusMapRef.current.set(rec.name, rec.status === null ? "รอเช็ค" : (rec.status as Status));
       });
 
       await loadAttendanceForDate(selectedDate);
@@ -428,9 +428,9 @@ export default function AttendancePage() {
       setMsg({ type: "ok", text: "ล้างข้อมูลเช็คชื่อสำเร็จ" });
 
       recordsToClear.forEach((rec) => {
-        initialStatusMapRef.current.set(rec.name, null);
+        initialStatusMapRef.current.set(rec.name, "รอเช็ค");
       });
-      setRows((prev) => prev.map((r) => ({ ...r, status: null })));
+      setRows((prev) => prev.map((r) => ({ ...r, status: "รอเช็ค" })));
 
       await loadAttendanceForDate(selectedDate);
 

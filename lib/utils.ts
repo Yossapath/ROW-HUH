@@ -39,6 +39,10 @@ export function isBookingOpen(schedule?: {
     return { open: true };
   }
 
+  if (schedule.isClosed) {
+    return { open: false, reason: "⛔ ระบบจองดันเจี้ยนถูกปิดชั่วคราว" };
+  }
+
   const isUnlimited = !schedule.openTime && !schedule.closeTime && !schedule.openDate;
   if (isUnlimited) {
     return { open: true };

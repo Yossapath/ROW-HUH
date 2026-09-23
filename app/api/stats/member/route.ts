@@ -20,7 +20,7 @@ export async function GET(req: Request) {
     const attendanceSnap = await trackFirestoreRead(
       "GET /api/stats/member",
       `attendance member ${name}`,
-      () => attendanceRef().collection("records").where("name", "==", name).orderBy("date", "desc").get()
+      () => attendanceRef().collection("records").where("name", "==", name).get()
     );
 
     let present = 0;
@@ -41,6 +41,9 @@ export async function GET(req: Request) {
       });
     });
 
+    // Sort by date desc in memory to avoid requiring a composite index in Firestore
+    warHistory.sort((a, b) => b.date.localeCompare(a.date));
+
     const totalWars = present + absent + leave;
     const presentPercent = totalWars > 0 ? Math.round((present / totalWars) * 100) : 0;
     const absentPercent = totalWars > 0 ? Math.round((absent / totalWars) * 100) : 0;
@@ -52,7 +55,6 @@ export async function GET(req: Request) {
       `dungeon queues member ${name}`,
       () => dungeonsRef().collection("queues")
               .where("name", "==", name)
-              .where("status", "==", "completed")
               .get()
     );
     
@@ -61,7 +63,9 @@ export async function GET(req: Request) {
     let totalDungeons = 0;
     dungeonSnap.docs.forEach((doc) => {
       const data = doc.data();
-      totalDungeons += (data.rounds || 1);
+      if (data.status === "completed") {
+        totalDungeons += (data.rounds || 1);
+      }
     });
 
     return ok({

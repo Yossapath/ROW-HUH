@@ -9,29 +9,29 @@ const prompt = Prompt({
   variable: "--font-prompt",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://row-topguild.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://row-huh.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "TopGuild - ระบบข้อมูลกิลด์",
-    template: "%s | TopGuild",
+    default: "HUH? - ระบบข้อมูลกิลด์",
+    template: "%s | HUH?",
   },
   description:
-    "ระบบจัดการสมาชิกกิลด์ จัดทีมสนามหลัก-สนามรอง จองคิวดันเจี้ยน และเชื่อมต่อฐานข้อมูล Firebase Real-time",
+    "ระบบจัดการกิลด์ครบ จบในที่เดียว จัดการสมาชิก จัดทีม GVG จัดทีม GL และฟีเจอร์อื่นๆ อีกมากมาย",
   openGraph: {
-    title: "TopGuild - ระบบข้อมูลกิลด์",
+    title: "HUH? - ระบบข้อมูลกิลด์",
     description:
-      "ระบบจัดการสมาชิกกิลด์ จัดทีมสนามหลัก-สนามรอง จองคิวดันเจี้ยน และเชื่อมต่อฐานข้อมูล Firebase Real-time",
+      "ระบบจัดการกิลด์ครบ จบในที่เดียว จัดการสมาชิก จัดทีม GVG จัดทีม GL และฟีเจอร์อื่นๆ อีกมากมาย",
     url: siteUrl,
-    siteName: "TopGuild",
+    siteName: "HUH?",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "TopGuild Banner",
-        type: "image/png",
+        alt: "HUH? Banner",
+        type: "image/jpeg",
       },
     ],
     locale: "th_TH",
@@ -39,10 +39,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TopGuild - ระบบข้อมูลกิลด์",
+    title: "HUH? - ระบบข้อมูลกิลด์",
     description:
-      "ระบบจัดการสมาชิกกิลด์ จัดทีมสนามหลัก-สนามรอง จองคิวดันเจี้ยน และเชื่อมต่อฐานข้อมูล Firebase Real-time",
-    images: ["/og-image.png"],
+      "ระบบจัดการกิลด์ครบ จบในที่เดียว จัดการสมาชิก จัดทีม GVG จัดทีม GL และฟีเจอร์อื่นๆ อีกมากมาย",
+    images: ["/og-image.jpg"],
   },
 };
 

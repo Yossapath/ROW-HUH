@@ -54,11 +54,6 @@ export async function PUT(req: Request) {
     const currentTargetRole = targetUser.role || "member";
     const isCallerOwner = auth.user.role === "owner";
 
-    // 1.5. No one can assign 'dev' role via UI/API
-    if (role === "dev" && currentTargetRole !== "dev") {
-      return err("ยศ Dev ไม่สามารถเพิ่มผ่านระบบได้ ต้องเพิ่มผ่าน Database เท่านั้น", 403);
-    }
-
     // 2. Admin cannot manage Owner or peer Admin:
     if (!isCallerOwner) {
       if (role === "owner") {

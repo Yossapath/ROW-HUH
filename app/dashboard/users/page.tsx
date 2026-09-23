@@ -228,7 +228,6 @@ export default function UsersPage() {
                             >
                               {isOwner && <option value="owner">Owner</option>}
                               <option value="admin">Admin</option>
-                              {u.role === 'dev' && <option value="dev">Dev</option>}
                               <option value="member">Member</option>
                             </select>
                           )}

@@ -136,7 +136,7 @@ export default function LogPage() {
         .catch(() => setQueues([]))
         .finally(() => setQueuesLoading(false));
     }
-  }, [activeTab, queuesFetched]);
+  }, [activeTab, queuesFetched, isAdmin]);
 
   // ── Delete leave ─────────────────────────────────────────────
   async function handleDeleteLeave(id: string) {

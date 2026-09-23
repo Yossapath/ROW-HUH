@@ -249,7 +249,7 @@ export default function AttendancePage() {
     if (!selectedDate) { setRows([]); setSelectedDay(""); return; }
     
     // Auto sync selectedDay
-    let foundDay;
+    let foundDay: WarDay | undefined;
     if (selectedDate.endsWith("-R1")) foundDay = "อังคาร (รอบ 1)";
     else if (selectedDate.endsWith("-R2")) foundDay = "อังคาร (รอบ 2)";
     else {
@@ -296,7 +296,7 @@ export default function AttendancePage() {
     });
     initialStatusMapRef.current = initialMap;
     setRows(mappedRows);
-  }, [selectedDate, roster, leaveRecords, attendanceRecords]);
+  }, [selectedDate, roster, leaveRecords, attendanceRecords, selectedDay]);
 
   const handleDayBtn = (day: WarDay) => {
     setSelectedDay(day);

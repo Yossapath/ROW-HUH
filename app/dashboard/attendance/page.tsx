@@ -23,8 +23,8 @@ import {
 } from "@/lib/war-dates";
 
 
-type WarDay = "อังคาร" | "พฤหัสบดี" | "อาทิตย์";
-type Status = "มา" | "ขาด" | "ลา" | null;
+type WarDay = "รอบ 1/2" | "พฤหัสบดี" | "อาทิตย์";
+type Status = "มา" | "ขาด" | "ลา" | "รอเช็ค";
 
 interface AttendanceRow {
   name: string;
@@ -33,10 +33,10 @@ interface AttendanceRow {
   status: Status;
 }
 
-const WAR_DAYS: WarDay[] = ["อังคาร", "พฤหัสบดี", "อาทิตย์"];
-const DAY_ISO: Record<WarDay, number> = { อังคาร: 2, พฤหัสบดี: 4, อาทิตย์: 0 };
+const WAR_DAYS: WarDay[] = ["รอบ 1/2", "พฤหัสบดี", "อาทิตย์"];
+const DAY_ISO: Record<WarDay, number> = { "รอบ 1/2": 2, พฤหัสบดี: 4, อาทิตย์: 0 };
 const DAY_LABEL: Record<number, string> = {
-  0: "อาทิตย์", 1: "จันทร์", 2: "อังคาร",
+  0: "อาทิตย์", 1: "จันทร์", 2: "รอบ 1/2",
   3: "พุธ", 4: "พฤหัสบดี", 5: "ศุกร์", 6: "เสาร์",
 };
 const JOB_COLORS: Record<string, string> = {
@@ -44,10 +44,11 @@ const JOB_COLORS: Record<string, string> = {
   Sniper: "#d4a015", Priest: "#25ae62", Champion: "#15a083",
   "Assassin Cross": "#8b46af", Merchant: "#c2185d", Gunslinger: "#894517", Druid: "#41b388",
 };
-const STATUS_CONFIG: Record<NonNullable<Status>, { label: string; bg: string; text: string; border: string }> = {
-  มา:  { label: "เข้าร่วม", bg: "bg-green-50 dark:bg-green-950/40",  text: "text-green-700 dark:text-green-400",  border: "border-green-200 dark:border-green-800/60" },
-  ขาด: { label: "ขาด",      bg: "bg-red-50 dark:bg-red-950/40",    text: "text-red-600 dark:text-red-400",    border: "border-red-200 dark:border-red-800/60"   },
-  ลา:  { label: "ลา",       bg: "bg-yellow-50 dark:bg-yellow-950/40", text: "text-yellow-700 dark:text-yellow-400", border: "border-yellow-200 dark:border-yellow-800/60" },
+const STATUS_CONFIG: Record<Status, { label: string; bg: string; text: string; border: string }> = {
+  มา:    { label: "มา",     bg: "bg-green-50 dark:bg-green-950/40",    text: "text-green-700 dark:text-green-400",    border: "border-green-200 dark:border-green-800/60" },
+  ขาด:   { label: "ขาด",   bg: "bg-red-50 dark:bg-red-950/40",        text: "text-red-600 dark:text-red-400",        border: "border-red-200 dark:border-red-800/60"   },
+  ลา:    { label: "ลา",    bg: "bg-yellow-50 dark:bg-yellow-950/40",   text: "text-yellow-700 dark:text-yellow-400",  border: "border-yellow-200 dark:border-yellow-800/60" },
+  รอเช็ค: { label: "รอเช็ค", bg: "bg-slate-100 dark:bg-slate-800/40",  text: "text-slate-500 dark:text-slate-400",    border: "border-slate-300 dark:border-slate-700" },
 };
 
 
@@ -70,7 +71,7 @@ function getWeekDates(weekOffset: number): Record<WarDay, string> {
   const tue = new Date(mon); tue.setUTCDate(mon.getUTCDate() + 1);
   const thu = new Date(mon); thu.setUTCDate(mon.getUTCDate() + 3);
   const sun = new Date(mon); sun.setUTCDate(mon.getUTCDate() + 6);
-  return { "อังคาร": fmt(tue), "พฤหัสบดี": fmt(thu), "อาทิตย์": fmt(sun) };
+  return { "รอบ 1/2": fmt(tue), "พฤหัสบดี": fmt(thu), "อาทิตย์": fmt(sun) };
 }
 
 
@@ -90,7 +91,7 @@ function flattenRoster(roster: Record<string, { name: string; power?: number }[]
   const rows: AttendanceRow[] = [];
   for (const [job, members] of Object.entries(roster)) {
     for (const m of members) {
-      rows.push({ name: m.name, job, power: m.power ?? 0, status: null });
+      rows.push({ name: m.name, job, power: m.power ?? 0, status: "รอเช็ค" });
     }
   }
   // Sort by power descending (like the image)
@@ -274,7 +275,7 @@ export default function AttendancePage() {
 
     const initialMap = new Map<string, Status>();
     const mappedRows = baseRows.map((r) => {
-      let status: Status = null;
+      let status: Status = "รอเช็ค";
       if (attMap.has(r.name)) {
         status = attMap.get(r.name)!;
       } else if (leaveNames.has(r.name)) {
@@ -356,8 +357,8 @@ export default function AttendancePage() {
         .map((r) => ({
           name: r.name,
           present: r.status === "มา",
-          status: r.status,
-          clear: r.status === null,
+          status: r.status === "รอเช็ค" ? null : r.status,
+          clear: r.status === "รอเช็ค",
         }));
 
       if (changedRecords.length === 0) {
@@ -400,7 +401,7 @@ export default function AttendancePage() {
     setMsg(null);
     try {
       const recordsToClear = rows
-        .filter((r) => r.status !== null)
+        .filter((r) => r.status !== "รอเช็ค")
         .map((r) => ({
           name: r.name,
           status: null,
@@ -479,7 +480,7 @@ export default function AttendancePage() {
           <div>
             <h1 className="text-xl font-bold text-slate-800 dark:text-white">เช็คชื่อกิลด์วอร์</h1>
             <p className="text-sm text-slate-500 dark:text-[#8B93A7]">
-              บันทึกการเข้าร่วมวอร์ | อังคาร · พฤหัสบดี · อาทิตย์
+              บันทึกการเข้าร่วมวอร์ | รอบ 1/2 · พฤหัสบดี · อาทิตย์
             </p>
           </div>
         </div>
@@ -512,8 +513,8 @@ export default function AttendancePage() {
             if (day && dates[day as WarDay]) {
               setSelectedDate(dates[day as WarDay]);
             } else {
-              setSelectedDate(dates["อังคาร"]);
-              setSelectedDay("อังคาร");
+              setSelectedDate(dates["รอบ 1/2"]);
+              setSelectedDay("รอบ 1/2");
             }
           }}
           className="border border-slate-200 dark:border-[#2D3342] rounded-lg px-2 py-1.5 text-sm font-semibold text-slate-700 dark:text-white bg-white dark:bg-[#272C38] focus:outline-none"
@@ -521,7 +522,7 @@ export default function AttendancePage() {
           {Array.from({ length: 1 }, (_, i) => {
             const offset = -i;
             const dates = getWeekDates(offset);
-            const tuDate = formatDateTH(dates["อังคาร"]);
+            const tuDate = formatDateTH(dates["รอบ 1/2"]);
             const sunDate = formatDateTH(dates["อาทิตย์"]);
             const label = `สัปดาห์นี้ (${tuDate} – ${sunDate})`;
             return (
@@ -535,7 +536,7 @@ export default function AttendancePage() {
         <span className="text-sm font-semibold text-slate-600 dark:text-white flex items-center gap-1.5">
           วัน:
         </span>
-        {(["อังคาร", "พฤหัสบดี", "อาทิตย์"] as WarDay[]).map((day) => {
+        {(["รอบ 1/2", "พฤหัสบดี", "อาทิตย์"] as WarDay[]).map((day) => {
           const dates = getWeekDates(weekOffset);
           const dateStr = dates[day];
           const isSelected = selectedDay === day || (!selectedDay && selectedDate === dateStr);
@@ -643,25 +644,24 @@ export default function AttendancePage() {
                         </td>
                         <td className="px-4 py-3.5">
                           {isAdmin ? (
-                            <div className="relative inline-flex items-center">
-                              <select
-                                value={r.status ?? ""}
-                                onChange={(e) => {
-                                  const val = e.target.value as Status;
-                                  setStatus(i, val || null);
-                                }}
-                                className={`appearance-none pl-3 pr-7 py-1.5 rounded-lg text-sm font-semibold border-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all w-full ${
-                                  sc
-                                    ? `${sc.bg} ${sc.text} ${sc.border}`
-                                    : "bg-white dark:bg-[#272C38] text-slate-400 dark:text-[#8B93A7] border-slate-200 dark:border-[#2D3342] hover:border-slate-300 dark:hover:border-slate-600"
-                                }`}
-                              >
-                                <option value="">— เลือก —</option>
-                                <option value="มา">เข้าร่วม</option>
-                                <option value="ลา">ลา</option>
-                                <option value="ขาด">ขาด</option>
-                              </select>
-                              <span className={`pointer-events-none absolute right-2 text-[10px] font-bold ${sc ? sc.text : "text-slate-400"}`}>▼</span>
+                            <div className="flex items-center gap-1">
+                              {(["มา", "ขาด", "ลา", "รอเช็ค"] as Status[]).map((st) => {
+                                const isSelected = r.status === st;
+                                const conf = STATUS_CONFIG[st];
+                                return (
+                                  <button
+                                    key={st}
+                                    onClick={() => setStatus(i, st)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${
+                                      isSelected
+                                        ? `${conf.bg} ${conf.text} ${conf.border}`
+                                        : "bg-white dark:bg-[#272C38] text-slate-400 dark:text-[#8B93A7] border-slate-200 dark:border-[#2D3342] hover:border-slate-300 dark:hover:border-slate-600"
+                                    }`}
+                                  >
+                                    {conf.label}
+                                  </button>
+                                );
+                              })}
                             </div>
                           ) : (
                             <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold border-2 ${sc ? `${sc.bg} ${sc.text} ${sc.border}` : "bg-white dark:bg-[#272C38] text-slate-400 border-slate-200 dark:border-[#2D3342]"}`}>

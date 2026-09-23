@@ -23,7 +23,7 @@ import {
 } from "@/lib/war-dates";
 
 
-type WarDay = "รอบ 1/2" | "พฤหัสบดี" | "อาทิตย์";
+type WarDay = "อังคาร (รอบ 1)" | "อังคาร (รอบ 2)" | "พฤหัสบดี" | "อาทิตย์";
 type Status = "มา" | "ขาด" | "ลา" | "รอเช็ค";
 
 interface AttendanceRow {
@@ -33,10 +33,10 @@ interface AttendanceRow {
   status: Status;
 }
 
-const WAR_DAYS: WarDay[] = ["รอบ 1/2", "พฤหัสบดี", "อาทิตย์"];
-const DAY_ISO: Record<WarDay, number> = { "รอบ 1/2": 2, พฤหัสบดี: 4, อาทิตย์: 0 };
+const WAR_DAYS: WarDay[] = ["อังคาร (รอบ 1)", "อังคาร (รอบ 2)", "พฤหัสบดี", "อาทิตย์"];
+const DAY_ISO: Record<WarDay, number> = { "อังคาร (รอบ 1)": 2, "อังคาร (รอบ 2)": 2, พฤหัสบดี: 4, อาทิตย์: 0 };
 const DAY_LABEL: Record<number, string> = {
-  0: "อาทิตย์", 1: "จันทร์", 2: "รอบ 1/2",
+  0: "อาทิตย์", 1: "จันทร์", 2: "อังคาร",
   3: "พุธ", 4: "พฤหัสบดี", 5: "ศุกร์", 6: "เสาร์",
 };
 const JOB_COLORS: Record<string, string> = {
@@ -71,7 +71,7 @@ function getWeekDates(weekOffset: number): Record<WarDay, string> {
   const tue = new Date(mon); tue.setUTCDate(mon.getUTCDate() + 1);
   const thu = new Date(mon); thu.setUTCDate(mon.getUTCDate() + 3);
   const sun = new Date(mon); sun.setUTCDate(mon.getUTCDate() + 6);
-  return { "รอบ 1/2": fmt(tue), "พฤหัสบดี": fmt(thu), "อาทิตย์": fmt(sun) };
+  return { "อังคาร (รอบ 1)": fmt(tue) + "-R1", "อังคาร (รอบ 2)": fmt(tue) + "-R2", "พฤหัสบดี": fmt(thu), "อาทิตย์": fmt(sun) };
 }
 
 
@@ -84,7 +84,11 @@ function formatDateTH(dateStr: string): string {
 
 function getDayName(dateStr: string): string {
   if (!dateStr) return "";
-  return DAY_LABEL[new Date(dateStr + "T00:00:00").getDay()] ?? "";
+  const pureDate = dateStr.substring(0, 10);
+  let name = DAY_LABEL[new Date(pureDate + "T00:00:00").getDay()] ?? "";
+  if (dateStr.endsWith("-R1")) name += " (รอบ 1)";
+  if (dateStr.endsWith("-R2")) name += " (รอบ 2)";
+  return name;
 }
 
 function flattenRoster(roster: Record<string, { name: string; power?: number }[]>): AttendanceRow[] {
@@ -245,8 +249,13 @@ export default function AttendancePage() {
     if (!selectedDate) { setRows([]); setSelectedDay(""); return; }
     
     // Auto sync selectedDay
-    const dayIdx = new Date(selectedDate + "T12:00:00Z").getUTCDay();
-    const foundDay = WAR_DAYS.find((d) => DAY_ISO[d] === dayIdx);
+    let foundDay;
+    if (selectedDate.endsWith("-R1")) foundDay = "อังคาร (รอบ 1)";
+    else if (selectedDate.endsWith("-R2")) foundDay = "อังคาร (รอบ 2)";
+    else {
+      const dayIdx = new Date(selectedDate.substring(0, 10) + "T12:00:00Z").getUTCDay();
+      foundDay = WAR_DAYS.find((d) => DAY_ISO[d] === dayIdx);
+    }
     if (foundDay && selectedDay !== foundDay) {
       setSelectedDay(foundDay);
     }
@@ -267,8 +276,9 @@ export default function AttendancePage() {
     }
 
     const leaveNames = new Set<string>();
+    const baseDayName = dayName.split(" ")[0];
     for (const lr of leaveRecords) {
-      if (lr.date === selectedDate || lr.day === dayName) {
+      if (lr.date === selectedDate || (lr.day && (lr.day === dayName || lr.day === baseDayName))) {
         leaveNames.add(lr.name);
       }
     }
@@ -513,8 +523,8 @@ export default function AttendancePage() {
             if (day && dates[day as WarDay]) {
               setSelectedDate(dates[day as WarDay]);
             } else {
-              setSelectedDate(dates["รอบ 1/2"]);
-              setSelectedDay("รอบ 1/2");
+              setSelectedDate(dates["อังคาร (รอบ 1)"]);
+              setSelectedDay("อังคาร (รอบ 1)");
             }
           }}
           className="border border-slate-200 dark:border-[#2D3342] rounded-lg px-2 py-1.5 text-sm font-semibold text-slate-700 dark:text-white bg-white dark:bg-[#272C38] focus:outline-none"
@@ -522,7 +532,7 @@ export default function AttendancePage() {
           {Array.from({ length: 1 }, (_, i) => {
             const offset = -i;
             const dates = getWeekDates(offset);
-            const tuDate = formatDateTH(dates["รอบ 1/2"]);
+            const tuDate = formatDateTH(dates["อังคาร (รอบ 1)"]);
             const sunDate = formatDateTH(dates["อาทิตย์"]);
             const label = `สัปดาห์นี้ (${tuDate} – ${sunDate})`;
             return (
@@ -536,7 +546,35 @@ export default function AttendancePage() {
         <span className="text-sm font-semibold text-slate-600 dark:text-white flex items-center gap-1.5">
           วัน:
         </span>
-        {(["รอบ 1/2", "พฤหัสบดี", "อาทิตย์"] as WarDay[]).map((day) => {
+                {/* อังคาร (รอบ 1 และ รอบ 2) */}
+        <div className="flex flex-col border border-[#0b3d63]/30 dark:border-[#4D73CD]/40 rounded-xl overflow-hidden bg-white dark:bg-[#272C38]">
+          <div className="text-center text-[10px] font-bold bg-slate-50 dark:bg-[#2A2F3E] py-1 text-[#0b3d63] dark:text-white border-b border-[#0b3d63]/10 dark:border-[#4D73CD]/20">
+            อังคาร ({formatDateTH(getWeekDates(weekOffset)["อังคาร (รอบ 1)"])})
+          </div>
+          <div className="flex divide-x divide-[#0b3d63]/20 dark:divide-[#4D73CD]/30">
+            {(["อังคาร (รอบ 1)", "อังคาร (รอบ 2)"] as WarDay[]).map(day => {
+              const dates = getWeekDates(weekOffset);
+              const dateStr = dates[day];
+              const isSelected = selectedDay === day || (!selectedDay && selectedDate === dateStr);
+              return (
+                <button
+                  key={day}
+                  onClick={() => handleDayBtn(day)}
+                  className={`px-4 py-2 text-sm font-semibold transition-all ${
+                    isSelected
+                      ? "bg-[#0b3d63] dark:bg-[#3B66D1] text-white shadow-sm"
+                      : "text-[#0b3d63] dark:text-white hover:bg-blue-50 dark:hover:bg-[#32384A]"
+                  }`}
+                >
+                  {day.includes("รอบ 1") ? "รอบ 1" : "รอบ 2"}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* วันอื่นๆ */}
+        {(["พฤหัสบดี", "อาทิตย์"] as WarDay[]).map((day) => {
           const dates = getWeekDates(weekOffset);
           const dateStr = dates[day];
           const isSelected = selectedDay === day || (!selectedDay && selectedDate === dateStr);

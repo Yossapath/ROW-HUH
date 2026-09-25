@@ -5,7 +5,7 @@ import { CalendarOff, Trash2, Calendar } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import type { LeaveRecord } from "@/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { JOB_COLORS } from "@/lib/utils";
+import { JOB_COLORS, JOB_LIST } from "@/lib/utils";
 
 type WarDay = "อังคาร" | "พฤหัสบดี" | "อาทิตย์";
 
@@ -14,10 +14,7 @@ const DAY_LABEL: Record<number, string> = {
   0: "อาทิตย์", 1: "จันทร์", 2: "อังคาร",
   3: "พุธ", 4: "พฤหัสบดี", 5: "ศุกร์", 6: "เสาร์",
 };
-const JOB_LIST = [
-  "Priest", "Lord Knight", "Paladin", "High Wizard",
-  "Sniper", "Champion", "Assassin Cross", "Merchant", "Gunslinger", "Druid",
-];
+
 
 function formatDateTH(dateStr: string): string {
   if (!dateStr) return "—";

@@ -1,4 +1,5 @@
 "use client";
+import { JOB_COLORS } from "@/lib/utils";
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
@@ -38,11 +39,6 @@ const DAY_ISO: Record<WarDay, number> = { "อังคาร (รอบ 1)": 2,
 const DAY_LABEL: Record<number, string> = {
   0: "อาทิตย์", 1: "จันทร์", 2: "อังคาร",
   3: "พุธ", 4: "พฤหัสบดี", 5: "ศุกร์", 6: "เสาร์",
-};
-const JOB_COLORS: Record<string, string> = {
-  "Lord Knight": "#c13829", Paladin: "#e18028", "High Wizard": "#2c7eb9",
-  Sniper: "#d4a015", Priest: "#25ae62", Champion: "#15a083",
-  "Assassin Cross": "#8b46af", Merchant: "#c2185d", Gunslinger: "#894517", Druid: "#41b388",
 };
 const STATUS_CONFIG: Record<Status, { label: string; bg: string; text: string; border: string }> = {
   มา:    { label: "มา",     bg: "bg-green-50 dark:bg-green-950/40",    text: "text-green-700 dark:text-green-400",    border: "border-green-200 dark:border-green-800/60" },

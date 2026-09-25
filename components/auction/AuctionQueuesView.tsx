@@ -1,4 +1,5 @@
 "use client";
+import { formatItemName } from "@/lib/utils";
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -209,13 +210,13 @@ export function AuctionQueuesView({ auctions }: Props) {
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-8 h-8 rounded bg-slate-100 dark:bg-[#2D3342] flex items-center justify-center shrink-0 overflow-hidden">
                     {auction.imageUrl ? (
-                      <img src={auction.imageUrl} alt={auction.itemName} className="w-full h-full object-cover" />
+                      <img src={auction.imageUrl} alt={formatItemName(auction.itemName, auction.category)} className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-xs">📦</span>
                     )}
                   </div>
                   <span translate="no" className={`notranslate text-sm truncate font-bold ${selectedAuctionId === auction.id ? "text-[#0b3d63] dark:text-[#5B86F1]" : "text-slate-700 dark:text-slate-300"}`}>
-                    {auction.itemName}
+                    {formatItemName(auction.itemName, auction.category)}
                   </span>
                 </div>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#2D3342] text-slate-500">
@@ -241,13 +242,13 @@ export function AuctionQueuesView({ auctions }: Props) {
                     )}
                   <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-[#2D3342] flex items-center justify-center shrink-0 overflow-hidden">
                     {selectedAuction.imageUrl ? (
-                      <img src={selectedAuction.imageUrl} alt={selectedAuction.itemName} className="w-full h-full object-cover" />
+                      <img src={selectedAuction.imageUrl} alt={formatItemName(selectedAuction.itemName, selectedAuction.category)} className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-2xl">📦</span>
                     )}
                   </div>
                   <div>
-                    <h2 translate="no" className="notranslate text-xl font-bold text-slate-800 dark:text-white">{selectedAuction.itemName}</h2>
+                    <h2 translate="no" className="notranslate text-xl font-bold text-slate-800 dark:text-white">{formatItemName(selectedAuction.itemName, selectedAuction.category)}</h2>
                     <div className="flex gap-2 mt-1">
                       <span className="text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#2D3342] text-slate-500">
                         {selectedAuction.category}

@@ -181,6 +181,7 @@ export const auctionItemCreateSchema = z.object({
 });
 
 export const auctionItemUpdateSchema = z.object({
+  imageUrl: z.string().optional(),
   itemName: z.string().trim().min(1, "กรุณาระบุชื่อไอเทม").max(100).optional(),
   category: z.enum(["gear", "card", "pet", "relic"]).optional(),
   description: z.string().trim().max(500).optional(),

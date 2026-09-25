@@ -1,6 +1,6 @@
 "use client";
 import { useModalStore } from "@/stores/useModalStore";
-import { JOB_COLORS } from "@/lib/utils";
+import { JOB_COLORS, JOB_ICONS } from "@/lib/utils";
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
@@ -789,7 +789,7 @@ export default function AttendancePage() {
                     <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 flex-shrink-0" />
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-slate-700 dark:text-white truncate">{r.name}</p>
-                      <p className="text-[10px] font-semibold truncate" style={{ color: JOB_COLORS[r.job] ?? "#64748b" }}>{r.job}</p>
+                      <p className="text-[10px] font-semibold truncate" style={{ color: JOB_COLORS[r.job] ?? "#64748b" }}>{JOB_ICONS[r.job] && <img src={JOB_ICONS[r.job]} alt={r.job} className="w-3 h-3 object-contain inline-block mr-0.5" />}{r.job}</p>
                     </div>
                   </div>
                 ))}
@@ -809,7 +809,7 @@ export default function AttendancePage() {
                     <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0" />
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-slate-600 dark:text-white truncate">{r.name}</p>
-                      <p className="text-[10px] font-semibold truncate" style={{ color: JOB_COLORS[r.job] ?? "#64748b" }}>{r.job}</p>
+                      <p className="text-[10px] font-semibold truncate" style={{ color: JOB_COLORS[r.job] ?? "#64748b" }}>{JOB_ICONS[r.job] && <img src={JOB_ICONS[r.job]} alt={r.job} className="w-3 h-3 object-contain inline-block mr-0.5" />}{r.job}</p>
                     </div>
                   </div>
                 ))}

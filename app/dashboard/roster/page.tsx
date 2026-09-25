@@ -4,7 +4,7 @@ import { useModalStore } from "@/stores/useModalStore";
 import { useState, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { JOB_LIST, JOB_COLORS } from "@/lib/utils";
+import { JOB_LIST, JOB_COLORS, JOB_ICONS } from "@/lib/utils";
 import { Search, X, Users, Upload, FileSpreadsheet, Check } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import * as XLSX from "xlsx";
@@ -449,9 +449,12 @@ export default function RosterPage() {
                     </td>
                     <td className="py-3 px-4">
                       <span 
-                        className="px-2 py-1 rounded-md text-xs font-bold text-white shadow-sm"
+                        className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold text-white shadow-sm"
                         style={{ backgroundColor: jobColor }}
                       >
+                        {JOB_ICONS[member.job] && (
+                          <img src={JOB_ICONS[member.job]} alt={member.job} className="w-4 h-4 object-contain" />
+                        )}
                         {mapClassName(member.job)}
                       </span>
                     </td>

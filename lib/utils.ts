@@ -22,7 +22,24 @@ export const JOB_COLORS: Record<string, string> = {
   "Dancer":         "#e91e63",
 };
 
+export const JOB_ICONS: Record<string, string> = {
+  "Lord Knight":    "/class/Lord_Knight.png",
+  "Paladin":        "/class/Paladin.png",
+  "High Wizard":    "/class/High_Wizard.png",
+  "Sniper":         "/class/Sniper.png",
+  "Priest":         "/class/Priest.png",
+  "Champion":       "/class/Champion.png",
+  "Assassin Cross": "/class/Assassin_Cross.png",
+  "Merchant":       "/class/Merchant.png",
+  "Gunslinger":     "/class/Gunslinger.png",
+  "Druid":          "/class/Druid.png",
+  "Biosmith":       "/class/Biosmith.png",
+  "Bard":           "/class/Bard.png",
+  "Dancer":         "/class/Dancer.png",
+};
+
 export const JOB_LIST = Object.keys(JOB_COLORS);
+
 
 // ── Booking time check (Bangkok timezone) ────────────────────
 export function isBookingOpen(schedule?: {

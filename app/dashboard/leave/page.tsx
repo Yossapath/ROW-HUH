@@ -5,7 +5,7 @@ import { CalendarOff, Trash2, Calendar } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import type { LeaveRecord } from "@/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { JOB_COLORS, JOB_LIST } from "@/lib/utils";
+import { JOB_COLORS, JOB_LIST, JOB_ICONS } from "@/lib/utils";
 
 type WarDay = "อังคาร" | "พฤหัสบดี" | "อาทิตย์";
 

@@ -171,7 +171,7 @@ export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
               </button>
               <button
                 onClick={async () => {
-                  if (!confirm("ยืนยันการลบไอเทมนี้ทิ้ง? การกระทำนี้ไม่สามารถย้อนกลับได้")) return;
+                  if (!window.confirm(`🗑️ ยืนยันการลบ "\n\n${auction.itemName}"\n\n⚠️ การกระทำนี้ไม่สามารถย้อนกลับได้! คิวทั้งหมดจะหายไปด้วย`)) return;
                   await fetch(`/api/auctions/${auction.id}`, { method: "DELETE" });
                   queryClient.invalidateQueries({ queryKey: ["auctions"] });
                 }}

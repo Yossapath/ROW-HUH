@@ -29,7 +29,7 @@ export default function Sidebar({ isExpanded }: { isExpanded: boolean }) {
 
   return (
     <aside 
-      className={`flex-shrink-0 bg-[#0b3d63] dark:bg-[#171D27] h-screen flex flex-col transition-all duration-300 shadow-xl border-r border-[#082e4b] dark:border-[#1F2430] z-30 ${
+      className={`bg-[#0b3d63] dark:bg-[#171D27] h-screen flex flex-col transition-all duration-300 shadow-xl border-r border-[#082e4b] dark:border-[#1F2430] z-30 ${
         isExpanded ? "w-64" : "w-20"
       }`}
     >

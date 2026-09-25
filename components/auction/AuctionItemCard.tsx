@@ -161,7 +161,7 @@ export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
                 onClick={() => setIsEditModalOpen(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 dark:bg-[#2D3342] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#3B4358] transition-colors"
               >
-                <Edit2 size={14} />
+                
                 แก้ไข
               </button>
             </div>

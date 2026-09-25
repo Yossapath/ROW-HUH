@@ -15,7 +15,7 @@ export async function GET(req: Request) {
        const d = doc.data();
        
        if (d.data && d.data.teamOrder) {
-           for (const [did, info] of Object.entries(d.data.teamOrder)) {
+           for (const [did, info] of Object.entries(d.data.teamOrder) as [string, any][]) {
                if (info.name === 'Andanoi') {
                    andanoiDiscordId = did;
                    andanoiData = info;
@@ -23,7 +23,7 @@ export async function GET(req: Request) {
            }
        }
        if (d.teamOrder) {
-           for (const [did, info] of Object.entries(d.teamOrder)) {
+           for (const [did, info] of Object.entries(d.teamOrder) as [string, any][]) {
                if (info.name === 'Andanoi') {
                    andanoiDiscordId = did;
                    andanoiData = info;

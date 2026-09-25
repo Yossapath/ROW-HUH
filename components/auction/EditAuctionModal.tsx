@@ -79,8 +79,8 @@ export function EditAuctionModal({ auction, onClose }: Props) {
       alert("กรุณาอัปโหลดไฟล์รูปภาพเท่านั้น (png, jpg)");
       return;
     }
-    if (file.size > 1.5 * 1024 * 1024) {
-      alert("ขนาดรูปภาพต้องไม่เกิน 1.5MB (Firestore limit)");
+    if (file.size > 700 * 1024) {
+      alert("ขนาดรูปภาพต้องไม่เกิน 700KB (Firestore limit)");
       return;
     }
 
@@ -148,7 +148,7 @@ export function EditAuctionModal({ auction, onClose }: Props) {
                   <p className="text-[10px] text-green-500 mt-2 font-bold">✓ บันทึกรูปภาพเรียบร้อยแล้ว</p>
                 )}
                 {!updateImageMutation.isSuccess && (
-                  <p className="text-[10px] text-slate-500 mt-2">รองรับ PNG, JPG ขนาดไม่เกิน 1.5MB</p>
+                  <p className="text-[10px] text-slate-500 mt-2">รองรับ PNG, JPG ขนาดไม่เกิน 700KB</p>
                 )}
               </div>
             </div>

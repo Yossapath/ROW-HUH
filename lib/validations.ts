@@ -175,6 +175,7 @@ export function validateBody<T>(
 
 // ── Auction Queue Schemas ─────────────────────────────────────
 export const auctionItemCreateSchema = z.object({
+  imageUrl: z.string().optional(),
   itemName: z.string().trim().min(1, "กรุณาระบุชื่อไอเทม").max(100),
   category: z.enum(["gear", "card", "pet", "relic"]),
   description: z.string().trim().max(500).optional(),

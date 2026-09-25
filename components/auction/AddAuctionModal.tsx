@@ -25,8 +25,8 @@ export function AddAuctionModal({ onClose }: Props) {
       alert("กรุณาอัปโหลดไฟล์รูปภาพเท่านั้น (png, jpg)");
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      alert("ขนาดรูปภาพต้องไม่เกิน 2MB");
+    if (file.size > 700 * 1024) {
+      alert("ขนาดรูปภาพต้องไม่เกิน 700KB");
       return;
     }
     setIsUploading(true);
@@ -120,7 +120,7 @@ export function AddAuctionModal({ onClose }: Props) {
                   {isUploading ? <RefreshCw className="animate-spin" size={16} /> : <Upload size={16} />}
                   {imageUrl ? "เปลี่ยนรูปภาพ" : "อัปโหลดรูปภาพ"}
                 </button>
-                <p className="text-[10px] text-slate-500 mt-2">รองรับ PNG, JPG ขนาดไม่เกิน 2MB</p>
+                <p className="text-[10px] text-slate-500 mt-2">รองรับ PNG, JPG ขนาดไม่เกิน 700KB</p>
               </div>
             </div>
           </div>

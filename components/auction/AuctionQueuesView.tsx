@@ -351,10 +351,12 @@ export function AuctionQueuesView({ auctions }: Props) {
                                       )}
                                     </td>
                                     <td className="py-4 px-6 text-sm">
-                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-bold text-white shadow-sm" style={{ backgroundColor: (res.job && JOB_COLORS[res.job]) || "#475569" }}>
-                                        {res.job && JOB_ICONS[res.job] && <img src={JOB_ICONS[res.job]} alt={res.job} className="w-3.5 h-3.5 object-contain" />}
-                                        {res.job}
-                                      </span>
+                                      <div className="inline-flex items-center gap-2">
+                                        {res.job && JOB_ICONS[res.job] && <img src={JOB_ICONS[res.job]} alt={res.job} className="w-6 h-6 object-contain shrink-0 drop-shadow-sm" />}
+                                        <span className="px-2.5 py-0.5 rounded-md text-xs font-bold text-white shadow-sm" style={{ backgroundColor: (res.job && JOB_COLORS[res.job]) || "#475569" }}>
+                                          {res.job}
+                                        </span>
+                                      </div>
                                     </td>
                                     <td className="py-4 px-6 text-sm text-right">
                                       {isAdmin ? (

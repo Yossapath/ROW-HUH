@@ -46,7 +46,7 @@ export function MemberProfileModal({ member, onClose }: MemberProfileModalProps)
               </h2>
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-[#8B93A7]">
                 <span className="flex items-center gap-1.5">
-                  คลาส: {member.job && JOB_ICONS[member.job] && <img src={JOB_ICONS[member.job]} alt={member.job} className="w-4 h-4 object-contain inline-block" />}
+                  คลาส: {member.job && JOB_ICONS[member.job] && <img src={JOB_ICONS[member.job]} alt={member.job} className="w-5 h-5 object-contain inline-block drop-shadow-sm" />}
                   <span className="font-bold text-slate-800 dark:text-white">{member.job || "-"}</span>
                 </span>
                 <span>•</span>

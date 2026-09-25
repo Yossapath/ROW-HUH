@@ -6,6 +6,7 @@ import { UserCog, Shield, User, Loader2, Trash2, AlertTriangle, X } from "lucide
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useState } from "react";
+import { JOB_ICONS, JOB_COLORS } from "@/lib/utils";
 
 type UserData = {
   discordId: string;
@@ -195,9 +196,16 @@ export default function UsersPage() {
                         <span className="font-semibold text-slate-800 dark:text-white">{u.gameUsername || "-"}</span>
                       </td>
                       <td className="py-3 px-4">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-bold text-slate-800 dark:text-white">{u.class || "-"}</span>
-                          <span className="text-xs text-slate-500 dark:text-[#8B93A7]">{u.power ? u.power.toLocaleString() + " CP" : "-"}</span>
+                        <div className="flex items-center gap-2.5">
+                          {u.class && JOB_ICONS[u.class] ? (
+                            <img src={JOB_ICONS[u.class]} alt={u.class} className="w-7 h-7 object-contain shrink-0 drop-shadow-sm" />
+                          ) : null}
+                          <div className="flex flex-col">
+                            <span className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
+                              {u.class || "-"}
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-[#8B93A7]">{u.power ? u.power.toLocaleString() + " CP" : "-"}</span>
+                          </div>
                         </div>
                       </td>
                       <td className="py-3 px-4 text-center">

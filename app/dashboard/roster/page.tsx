@@ -374,7 +374,7 @@ export default function RosterPage() {
             >
               <div className="flex items-center space-x-2 font-bold text-sm text-slate-700 dark:text-white">
                 {JOB_ICONS[job] && (
-                  <img src={JOB_ICONS[job]} alt={job} className="w-5 h-5 object-contain shrink-0" />
+                  <img src={JOB_ICONS[job]} alt={job} className="w-6 h-6 object-contain shrink-0 drop-shadow-sm" />
                 )}
                 <span className={isSelected ? "text-[#0b3d63] dark:text-[#82A0F5]" : ""}>{job}</span>
               </div>
@@ -441,15 +441,17 @@ export default function RosterPage() {
                       {isCurrentUser && <span className="text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-700">คุณ</span>}
                     </td>
                     <td className="py-3 px-4">
-                      <span 
-                        className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold text-white shadow-sm"
-                        style={{ backgroundColor: jobColor }}
-                      >
+                      <div className="inline-flex items-center gap-2">
                         {JOB_ICONS[member.job] && (
-                          <img src={JOB_ICONS[member.job]} alt={member.job} className="w-4 h-4 object-contain" />
+                          <img src={JOB_ICONS[member.job]} alt={member.job} className="w-6 h-6 object-contain shrink-0 drop-shadow-sm" />
                         )}
-                        {mapClassName(member.job)}
-                      </span>
+                        <span 
+                          className="px-2.5 py-1 rounded-md text-xs font-bold text-white shadow-sm"
+                          style={{ backgroundColor: jobColor }}
+                        >
+                          {mapClassName(member.job)}
+                        </span>
+                      </div>
                     </td>
                     <td className="py-3 px-4 text-slate-600 dark:text-slate-300 font-medium">{member.title || "-"}</td>
                     <td className="py-3 px-4 text-right font-semibold text-[#0b3d63] dark:text-[#82A0F5]">

@@ -678,12 +678,14 @@ export default function AttendancePage() {
                         <td className="px-4 py-3.5 text-slate-400 dark:text-[#6B7280] text-sm font-medium">{i + 1}</td>
                         <td className="px-4 py-3.5 font-semibold text-slate-800 dark:text-white text-sm">{r.name}</td>
                         <td className="px-4 py-3.5">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold text-white shadow-sm" style={{ backgroundColor: jobColor }}>
+                          <div className="inline-flex items-center gap-2">
                             {JOB_ICONS[r.job] && (
-                              <img src={JOB_ICONS[r.job]} alt={r.job} className="w-4 h-4 object-contain" />
+                              <img src={JOB_ICONS[r.job]} alt={r.job} className="w-6 h-6 object-contain shrink-0 drop-shadow-sm" />
                             )}
-                            {r.job}
-                          </span>
+                            <span className="px-2.5 py-1 rounded-md text-xs font-bold text-white shadow-sm" style={{ backgroundColor: jobColor }}>
+                              {r.job}
+                            </span>
+                          </div>
                         </td>
                         <td className="px-4 py-3.5 text-right font-semibold text-slate-800 dark:text-white text-sm tabular-nums">
                           {r.power > 0 ? r.power.toLocaleString() : "—"}

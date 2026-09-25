@@ -68,23 +68,19 @@ export default function RosterPage() {
     
     setIsSaving(true);
     try {
-      let newRoster = { ...roster };
-      
-      if (editingMember.job && newRoster[editingMember.job]) {
-        newRoster[editingMember.job] = newRoster[editingMember.job].filter((m: any) => m.name !== editingMember.name);
-      }
-      
-      if (!newRoster[editJob]) newRoster[editJob] = [];
-      newRoster[editJob].push({
-        ...editingMember,
+      await axios.put("/api/roster/member", {
+        targetDiscordId: editingMember.discordId || null,
+        originalName: editingMember.name,
+        originalJob: editingMember.job,
         name: editName,
         job: editJob,
         title: editTitle,
         power: Number(editPower) || 0,
-        activity: Number(editActivity) || 0
+        activity: Number(editActivity) || 0,
+        warRole: editingMember.role || "อิสระ (ให้ระบบจัดให้)",
+        gvgField: editingMember.gvgField || "main"
       });
       
-      await axios.put("/api/roster", newRoster);
       queryClient.invalidateQueries({ queryKey: ["roster"] });
       setEditingMember(null);
     } catch (err: any) {

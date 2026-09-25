@@ -56,7 +56,7 @@ export async function GET(req: Request) {
         if (!rData[job]) rData[job] = [];
 
         // check if already there
-        const exists = rData[job].find(m => m.discordId === andanoiDiscordId);
+        const exists = rData[job].find((m: any) => m.discordId === andanoiDiscordId);
         if (!exists) {
             rData[job].push({
                 discordId: andanoiDiscordId,

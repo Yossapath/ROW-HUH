@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { ChevronDown, ChevronUp, Check, X, Shield, Users, Clock, RefreshCw } from "lucide-react";
 import { AuctionItem, AuctionReservation } from "@/types";
+import { EditAuctionModal } from "./EditAuctionModal";
+import { Edit2 } from "lucide-react";
 
 interface Props {
   auction: AuctionItem;
@@ -15,6 +17,7 @@ interface Props {
 export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
   const myReservation = myReservations.find(r => r.auctionId === auction.id && r.status === "waiting");
   const isMyReservation = !!myReservation;
@@ -155,35 +158,17 @@ export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
           {isAdmin && (
             <div className="flex items-center gap-1 ml-2 pl-2 border-l border-slate-200 dark:border-slate-700">
               <button
-                onClick={async () => {
-                  const newStatus = auction.status === "open" ? "closed" : "open";
-                  if (!confirm(`เปลี่ยนสถานะเป็น ${newStatus}?`)) return;
-                  await fetch(`/api/auctions/${auction.id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ status: newStatus }),
-                  });
-                  queryClient.invalidateQueries({ queryKey: ["auctions"] });
-                }}
-                className="px-2 py-1.5 text-[10px] font-bold rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                onClick={() => setIsEditModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 dark:bg-[#2D3342] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#3B4358] transition-colors"
               >
-                {auction.status === "open" ? "ปิดรับ" : "เปิดรับ"}
-              </button>
-              <button
-                onClick={async () => {
-                  if (!window.confirm(`🗑️ ยืนยันการลบ "\n\n${auction.itemName}"\n\n⚠️ การกระทำนี้ไม่สามารถย้อนกลับได้! คิวทั้งหมดจะหายไปด้วย`)) return;
-                  await fetch(`/api/auctions/${auction.id}`, { method: "DELETE" });
-                  queryClient.invalidateQueries({ queryKey: ["auctions"] });
-                }}
-                className="px-2 py-1.5 text-[10px] font-bold rounded-md bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
-              >
-                ลบทิ้ง
+                <Edit2 size={14} />
+                แก้ไข
               </button>
             </div>
           )}
         </div>
       </div>
-
-      </div>
+      {isEditModalOpen && <EditAuctionModal auction={auction} onClose={() => setIsEditModalOpen(false)} />}
+    </div>
   );
 }

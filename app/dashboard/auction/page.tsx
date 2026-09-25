@@ -48,13 +48,13 @@ export default function AuctionPage() {
     enabled: activeTab === "my" && !!user,
   });
 
-  const auctions = auctionsRes?.data || [];
-  const myReservations = myRes?.data || [];
+  const auctions = Array.isArray(auctionsRes?.data) ? auctionsRes.data : [];
+  const myReservations = Array.isArray(myRes?.data) ? myRes.data : [];
 
   // Filter logic
   let displayedAuctions = auctions.filter(a => a.itemName.toLowerCase().includes(searchQuery.toLowerCase()));
   if (activeTab === "my") {
-    const myAuctionIds = myReservations.map(r => r.auctionId);
+    const myAuctionIds = (Array.isArray(myReservations) ? myReservations : []).map(r => r.auctionId);
     displayedAuctions = auctions.filter(a => myAuctionIds.includes(a.id) && a.itemName.toLowerCase().includes(searchQuery.toLowerCase()));
   } else if (activeTab !== "all") {
     displayedAuctions = auctions.filter(a => a.category === activeTab && a.itemName.toLowerCase().includes(searchQuery.toLowerCase()));

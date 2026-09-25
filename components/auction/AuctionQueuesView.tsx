@@ -48,8 +48,8 @@ export function AuctionQueuesView({ auctions }: Props) {
     },
     enabled: isAdmin,
   });
-  const rosterData = rosterRes?.data?.data || rosterRes?.data || {};
-  const roster = Object.entries(rosterData).flatMap(([job, members]) => Array.isArray(members) ? members.map((m: any) => ({ ...m, job })) : []);
+  const rosterData = (typeof rosterRes?.data?.data === "object" ? rosterRes?.data?.data : (typeof rosterRes?.data === "object" ? rosterRes?.data : {})) || {};
+  const roster = Object.entries(rosterData || {}).flatMap(([job, members]) => Array.isArray(members) ? members.map((m: any) => ({ ...m, job })) : []);
 
   const reorderMutation = useMutation({
     mutationFn: async (orderedIds: string[]) => {
@@ -146,7 +146,7 @@ export function AuctionQueuesView({ auctions }: Props) {
     queryClient.setQueryData(["auction_queue", selectedAuctionId], items);
 
     // Send new order to server
-    reorderMutation.mutate(items.map(item => item.id));
+    reorderMutation.mutate((items || []).map(item => item.id));
   };
 
   if (!isMounted) return null;
@@ -154,15 +154,7 @@ export function AuctionQueuesView({ auctions }: Props) {
   return (
     <div className="flex flex-col lg:flex-row gap-6 relative">
       {/* Mobile Toggle Button */}
-      <div className="mb-4 flex items-center justify-between">
-        <button 
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1A1D27] border border-slate-200 dark:border-[#2D3342] rounded-xl font-bold text-sm shadow-sm"
-        >
-          <Menu size={16} />
-          {isSidebarOpen ? "ซ่อนเมนูเลือกไอเทม" : "เปิดเมนูเลือกไอเทม"}
-        </button>
-      </div>
+      
 
       {/* Sidebar */}
       <div className={`w-full lg:w-1/3 flex-col gap-4 ${isSidebarOpen ? "flex" : "hidden"}`}>
@@ -233,6 +225,9 @@ export function AuctionQueuesView({ auctions }: Props) {
             <>
               <div className="p-6 border-b border-slate-200 dark:border-[#2D3342] flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
+                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-50 hover:bg-slate-100 dark:bg-[#232733] dark:hover:bg-[#2A2F3E] rounded-lg transition-colors">
+                      <Menu size={20} />
+                    </button>
                   <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-[#2D3342] flex items-center justify-center shrink-0 overflow-hidden">
                     {selectedAuction.imageUrl ? (
                       <img src={selectedAuction.imageUrl} alt={selectedAuction.itemName} className="w-full h-full object-cover" />
@@ -382,8 +377,11 @@ export function AuctionQueuesView({ auctions }: Props) {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-slate-400 p-8">
-              <p>กรุณาเลือกไอเทมจากเมนูด้านซ้าย</p>
+            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8 gap-4">
+              <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-3 text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-50 hover:bg-slate-100 dark:bg-[#232733] dark:hover:bg-[#2A2F3E] rounded-xl transition-colors shadow-sm">
+                <Menu size={24} />
+              </button>
+              <p>กรุณาเลือกไอเทมจากเมนู</p>
             </div>
           )}
         </div>

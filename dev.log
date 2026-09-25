@@ -1,0 +1,12 @@
+
+> row-huh@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 3s
+ ○ Compiling /api/auctions/seed ...
+ ✓ Compiled /api/auctions/seed in 723ms (99 modules)
+ GET /api/auctions/seed 500 in 863ms

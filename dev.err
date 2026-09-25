@@ -1,0 +1,43 @@
+Seed error: Error: FIREBASE_INIT_ERROR: Missing FIREBASE_PRIVATE_KEY in Environment Variables
+    at getDb (webpack-internal:///(rsc)/./lib/firebase-admin.ts:72:15)
+    at auctionsRef (webpack-internal:///(rsc)/./lib/firebase-admin.ts:89:25)
+    at GET (webpack-internal:///(rsc)/./app/api/auctions/seed/route.ts:54:87)
+    at C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:55044
+    at C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+    at ContextAPI.with (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\@opentelemetry\api\build\src\api\context.js:51:46)
+    at NoopTracer.startActiveSpan (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:54:31)
+    at ProxyTracer.startActiveSpan (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:27:24)
+    at C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\lib\trace\tracer.js:122:103
+    at NoopContextManager.with (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\@opentelemetry\api\build\src\context\NoopContextManager.js:14:19)
+    at ContextAPI.with (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\@opentelemetry\api\build\src\api\context.js:51:46)
+    at NextTracerImpl.trace (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\lib\trace\tracer.js:122:28)
+    at C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:47853
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_hooks:91:14)
+    at Object.wrap (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:40244)
+    at C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:46429
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_hooks:91:14)
+    at Object.wrap (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:37583)
+    at C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:46391
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_hooks:91:14)
+    at ek.execute (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:45838)
+    at ek.handle (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:56303)
+    at doRender (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\base-server.js:1377:60)
+    at cacheEntry.responseCache.get.routeKind (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\base-server.js:1599:34)
+    at ResponseCache.get (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\response-cache\index.js:49:26)
+    at DevServer.renderToResponseWithComponentsImpl (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\base-server.js:1507:53)
+    at C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\base-server.js:1002:121
+    at NextTracerImpl.trace (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\lib\trace\tracer.js:105:20)
+    at DevServer.renderToResponseWithComponents (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\base-server.js:1002:41)
+    at DevServer.renderPageComponent (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\base-server.js:1931:35)
+    at async DevServer.renderToResponseImpl (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\base-server.js:1969:32)
+    at async DevServer.pipeImpl (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\base-server.js:920:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\base-server.js:816:17)
+    at async C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\lib\router-server.js:353:24)
+    at async requestHandlerImpl (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\Users\User\.gemini\antigravity\scratch\ROW-HUH\node_modules\next\dist\server\lib\start-server.js:141:13)

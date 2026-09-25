@@ -7,7 +7,7 @@ export async function GET(req: Request) {
     const db = getDb();
     const usersSnap = await db.collection(COLL_USER).get();
     
-    const users = [];
+    const users: any[] = [];
     usersSnap.forEach(doc => {
         users.push({ id: doc.id, ...doc.data() });
     });
@@ -16,7 +16,7 @@ export async function GET(req: Request) {
     const data = snap.data();
     let rosterData = data?.data || data;
 
-    const rosterMembers = [];
+    const rosterMembers: any[] = [];
     for (const job of Object.keys(rosterData)) {
       if (Array.isArray(rosterData[job])) {
         for (const m of rosterData[job]) {

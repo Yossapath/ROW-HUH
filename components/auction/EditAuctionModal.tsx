@@ -64,8 +64,8 @@ export function EditAuctionModal({ auction, onClose }: Props) {
       return res.json();
     },
     onSuccess: () => {
+      // Refresh auction list but keep modal open so user sees the preview
       queryClient.invalidateQueries({ queryKey: ["auctions"] });
-      onClose();
     },
     onError: (err: any) => alert(err.message),
   });
@@ -78,8 +78,8 @@ export function EditAuctionModal({ auction, onClose }: Props) {
       alert("กรุณาอัปโหลดไฟล์รูปภาพเท่านั้น (png, jpg)");
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      alert("ขนาดรูปภาพต้องไม่เกิน 2MB");
+    if (file.size > 1.5 * 1024 * 1024) {
+      alert("ขนาดรูปภาพต้องไม่เกิน 1.5MB (Firestore limit)");
       return;
     }
 
@@ -88,8 +88,13 @@ export function EditAuctionModal({ auction, onClose }: Props) {
     reader.onload = (ev) => {
       const base64 = ev.target?.result as string;
       setImageUrl(base64);
-      updateImageMutation.mutate(base64);
       setIsUploading(false);
+      // Automatically save
+      updateImageMutation.mutate(base64);
+    };
+    reader.onerror = () => {
+      setIsUploading(false);
+      alert("ไม่สามารถอ่านไฟล์ได้ กรุณาลองใหม่");
     };
     reader.readAsDataURL(file);
   };
@@ -138,7 +143,12 @@ export function EditAuctionModal({ auction, onClose }: Props) {
                   )}
                   {imageUrl ? "เปลี่ยนรูปภาพ" : "อัปโหลดรูปภาพ"}
                 </button>
-                <p className="text-[10px] text-slate-500 mt-2">รองรับ PNG, JPG ขนาดไม่เกิน 2MB</p>
+                {updateImageMutation.isSuccess && (
+                  <p className="text-[10px] text-green-500 mt-2 font-bold">✓ บันทึกรูปภาพเรียบร้อยแล้ว</p>
+                )}
+                {!updateImageMutation.isSuccess && (
+                  <p className="text-[10px] text-slate-500 mt-2">รองรับ PNG, JPG ขนาดไม่เกิน 1.5MB</p>
+                )}
               </div>
             </div>
           </div>

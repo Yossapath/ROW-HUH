@@ -118,6 +118,11 @@ export default function UsersPage() {
             <h1 className="text-xl font-bold text-slate-800 dark:text-white">จัดการผู้ใช้ (User Management)</h1>
             <p className="text-sm text-slate-500 dark:text-[#8B93A7]">
               สมาชิกล็อกอินทั้งหมด <span className="font-bold text-[#0b3d63] dark:text-[#82A0F5]">{userList.length}</span> คน
+              {users.filter(u => !u.gameUsername || !u.class).length > 0 && (
+                <span className="ml-2 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded">
+                  ⚠ {users.filter(u => !u.gameUsername || !u.class).length} คนยังไม่กรอกข้อมูล
+                </span>
+              )}
               {searchQuery && ` (ค้นพบ ${filteredUsers.length} คน)`}
             </p>
           </div>
@@ -178,6 +183,11 @@ export default function UsersPage() {
                             {u.discordUsername ? u.discordUsername.charAt(0).toUpperCase() : "U"}
                           </div>
                           <span className="font-bold text-slate-800 dark:text-white">{u.discordUsername || "Unknown"}</span>
+                          {(!u.gameUsername || !u.class) && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 ml-1">
+                              ⚠ ไม่สมบูรณ์
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="py-3 px-4">

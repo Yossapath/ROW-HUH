@@ -74,7 +74,7 @@ export async function PUT(req: Request) {
       return err(validation.error, 400);
     }
 
-    const { targetDiscordId, originalName, originalJob, name, job, power, warRole } = validation.data;
+    const { targetDiscordId, originalName, originalJob, name, job, power, warRole, gvgField } = validation.data;
 
     // Check permission: Admin or Self
     if (user.role !== "admin" && user.role !== "owner" && user.discordId !== targetDiscordId) {
@@ -98,7 +98,7 @@ export async function PUT(req: Request) {
       if (rosterData.data) rosterData = rosterData.data; // Handle legacy wrapper
 
       // Find existing member by targetDiscordId or originalName/originalJob
-      let memberObj: any = { discordId: targetDiscordId, name, power: Number(power) };
+      let memberObj: any = { discordId: targetDiscordId, name, power: Number(power), gvgField };
       
       // Retain existing role if not admin
       let existingWarRole = "อิสระ (ให้ระบบจัดให้)";
@@ -125,6 +125,7 @@ export async function PUT(req: Request) {
 
       if (userDoc.exists) {
         const updateData: any = { gameUsername: name, class: job, power: Number(power) };
+        if (gvgField !== undefined) updateData.gvgField = gvgField;
         if ((user.role === "admin" || user.role === "owner" || user.role === "dev") && warRole) {
           updateData.warRole = warRole;
         }

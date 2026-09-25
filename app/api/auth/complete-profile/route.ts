@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       return err(validation.error, 400);
     }
 
-    const { gameUsername, class: userClass, power } = validation.data;
+    const { gameUsername, class: userClass, power, gvgField } = validation.data;
 
     const db = getDb();
     const userRef = db.collection(COLL_USER).doc(user.discordId);
@@ -56,7 +56,8 @@ export async function POST(req: Request) {
         discordId: user.discordId, 
         discordUsername: user.discordUsername,
         name: gameUsername, 
-        power: Number(power) 
+        power: Number(power),
+        gvgField
       };
 
       rosterData[userClass].push(memberObj);
@@ -66,6 +67,7 @@ export async function POST(req: Request) {
           gameUsername,
           class: userClass,
           power: Number(power),
+          gvgField,
         });
       } else {
         t.set(userRef, {
@@ -75,6 +77,7 @@ export async function POST(req: Request) {
           class: userClass,
           power: Number(power),
           role: user.role || "member",
+          gvgField,
         }, { merge: true });
       }
 
@@ -95,6 +98,7 @@ export async function POST(req: Request) {
       gameUsername,
       class: userClass,
       power: Number(power),
+      gvgField,
       isProfileComplete: true,
     };
 

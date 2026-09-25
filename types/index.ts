@@ -14,6 +14,7 @@ export interface GuildUser {
   class?: string;
   power?: number;
   createdAt?: number;
+  gvgField?: "main" | "sub";
 }
 
 export interface AuthPayload {
@@ -24,6 +25,7 @@ export interface AuthPayload {
   class?: string;
   power?: number;
   isProfileComplete: boolean;
+  gvgField?: "main" | "sub";
 }
 
 // ── Roster ───────────────────────────────────────────────────

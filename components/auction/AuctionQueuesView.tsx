@@ -17,7 +17,7 @@ export function AuctionQueuesView({ auctions }: Props) {
 
   const [selectedAuctionId, setSelectedAuctionId] = useState<string>(auctions[0]?.id || "");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const { user } = useAuthStore();
   const isAdmin = user?.role === "admin" || user?.role === "owner";
@@ -48,7 +48,7 @@ export function AuctionQueuesView({ auctions }: Props) {
     },
     enabled: isAdmin,
   });
-  const rosterData = rosterRes?.data || {};
+  const rosterData = rosterRes?.data?.data || rosterRes?.data || {};
   const roster = Object.entries(rosterData).flatMap(([job, members]) => Array.isArray(members) ? members.map((m: any) => ({ ...m, job })) : []);
 
   const reorderMutation = useMutation({
@@ -138,7 +138,7 @@ export function AuctionQueuesView({ auctions }: Props) {
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination || !queue) return;
     
-    const items = Array.from(queue);
+    const items = Array.from(queue || []);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
@@ -154,7 +154,7 @@ export function AuctionQueuesView({ auctions }: Props) {
   return (
     <div className="flex flex-col lg:flex-row gap-6 relative">
       {/* Mobile Toggle Button */}
-      <div className="lg:hidden mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <button 
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1A1D27] border border-slate-200 dark:border-[#2D3342] rounded-xl font-bold text-sm shadow-sm"
@@ -165,7 +165,7 @@ export function AuctionQueuesView({ auctions }: Props) {
       </div>
 
       {/* Sidebar */}
-      <div className={`w-full lg:w-1/3 flex-col gap-4 ${isSidebarOpen ? "flex" : "hidden lg:flex"}`}>
+      <div className={`w-full lg:w-1/3 flex-col gap-4 ${isSidebarOpen ? "flex" : "hidden"}`}>
         <div className="bg-white dark:bg-[#1A1D27] p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] flex flex-col gap-4 h-[600px]">
           <h3 className="font-bold text-slate-800 dark:text-white text-lg">เลือกไอเทม</h3>
           
@@ -196,7 +196,7 @@ export function AuctionQueuesView({ auctions }: Props) {
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-1 pr-1">
-            {filteredAuctions.map(auction => (
+            {(filteredAuctions || []).map(auction => (
               <button
                 key={auction.id}
                 onClick={() => {
@@ -227,7 +227,7 @@ export function AuctionQueuesView({ auctions }: Props) {
       </div>
 
       {/* Main Content */}
-      <div className="w-full lg:w-2/3">
+      <div className={`w-full ${isSidebarOpen ? "lg:w-2/3" : "lg:w-full"}`}>
         <div className="bg-white dark:bg-[#1A1D27] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] overflow-hidden flex flex-col h-[600px]">
           {selectedAuction ? (
             <>
@@ -272,7 +272,7 @@ export function AuctionQueuesView({ auctions }: Props) {
                     className="flex-1 px-3 py-2 rounded-lg border border-sky-200 dark:border-sky-500/30 bg-white dark:bg-[#1A1D27] text-sm"
                   >
                     <option value="">-- เลือกรายชื่อสมาชิก --</option>
-                    {roster.map((r: any) => (
+                    {(roster || []).map((r: any) => (
                       <option key={r.discordId} value={r.discordId}>
                         {r.name} ({r.job || "Novice"})
                       </option>
@@ -317,7 +317,7 @@ export function AuctionQueuesView({ auctions }: Props) {
                             {...provided.droppableProps}
                             ref={provided.innerRef}
                           >
-                            {queue.map((res, idx) => (
+                            {(queue || []).map((res, idx) => (
                               <Draggable key={res.id} draggableId={res.id} index={idx} isDragDisabled={!isAdmin}>
                                 {(provided, snapshot) => (
                                   <tr 

@@ -188,7 +188,7 @@ export default function AuctionPage() {
               <p className="text-sm opacity-80 mt-1">ยังไม่มีไอเทมในหมวดหมู่นี้ หรือคุณยังไม่ได้จองไอเทมใดๆ</p>
             </div>
           ) : (
-            displayedAuctions.map(auction => (
+            (displayedAuctions || []).map(auction => (
               <AuctionItemCard 
                 key={auction.id} 
                 auction={auction} 

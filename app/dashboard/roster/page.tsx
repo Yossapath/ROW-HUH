@@ -373,15 +373,8 @@ export default function RosterPage() {
               }`}
             >
               <div className="flex items-center space-x-2 font-bold text-sm text-slate-700 dark:text-white">
-                {isSelected ? (
-                  <span 
-                    className="w-4 h-4 rounded-full flex items-center justify-center text-white shrink-0 shadow-sm" 
-                    style={{ backgroundColor: color }}
-                  >
-                    <Check size={10} strokeWidth={3} className="text-white" />
-                  </span>
-                ) : (
-                  <span className="w-2.5 h-2.5 rounded-full shadow-sm shrink-0" style={{ backgroundColor: color }}></span>
+                {JOB_ICONS[job] && (
+                  <img src={JOB_ICONS[job]} alt={job} className="w-5 h-5 object-contain shrink-0" />
                 )}
                 <span className={isSelected ? "text-[#0b3d63] dark:text-[#82A0F5]" : ""}>{job}</span>
               </div>

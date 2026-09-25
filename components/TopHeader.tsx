@@ -6,7 +6,7 @@ import { Menu as MenuIcon, User as UserIcon, LifeBuoy, LogOut, Moon, Sun, Settin
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { useTheme } from "next-themes";
-import { JOB_LIST } from "@/lib/utils";
+import { JOB_LIST, JOB_ICONS } from "@/lib/utils";
 
 // Map routes to titles
 const ROUTE_TITLES: Record<string, string> = {
@@ -166,7 +166,11 @@ export default function TopHeader({
               </div>
               
               <div className="px-4 py-2.5 text-sm font-medium text-theme-text flex items-center gap-3">
-                <LifeBuoy size={16} className="text-theme-success" />
+                {user?.class && JOB_ICONS[user.class] ? (
+                  <img src={JOB_ICONS[user.class]} alt={user.class} className="w-4 h-4 object-contain shrink-0" />
+                ) : (
+                  <LifeBuoy size={16} className="text-theme-success" />
+                )}
                 <span className="truncate">{user?.class || "No Class"} / {user?.power?.toLocaleString('en-US') || "0"}</span>
               </div>
               

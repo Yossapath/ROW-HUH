@@ -677,7 +677,14 @@ export default function AttendancePage() {
                       >
                         <td className="px-4 py-3.5 text-slate-400 dark:text-[#6B7280] text-sm font-medium">{i + 1}</td>
                         <td className="px-4 py-3.5 font-semibold text-slate-800 dark:text-white text-sm">{r.name}</td>
-                        <td className="px-4 py-3.5 font-semibold text-sm" style={{ color: jobColor }}>{r.job}</td>
+                        <td className="px-4 py-3.5">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold text-white shadow-sm" style={{ backgroundColor: jobColor }}>
+                            {JOB_ICONS[r.job] && (
+                              <img src={JOB_ICONS[r.job]} alt={r.job} className="w-4 h-4 object-contain" />
+                            )}
+                            {r.job}
+                          </span>
+                        </td>
                         <td className="px-4 py-3.5 text-right font-semibold text-slate-800 dark:text-white text-sm tabular-nums">
                           {r.power > 0 ? r.power.toLocaleString() : "—"}
                         </td>

@@ -1,5 +1,5 @@
 ﻿import React, { forwardRef } from "react";
-import { JOB_COLORS } from "@/lib/utils";
+import { JOB_COLORS, JOB_ICONS } from "@/lib/utils";
 
 type Member = { id: string; name: string; job: string; power: number };
 type Column = { id: string; title: string; memberIds: (string | null)[]; type: "main" | "sub" | "unassigned"; locked: boolean };
@@ -206,7 +206,10 @@ export const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
                                 textOverflow: "ellipsis",
                                 lineHeight: 1.1,
                               }}>
-                                {m.job}
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+                                  {JOB_ICONS[m.job] && <img src={JOB_ICONS[m.job]} alt={m.job} style={{ width: "20px", height: "20px", objectFit: "contain" }} />}
+                                  <span>{m.job}</span>
+                                </div>
                               </div>
                             ) : (
                               <div style={txt(18, 400, "#cbd5e1", "center")}>-</div>

@@ -296,7 +296,10 @@ export default function LeavePage() {
                       </td>
                       <td className="px-5 py-3.5">
                         {rec.job
-                          ? <span className="px-2 py-0.5 text-white rounded text-xs font-semibold" style={{ backgroundColor: JOB_COLORS[rec.job] || "#475569" }}>{rec.job}</span>
+                          ? <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-white rounded-md text-xs font-bold shadow-sm" style={{ backgroundColor: JOB_COLORS[rec.job] || "#475569" }}>
+                            {JOB_ICONS[rec.job] && <img src={JOB_ICONS[rec.job]} alt={rec.job} className="w-3.5 h-3.5 object-contain" />}
+                            {rec.job}
+                          </span>
                           : <span className="text-slate-300 dark:text-slate-600">—</span>}
                       </td>
                       <td className="px-5 py-3.5 text-slate-500 text-xs">{rec.name}</td>

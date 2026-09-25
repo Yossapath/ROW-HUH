@@ -13,7 +13,7 @@ import {
   Shield,
   AlertCircle,
 } from "lucide-react";
-import { JOB_LIST, JOB_COLORS, isBookingOpen, formatTimestamp } from "@/lib/utils";
+import { JOB_LIST, JOB_COLORS, JOB_ICONS, isBookingOpen, formatTimestamp } from "@/lib/utils";
 import type { DungeonQueue, DungeonSchedule } from "@/types";
 import { useAuthStore } from "@/stores/useAuthStore";
 import Link from "next/link";
@@ -669,10 +669,11 @@ export default function BookingPage() {
                                 border: `1px solid ${jobColor}66`,
                               }}
                             >
-                              <span
-                                className="w-1.5 h-1.5 rounded-full shrink-0"
-                                style={{ backgroundColor: jobColor }}
-                              />
+                              {JOB_ICONS[q.job] ? (
+                                <img src={JOB_ICONS[q.job]} alt={q.job} className="w-4 h-4 object-contain shrink-0" />
+                              ) : (
+                                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: jobColor }} />
+                              )}
                               {q.job}
                             </span>
                             {(realPower && realPower > 0) ? (

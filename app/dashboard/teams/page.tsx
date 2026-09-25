@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { Shield, Users, Loader2, GripVertical, Lock, Unlock, X, ChevronLeft, ChevronRight, LayoutGrid, Wand2, ChevronDown, Plus, Trash2, Edit2, Check, CheckCircle2, Search, Download, AlertCircle, RefreshCw } from "lucide-react";
 import axios from "axios";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { JOB_COLORS, JOB_LIST } from "@/lib/utils";
+import { JOB_COLORS, JOB_LIST, JOB_ICONS } from "@/lib/utils";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { allocateTeams, AllocatorResult } from "@/lib/team-allocator";
 import html2canvas from "html2canvas";
@@ -996,7 +996,10 @@ export default function TeamsPage() {
                 return matches.map(m => (
                   <div key={m.id} onClick={() => { setPlayerSearchQuery(m.name); setTimeout(() => handleSearchPlayer({preventDefault:()=>({})} as any), 50); }} className="px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-[#343B4B] cursor-pointer text-sm font-bold text-slate-800 dark:text-white flex justify-between items-center border-b border-slate-100 dark:border-[#2D3342] last:border-0">
                     <span>{m.name}</span>
-                    <span className="text-[10px] text-white px-2 py-0.5 rounded-full" style={{ backgroundColor: JOB_COLORS[m.job] || "#475569" }}>{m.job}</span>
+                    <span className="inline-flex items-center gap-1 text-[10px] text-white px-2 py-0.5 rounded-full font-bold shadow-sm" style={{ backgroundColor: JOB_COLORS[m.job] || "#475569" }}>
+                      {JOB_ICONS[m.job] && <img src={JOB_ICONS[m.job]} alt={m.job} className="w-3.5 h-3.5 object-contain" />}
+                      {m.job}
+                    </span>
                   </div>
                 ));
               })()}
@@ -1086,7 +1089,7 @@ export default function TeamsPage() {
                           const count = (data.columns["unassigned"].memberIds as string[]).filter(id => data.members[id]?.job === job).length;
                           return (
                             <label key={job} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-[#272C38] cursor-pointer text-xs select-none">
-                              <div className="flex items-center gap-2"><input type="checkbox" checked={isChecked} onChange={() => setUnassignedFilterJobs(prev => prev.includes(job) ? prev.filter(j => j !== job) : [...prev, job])} className="rounded border-slate-300 text-[#3B66D1]" /><span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: JOB_COLORS[job] || "#475569" }} /><span className={`truncate font-medium ${isChecked ? "font-bold text-[#0b3d63] dark:text-[#82A0F5]" : "text-slate-700 dark:text-slate-300"}`}>{job}</span></div>
+                              <div className="flex items-center gap-2"><input type="checkbox" checked={isChecked} onChange={() => setUnassignedFilterJobs(prev => prev.includes(job) ? prev.filter(j => j !== job) : [...prev, job])} className="rounded border-slate-300 text-[#3B66D1]" />{JOB_ICONS[job] ? <img src={JOB_ICONS[job]} alt={job} className="w-4 h-4 object-contain shrink-0" /> : <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: JOB_COLORS[job] || "#475569" }} />}<span className={`truncate font-medium ${isChecked ? "font-bold text-[#0b3d63] dark:text-[#82A0F5]" : "text-slate-700 dark:text-slate-300"}`}>{job}</span></div>
                               <span className="text-[10px] font-mono text-slate-400">{count}</span>
                             </label>
                           );
@@ -1147,7 +1150,7 @@ export default function TeamsPage() {
                           if (count === 0) return null;
                           return (
                             <div key={job} className="flex items-center gap-1.5 px-2 py-1 bg-slate-50 dark:bg-[#1C1F27] border border-slate-200 dark:border-[#2D3342] rounded-lg shadow-sm text-xs">
-                              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: JOB_COLORS[job] || "#ccc" }} />
+                              {JOB_ICONS[job] ? <img src={JOB_ICONS[job]} alt={job} className="w-4 h-4 object-contain shrink-0" /> : <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: JOB_COLORS[job] || "#ccc" }} />}
                               <span className="text-slate-600 dark:text-slate-300 font-medium">{job}</span>
                               <span className="font-bold text-[#0b3d63] dark:text-[#82A0F5] bg-white dark:bg-[#2A2F3E] px-1.5 rounded text-[10px] min-w-[1.25rem] text-center">{count}</span>
                             </div>
@@ -1250,7 +1253,10 @@ export default function TeamsPage() {
                                     <span>{m.name}</span>
                                     {m.power > 0 && <span className="text-xs text-amber-500">{m.power.toLocaleString()}</span>}
                                   </div>
-                                  <span className="text-[10px] text-white px-2 py-0.5 rounded-full" style={{ backgroundColor: JOB_COLORS[m.job] || "#475569" }}>{m.job}</span>
+                                  <span className="inline-flex items-center gap-1 text-[10px] text-white px-2 py-0.5 rounded-full font-bold shadow-sm" style={{ backgroundColor: JOB_COLORS[m.job] || "#475569" }}>
+                                    {JOB_ICONS[m.job] && <img src={JOB_ICONS[m.job]} alt={m.job} className="w-3.5 h-3.5 object-contain" />}
+                                    {m.job}
+                                  </span>
                                 </div>
                               ))}
                             </div>
@@ -1449,7 +1455,11 @@ function TeamCard({
                               <div id={`member-assigned-${memberId}`} ref={prov.innerRef} {...prov.draggableProps} className={`w-full h-[38px] grid ${isAdmin ? "grid-cols-[30px_minmax(0,1fr)_85px_50px_22px] sm:grid-cols-[36px_minmax(0,1fr)_115px_60px_24px]" : "grid-cols-[30px_minmax(0,1fr)_85px_50px] sm:grid-cols-[36px_minmax(0,1fr)_115px_60px]"} gap-1.5 sm:gap-2 items-center px-2 py-1 rounded-xl bg-white dark:bg-[#272C38] hover:bg-slate-50 dark:hover:bg-[#2A2F3E] group border border-slate-100 dark:border-[#2D3342] transition-all ${snap.isDragging ? "shadow-2xl border-blue-400 dark:border-[#4D73CD] ring-2 ring-[#0b3d63]/20 z-[99999]" : "shadow-xs"}`} style={prov.draggableProps.style}>
                                 <div className="flex items-center gap-0.5 sm:gap-1 text-slate-400 cursor-grab touch-none p-1 -m-1" {...(isAdmin ? prov.dragHandleProps : {})}>{isAdmin ? <GripVertical size={14} className="text-sky-300 dark:text-sky-400 shrink-0" /> : null}<span className="text-xs font-bold text-sky-500 font-mono w-3 text-center">{slotIdx + 1}</span></div>
                                 <div className="min-w-0 pr-1"><span className="text-xs font-bold text-slate-800 dark:text-white truncate block" title={m?.name}>{m ? m.name : (memberId || "Unknown")}</span></div>
-                                {m && <div className="h-[24px] sm:h-[26px] px-1.5 sm:px-3 rounded-full text-[10px] sm:text-xs font-bold text-white flex items-center justify-center gap-1 shadow-sm shrink-0 w-[85px] sm:w-[115px]" style={{ backgroundColor: color }}><span className="truncate">{m.job}</span><ChevronDown size={10} className="opacity-80 shrink-0 stroke-[2.5] hidden sm:inline-block" /></div>}
+                                {m && <div className="h-[24px] sm:h-[26px] px-1.5 sm:px-2.5 rounded-full text-[10px] sm:text-xs font-bold text-white flex items-center justify-center gap-1 shadow-sm shrink-0 w-[85px] sm:w-[115px]" style={{ backgroundColor: color }}>
+                                  {JOB_ICONS[m.job] && <img src={JOB_ICONS[m.job]} alt={m.job} className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain shrink-0" />}
+                                  <span className="truncate">{m.job}</span>
+                                  <ChevronDown size={10} className="opacity-80 shrink-0 stroke-[2.5] hidden sm:inline-block" />
+                                </div>}
                                 {m && <div className="text-[10px] sm:text-xs font-bold text-[#0b3d63] dark:text-white text-right tabular-nums shrink-0">{(m.power || 0).toLocaleString()}</div>}
                                 {isAdmin && <button onClick={e => { e.stopPropagation(); removeMember(column.id, memberId); }} disabled={column.locked} className="text-sky-300 hover:text-red-500 dark:text-sky-400 dark:hover:text-red-400 opacity-60 hover:opacity-100 transition-opacity flex justify-center disabled:hidden p-0.5" title="นำออกจากทีม"><X size={14} strokeWidth={2.5} /></button>}
                               </div>
@@ -1489,7 +1499,10 @@ function MemberCard({ member, index }: { member?: Member; index: number }) {
             style={{ ...provided.draggableProps.style, backgroundColor: snapshot.isDragging ? undefined : hexToRgba(color, 0.05), borderLeftWidth: "4px", borderLeftColor: color }}>
             <div className="flex flex-col truncate pr-2 min-w-0">
               <span className="text-[12px] font-bold text-slate-800 dark:text-white truncate">{member.name}</span>
-              <span className="text-[9px] font-bold truncate opacity-90" style={{ color }}>{member.job}</span>
+              <span className="text-[9px] font-bold truncate opacity-90 flex items-center gap-1" style={{ color }}>
+                {JOB_ICONS[member.job] && <img src={JOB_ICONS[member.job]} alt={member.job} className="w-3 h-3 object-contain shrink-0" />}
+                {member.job}
+              </span>
             </div>
             <div className="text-[11px] font-bold tabular-nums tracking-tight flex-shrink-0" style={{ color }}>{(member.power || 0).toLocaleString()}</div>
           </div>

@@ -14,7 +14,7 @@ import {
   ShieldOff,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { JOB_COLORS, formatTimestamp, formatDateOnly, formatTimeOnly } from "@/lib/utils";
+import { JOB_COLORS, JOB_ICONS, formatTimestamp, formatDateOnly, formatTimeOnly } from "@/lib/utils";
 import type { SystemLog, LeaveRecord, DungeonQueue } from "@/types";
 
 // ── Module badge config ────────────────────────────────────────
@@ -470,7 +470,10 @@ export default function LogPage() {
                                     {(power && power > 0) ? <span className="text-xs font-bold text-amber-500">{power.toLocaleString()}</span> : <span className="text-slate-300 dark:text-slate-600">—</span>}
                                   </td>
                                   <td className="px-4 py-3">
-                                    {leave.job ? <span className="text-[11px] text-white px-2 py-0.5 rounded-full font-bold" style={{ backgroundColor: JOB_COLORS[leave.job] || "#475569" }}>{leave.job}</span> : <span className="text-slate-300 dark:text-slate-600">—</span>}
+                                    {leave.job ? <span className="inline-flex items-center gap-1 text-[11px] text-white px-2 py-0.5 rounded-full font-bold shadow-sm" style={{ backgroundColor: JOB_COLORS[leave.job] || "#475569" }}>
+                                        {JOB_ICONS[leave.job] && <img src={JOB_ICONS[leave.job]} alt={leave.job} className="w-3.5 h-3.5 object-contain" />}
+                                        {leave.job}
+                                      </span> : <span className="text-slate-300 dark:text-slate-600">—</span>}
                                   </td>
                                   <td className="px-4 py-3 text-slate-600 dark:text-white">
                                     {leave.day ?? "—"}
@@ -554,10 +557,11 @@ export default function LogPage() {
                       <td className="px-4 py-3 font-semibold text-slate-700 dark:text-white">{qr.name}</td>
                       <td className="px-4 py-3">
                         <span className="flex items-center gap-1.5">
-                          <span
-                            className="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0"
-                            style={{ backgroundColor: JOB_COLORS[qr.job] ?? "#94a3b8" }}
-                          />
+                          {JOB_ICONS[qr.job] ? (
+                            <img src={JOB_ICONS[qr.job]} alt={qr.job} className="w-4 h-4 object-contain shrink-0" />
+                          ) : (
+                            <span className="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0" style={{ backgroundColor: JOB_COLORS[qr.job] ?? "#94a3b8" }} />
+                          )}
                           <span className="text-slate-600 dark:text-white font-medium">{qr.job}</span>
                         </span>
                       </td>

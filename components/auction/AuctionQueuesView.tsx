@@ -1,6 +1,6 @@
 "use client";
 import { useModalStore } from "@/stores/useModalStore";
-import { formatItemName } from "@/lib/utils";
+import { formatItemName, JOB_ICONS, JOB_COLORS } from "@/lib/utils";
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -350,7 +350,12 @@ export function AuctionQueuesView({ auctions }: Props) {
                                         <span className="text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-1.5 py-0.5 rounded uppercase">You</span>
                                       )}
                                     </td>
-                                    <td className="py-4 px-6 text-sm text-slate-600 dark:text-[#8B93A7]">{res.job}</td>
+                                    <td className="py-4 px-6 text-sm">
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-bold text-white shadow-sm" style={{ backgroundColor: (res.job && JOB_COLORS[res.job]) || "#475569" }}>
+                                        {res.job && JOB_ICONS[res.job] && <img src={JOB_ICONS[res.job]} alt={res.job} className="w-3.5 h-3.5 object-contain" />}
+                                        {res.job}
+                                      </span>
+                                    </td>
                                     <td className="py-4 px-6 text-sm text-right">
                                       {isAdmin ? (
                                         <div className="flex justify-end gap-2">

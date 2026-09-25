@@ -1,4 +1,5 @@
 "use client";
+import { JOB_ICONS, JOB_COLORS } from "@/lib/utils";
 
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -44,7 +45,10 @@ export function MemberProfileModal({ member, onClose }: MemberProfileModalProps)
                 {member.name}
               </h2>
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-[#8B93A7]">
-                <span>คลาส: {member.job || "-"}</span>
+                <span className="flex items-center gap-1.5">
+                  คลาส: {member.job && JOB_ICONS[member.job] && <img src={JOB_ICONS[member.job]} alt={member.job} className="w-4 h-4 object-contain inline-block" />}
+                  <span className="font-bold text-slate-800 dark:text-white">{member.job || "-"}</span>
+                </span>
                 <span>•</span>
                 <span>Gear: {member.power ? member.power.toLocaleString() : "-"}</span>
               </div>

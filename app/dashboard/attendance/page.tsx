@@ -1,4 +1,5 @@
 "use client";
+import { useModalStore } from "@/stores/useModalStore";
 import { JOB_COLORS } from "@/lib/utils";
 
 import { useEffect, useState, useCallback, useRef } from "react";
@@ -406,7 +407,7 @@ export default function AttendancePage() {
 
   const handleReset = async () => {
     if (!selectedDate || !isAdmin) return;
-    if (!confirm(`คุณต้องการล้างข้อมูลการเช็คชื่อทั้งหมดของวันที่ ${formatDateTH(selectedDate)} หรือไม่?`)) return;
+    if (!await useModalStore.getState().confirm(`คุณต้องการล้างข้อมูลการเช็คชื่อทั้งหมดของวันที่ ${formatDateTH(selectedDate)} หรือไม่?`)) return;
     setSaving(true);
     setMsg(null);
     try {

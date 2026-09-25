@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Prompt } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
+import { GlobalModal } from "@/components/GlobalModal";
 
 const prompt = Prompt({
   subsets: ["latin", "thai"],
@@ -58,6 +59,7 @@ export default function RootLayout({
       </head>
       <body className={`min-h-screen bg-background text-foreground antialiased ${prompt.variable} font-sans`}>
         <Providers>{children}</Providers>
+        <GlobalModal />
       </body>
     </html>
   );

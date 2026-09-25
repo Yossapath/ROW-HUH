@@ -1,4 +1,5 @@
 "use client";
+import { useModalStore } from "@/stores/useModalStore";
 import { formatItemName } from "@/lib/utils";
 
 import { useState, useRef } from "react";
@@ -32,13 +33,13 @@ export function EditAuctionModal({ auction, onClose }: Props) {
       queryClient.invalidateQueries({ queryKey: ["auctions"] });
       onClose();
     },
-    onError: (err: any) => alert(err.message),
+    onError: (err: any) => useModalStore.getState().alert(err.message),
   });
 
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      if (!window.confirm(`🗑️ ยืนยันการลบ "\n\n${formatItemName(auction.itemName, auction.category)}"\n\n⚠️ การกระทำนี้ไม่สามารถย้อนกลับได้! คิวทั้งหมดจะหายไปด้วย`)) {
+      if (!await useModalStore.getState().confirm(`🗑️ ยืนยันการลบ "\n\n${formatItemName(auction.itemName, auction.category)}"\n\n⚠️ การกระทำนี้ไม่สามารถย้อนกลับได้! คิวทั้งหมดจะหายไปด้วย`)) {
         throw new Error("Cancelled");
       }
       const res = await fetch(`/api/auctions/${auction.id}`, { method: "DELETE" });
@@ -49,7 +50,7 @@ export function EditAuctionModal({ auction, onClose }: Props) {
       onClose();
     },
     onError: (err: any) => {
-      if (err.message !== "Cancelled") alert(err.message);
+      if (err.message !== "Cancelled") useModalStore.getState().alert(err.message);
     },
   });
 
@@ -68,7 +69,7 @@ export function EditAuctionModal({ auction, onClose }: Props) {
       // Refresh auction list but keep modal open so user sees the preview
       queryClient.invalidateQueries({ queryKey: ["auctions"] });
     },
-    onError: (err: any) => alert(err.message),
+    onError: (err: any) => useModalStore.getState().alert(err.message),
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,11 +77,11 @@ export function EditAuctionModal({ auction, onClose }: Props) {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      alert("กรุณาอัปโหลดไฟล์รูปภาพเท่านั้น (png, jpg)");
+      useModalStore.getState().alert("กรุณาอัปโหลดไฟล์รูปภาพเท่านั้น (png, jpg)");
       return;
     }
     if (file.size > 700 * 1024) {
-      alert("ขนาดรูปภาพต้องไม่เกิน 700KB (Firestore limit)");
+      useModalStore.getState().alert("ขนาดรูปภาพต้องไม่เกิน 700KB (Firestore limit)");
       return;
     }
 
@@ -95,7 +96,7 @@ export function EditAuctionModal({ auction, onClose }: Props) {
     };
     reader.onerror = () => {
       setIsUploading(false);
-      alert("ไม่สามารถอ่านไฟล์ได้ กรุณาลองใหม่");
+      useModalStore.getState().alert("ไม่สามารถอ่านไฟล์ได้ กรุณาลองใหม่");
     };
     reader.readAsDataURL(file);
   };

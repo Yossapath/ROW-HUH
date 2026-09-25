@@ -1,4 +1,5 @@
 "use client";
+import { useModalStore } from "@/stores/useModalStore";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle, RefreshCw, Users, Shield, Plus, X } from "lucide-react";
@@ -35,14 +36,14 @@ export function TeamBoard({ teams, isLoading, rosterMembers }: TeamBoardProps) {
     onSuccess: (data, variables) => {
       if (variables.action === "assign") {
         if (data.assignedCount === 0) {
-          alert(data.reason || data.message || "ไม่สามารถจัดทีมอัตโนมัติได้: ไม่มีผู้เล่นอาชีพ Priest ในคิว หรือทีมเต็มแล้ว");
+          useModalStore.getState().alert(data.reason || data.message || "ไม่สามารถจัดทีมอัตโนมัติได้: ไม่มีผู้เล่นอาชีพ Priest ในคิว หรือทีมเต็มแล้ว");
         }
       }
       // Invalidate the unified dungeon data query so the parent re-fetches
       queryClient.invalidateQueries({ queryKey: ["dungeon_data"] });
     },
     onError: (err: any) => {
-      alert(err.message);
+      useModalStore.getState().alert(err.message);
     },
   });
 

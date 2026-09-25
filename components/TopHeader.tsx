@@ -1,3 +1,4 @@
+import { useModalStore } from "@/stores/useModalStore";
 import GoogleTranslate from "@/components/GoogleTranslate";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useRouter, usePathname } from "next/navigation";
@@ -74,7 +75,7 @@ export default function TopHeader({
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editName || !editJob || !editPower) return alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+    if (!editName || !editJob || !editPower) return useModalStore.getState().alert("กรุณากรอกข้อมูลให้ครบถ้วน");
     setIsSaving(true);
     try {
       await axios.put("/api/roster/member", {
@@ -98,7 +99,7 @@ export default function TopHeader({
       setIsSettingsOpen(false);
       window.location.reload(); // Reload to refresh data in other components
     } catch (err: any) {
-      alert(err.response?.data?.error || "เกิดข้อผิดพลาดในการบันทึก");
+      useModalStore.getState().alert(err.response?.data?.error || "เกิดข้อผิดพลาดในการบันทึก");
     } finally {
       setIsSaving(false);
     }

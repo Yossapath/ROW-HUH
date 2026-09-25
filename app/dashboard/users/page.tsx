@@ -1,4 +1,5 @@
 "use client";
+import { useModalStore } from "@/stores/useModalStore";
 
 import { useAuthStore } from "@/stores/useAuthStore";
 import { UserCog, Shield, User, Loader2, Trash2, AlertTriangle, X } from "lucide-react";
@@ -40,10 +41,10 @@ export default function UsersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      alert("อัปเดต Role สำเร็จ!");
+      useModalStore.getState().alert("อัปเดต Role สำเร็จ!");
     },
     onError: (err: any) => {
-      alert(err?.response?.data?.error || "เกิดข้อผิดพลาดในการอัปเดต Role");
+      useModalStore.getState().alert(err?.response?.data?.error || "เกิดข้อผิดพลาดในการอัปเดต Role");
     },
   });
 
@@ -58,11 +59,11 @@ export default function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setUserToDelete(null);
       setConfirmInput("");
-      alert("ลบผู้ใช้เรียบร้อยแล้ว");
+      useModalStore.getState().alert("ลบผู้ใช้เรียบร้อยแล้ว");
     },
     onError: (error: any) => {
       const msg = error.response?.data?.error || "เกิดข้อผิดพลาดในการลบผู้ใช้";
-      alert(msg);
+      useModalStore.getState().alert(msg);
     },
   });
 
@@ -222,8 +223,7 @@ export default function UsersPage() {
                           ) : (
                             <select
                               value={u.role || "member"}
-                              onChange={(e) => {
-                                if (window.confirm(`ต้องการเปลี่ยนยศของ ${u.discordUsername || 'ผู้ใช้'} เป็น ${e.target.value} ใช่หรือไม่?`)) {
+                              onChange={async (e) => { if (await useModalStore.getState().confirm(`ต้องการเปลี่ยนยศของ ${u.discordUsername || 'ผู้ใช้'} เป็น ${e.target.value} ใช่หรือไม่?`)) {
                                   updateRoleMutation.mutate({ discordId: u.discordId, role: e.target.value });
                                 }
                               }}

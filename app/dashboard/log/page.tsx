@@ -1,4 +1,5 @@
 "use client";
+import { useModalStore } from "@/stores/useModalStore";
 
 import { useEffect, useState, useMemo } from "react";
 import {
@@ -140,7 +141,7 @@ export default function LogPage() {
 
   // ── Delete leave ─────────────────────────────────────────────
   async function handleDeleteLeave(id: string) {
-    if (!window.confirm("ยืนยันลบรายการนี้?")) return;
+    if (!await useModalStore.getState().confirm("ยืนยันลบรายการนี้?")) return;
     try {
       await fetch("/api/leave", {
         method: "DELETE",
@@ -153,7 +154,7 @@ export default function LogPage() {
 
   // ── Clear queues ─────────────────────────────────────────────
   async function handleClearQueues() {
-    if (!window.confirm("ยืนยันลบประวัติการจองดันเจี้ยนที่สำเร็จแล้วทั้งหมด?")) return;
+    if (!await useModalStore.getState().confirm("ยืนยันลบประวัติการจองดันเจี้ยนที่สำเร็จแล้วทั้งหมด?")) return;
     try {
       await fetch("/api/dungeon/queues", { method: "DELETE" });
       setQueues((prev) => prev.filter(q => q.status !== "done"));

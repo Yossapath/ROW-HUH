@@ -1,4 +1,5 @@
 "use client";
+import { useModalStore } from "@/stores/useModalStore";
 
 import { useEffect, useState, useMemo } from "react";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
@@ -49,7 +50,7 @@ export default function DungeonPage() {
       queryClient.invalidateQueries({ queryKey: ["dungeon_data"] });
     },
     onError: (err: any) => {
-      alert(err.message);
+      useModalStore.getState().alert(err.message);
     }
   });
 
@@ -305,7 +306,7 @@ export default function DungeonPage() {
   };
 
   const handleCloseBooking = async () => {
-    if (!confirm("แน่ใจที่จะปิดจองดันเจี้ยนใช่ไหม?")) return;
+    if (!await useModalStore.getState().confirm("แน่ใจที่จะปิดจองดันเจี้ยนใช่ไหม?")) return;
     setSchedSaving(true);
     setSchedMsg(null);
     try {

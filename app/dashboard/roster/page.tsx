@@ -1,4 +1,5 @@
 "use client";
+import { useModalStore } from "@/stores/useModalStore";
 
 import { useState, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -64,7 +65,7 @@ export default function RosterPage() {
   };
 
   const handleSaveEdit = async () => {
-    if (!editName || !editJob) return alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+    if (!editName || !editJob) return useModalStore.getState().alert("กรุณากรอกข้อมูลให้ครบถ้วน");
     
     setIsSaving(true);
     try {
@@ -84,14 +85,14 @@ export default function RosterPage() {
       queryClient.invalidateQueries({ queryKey: ["roster"] });
       setEditingMember(null);
     } catch (err: any) {
-      alert("เกิดข้อผิดพลาด: " + (err.response?.data?.error || err.message));
+      useModalStore.getState().alert("เกิดข้อผิดพลาด: " + (err.response?.data?.error || err.message));
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm("ยืนยันการลบสมาชิกนี้?")) return;
+    if (!await useModalStore.getState().confirm("ยืนยันการลบสมาชิกนี้?")) return;
     setIsSaving(true);
     try {
       await axios.delete("/api/roster", {
@@ -104,7 +105,7 @@ export default function RosterPage() {
       queryClient.invalidateQueries({ queryKey: ["roster"] });
       setEditingMember(null);
     } catch (err: any) {
-      alert("เกิดข้อผิดพลาดในการลบสมาชิก");
+      useModalStore.getState().alert("เกิดข้อผิดพลาดในการลบสมาชิก");
     } finally {
       setIsSaving(false);
     }
@@ -257,10 +258,10 @@ export default function RosterPage() {
                    setNotFoundNames(missingNames);
                    setShowModal(true);
                } else {
-                   alert("อัปเดตข้อมูลสำเร็จ!");
+                   useModalStore.getState().alert("อัปเดตข้อมูลสำเร็จ!");
                }
            } catch (error: any) {
-               alert("เกิดข้อผิดพลาดในการอัปเดต: " + (error.message || ""));
+               useModalStore.getState().alert("เกิดข้อผิดพลาดในการอัปเดต: " + (error.message || ""));
            } finally {
                setIsSaving(false);
            }
@@ -268,7 +269,7 @@ export default function RosterPage() {
         
       } catch (error) {
         console.error(error);
-        alert("เกิดข้อผิดพลาดในการอ่านไฟล์ Excel");
+        useModalStore.getState().alert("เกิดข้อผิดพลาดในการอ่านไฟล์ Excel");
       }
       
       if (fileInputRef.current) fileInputRef.current.value = "";

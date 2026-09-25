@@ -1,4 +1,5 @@
 "use client";
+import { useModalStore } from "@/stores/useModalStore";
 
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -22,11 +23,11 @@ export function AddAuctionModal({ onClose }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      alert("กรุณาอัปโหลดไฟล์รูปภาพเท่านั้น (png, jpg)");
+      useModalStore.getState().alert("กรุณาอัปโหลดไฟล์รูปภาพเท่านั้น (png, jpg)");
       return;
     }
     if (file.size > 700 * 1024) {
-      alert("ขนาดรูปภาพต้องไม่เกิน 700KB");
+      useModalStore.getState().alert("ขนาดรูปภาพต้องไม่เกิน 700KB");
       return;
     }
     setIsUploading(true);
@@ -56,7 +57,7 @@ export function AddAuctionModal({ onClose }: Props) {
       queryClient.invalidateQueries({ queryKey: ["auctions"] });
       onClose();
     },
-    onError: (err: any) => alert(err.message),
+    onError: (err: any) => useModalStore.getState().alert(err.message),
   });
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -1,4 +1,5 @@
 "use client";
+import { useModalStore } from "@/stores/useModalStore";
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -105,7 +106,7 @@ export default function TeamsPage() {
 
   const handleExportPDF = () => {
     if (!data) {
-      alert("ไม่พบข้อมูลสำหรับการ Export");
+      useModalStore.getState().alert("ไม่พบข้อมูลสำหรับการ Export");
       return;
     }
 
@@ -120,13 +121,13 @@ export default function TeamsPage() {
     });
 
     if (totalAssigned === 0) {
-      alert("ไม่สามารถ Export ได้ เนื่องจากยังไม่มีการจัดสมาชิกลงในทีม");
+      useModalStore.getState().alert("ไม่สามารถ Export ได้ เนื่องจากยังไม่มีการจัดสมาชิกลงในทีม");
       return;
     }
 
     const printWin = window.open("", "_blank");
     if (!printWin) {
-      alert("กรุณาอนุญาต Pop-up (Pop-up Blocker) สำหรับไซต์นี้ เพื่อดู PDF");
+      useModalStore.getState().alert("กรุณาอนุญาต Pop-up (Pop-up Blocker) สำหรับไซต์นี้ เพื่อดู PDF");
       return;
     }
 
@@ -355,7 +356,7 @@ export default function TeamsPage() {
 
       setData({ members: membersMap, columns: cols, zones, offlineIds });
     } catch {
-      alert("โหลดข้อมูลไม่สำเร็จ");
+      useModalStore.getState().alert("โหลดข้อมูลไม่สำเร็จ");
     } finally {
       setIsLoading(false);
     }
@@ -470,12 +471,12 @@ export default function TeamsPage() {
            }, 150);
         } else if (data.offlineIds.includes(targetId)) {
            setActiveTab("leave");
-           alert(`ผู้เล่น ${targetMember?.name ?? targetId} อยู่ในสถานะลา/ออฟไลน์`);
+           useModalStore.getState().alert(`ผู้เล่น ${targetMember?.name ?? targetId} อยู่ในสถานะลา/ออฟไลน์`);
         }
       }
       setPlayerSearchQuery(""); // clear after search
     } else {
-      alert("ไม่พบผู้เล่นที่ค้นหา");
+      useModalStore.getState().alert("ไม่พบผู้เล่นที่ค้นหา");
     }
   };
 
@@ -532,8 +533,8 @@ export default function TeamsPage() {
     });
   };
 
-  const autoRunTeamNumbers = () => {
-    if (!data || !confirm("ต้องการให้ระบบเรียงลำดับเลขทีมใหม่ (ทีม 1, ทีม 2, ...) เรียงตามโซนใช่หรือไม่?")) return;
+  const autoRunTeamNumbers = async () => {
+    if (!data || !await useModalStore.getState().confirm("ต้องการให้ระบบเรียงลำดับเลขทีมใหม่ (ทีม 1, ทีม 2, ...) เรียงตามโซนใช่หรือไม่?")) return;
     setData(prev => {
       if (!prev) return prev;
       const newCols = { ...prev.columns };
@@ -550,12 +551,12 @@ export default function TeamsPage() {
     });
   };
 
-  const deleteZone = (zoneId: string) => {
+  const deleteZone = async (zoneId: string) => {
     if (!data) return;
     const zone = data.zones.find(z => z.id === zoneId);
     if (!zone) return;
     if (zone.teamOrder.length > 0) {
-      if (!confirm(`โซนนี้มี ${zone.teamOrder.length} ทีม ต้องการลบโซนและย้ายสมาชิกทั้งหมดกลับไปยังไม่ได้จัด ใช่หรือไม่?`)) return;
+      if (!await useModalStore.getState().confirm(`โซนนี้มี ${zone.teamOrder.length} ทีม ต้องการลบโซนและย้ายสมาชิกทั้งหมดกลับไปยังไม่ได้จัด ใช่หรือไม่?`)) return;
     }
     const newData = { ...data };
     const newCols = { ...newData.columns };
@@ -578,7 +579,7 @@ export default function TeamsPage() {
     if (!data) return;
     const zone = data.zones.find(z => z.id === zoneId);
     if (!zone) return;
-    if (zone.type === "main" && !canAddMainTeam) { alert("สนามหลักมีครบ 60 คน (12 ทีม) แล้ว"); return; }
+    if (zone.type === "main" && !canAddMainTeam) { useModalStore.getState().alert("สนามหลักมีครบ 60 คน (12 ทีม) แล้ว"); return; }
     const allTeamNums = Object.keys(data.columns)
       .filter(id => id.startsWith(zone.type === "main" ? "main-" : "sub-"))
       .map(id => parseInt(id.split("-")[1])).filter(n => !isNaN(n));
@@ -596,7 +597,7 @@ export default function TeamsPage() {
     if (!data) return;
     const col = data.columns[colId];
     if (!col) return;
-    if (col.locked) { alert("ทีมนี้ถูกล็อกอยู่ ปลดล็อกก่อนลบ"); return; }
+    if (col.locked) { useModalStore.getState().alert("ทีมนี้ถูกล็อกอยู่ ปลดล็อกก่อนลบ"); return; }
     const newCols = { ...data.columns };
     const unassignedIds = [...newCols["unassigned"].memberIds] as string[];
     col.memberIds.forEach(id => { if (id) unassignedIds.push(id); });
@@ -1289,7 +1290,7 @@ export default function TeamsPage() {
                                 <td className="p-4 font-bold text-theme-textSecondary">{r.date || r.day}</td>
                                 <td className="p-4 text-sm text-theme-textMuted">{r.reason || "-"}</td>
                                 <td className="p-4 text-center">
-                                  <button onClick={async () => { if (confirm(`ลบรายการลาของ ${r.name}?`)) { try { await axios.delete("/api/leave", { data: { id: r.id } }); setLeaveRecords(prev => prev.filter(rec => rec.id !== r.id)); } catch { alert("ลบไม่สำเร็จ"); } } }} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg"><X size={16} /></button>
+                                  <button onClick={async () => { if (await useModalStore.getState().confirm(`ลบรายการลาของ ${r.name}?`)) { try { await axios.delete("/api/leave", { data: { id: r.id } }); setLeaveRecords(prev => prev.filter(rec => rec.id !== r.id)); } catch { useModalStore.getState().alert("ลบไม่สำเร็จ"); } } }} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg"><X size={16} /></button>
                                 </td>
                               </tr>
                             ))}

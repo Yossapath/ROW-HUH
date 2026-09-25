@@ -1,4 +1,5 @@
 "use client";
+import { useModalStore } from "@/stores/useModalStore";
 import { formatItemName } from "@/lib/utils";
 
 import { useState } from "react";
@@ -41,7 +42,7 @@ export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
       queryClient.invalidateQueries({ queryKey: ["auction-queue", auction.id] });
       queryClient.invalidateQueries({ queryKey: ["my-reservations"] });
     },
-    onError: (err: any) => alert(err.message),
+    onError: (err: any) => useModalStore.getState().alert(err.message),
   });
 
   const cancelMutation = useMutation({
@@ -60,12 +61,12 @@ export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
       queryClient.invalidateQueries({ queryKey: ["auction-queue", auction.id] });
       queryClient.invalidateQueries({ queryKey: ["my-reservations"] });
     },
-    onError: (err: any) => alert(err.message),
+    onError: (err: any) => useModalStore.getState().alert(err.message),
   });
 
   const awardMutation = useMutation({
     mutationFn: async (resInfo: { resId: string, charName: string, userId: string }) => {
-      if (!confirm(`ยืนยันการมอบไอเทมนี้ให้ ${resInfo.charName} หรือไม่?`)) throw new Error("Cancelled");
+      if (!await useModalStore.getState().confirm(`ยืนยันการมอบไอเทมนี้ให้ ${resInfo.charName} หรือไม่?`)) throw new Error("Cancelled");
       const res = await fetch(`/api/auctions/${auction.id}/award?reservationId=${resInfo.resId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -82,7 +83,7 @@ export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
       queryClient.invalidateQueries({ queryKey: ["auction-queue", auction.id] });
     },
     onError: (err: any) => {
-      if (err.message !== "Cancelled") alert(err.message);
+      if (err.message !== "Cancelled") useModalStore.getState().alert(err.message);
     },
   });
 

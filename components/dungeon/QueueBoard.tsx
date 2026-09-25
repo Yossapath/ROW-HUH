@@ -1,4 +1,5 @@
 "use client";
+import { useModalStore } from "@/stores/useModalStore";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RefreshCw, Search, Trash2, GripVertical } from "lucide-react";
@@ -41,7 +42,7 @@ export function QueueBoard({ queueItems, teams = [], rosterMembers = [], isLoadi
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dungeon_data"] });
     },
-    onError: (error: Error) => alert(error.message),
+    onError: (error: Error) => useModalStore.getState().alert(error.message),
   });
 
   const editRoundsMutation = useMutation({
@@ -58,7 +59,7 @@ export function QueueBoard({ queueItems, teams = [], rosterMembers = [], isLoadi
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dungeon_data"] });
     },
-    onError: (error: Error) => alert(error.message),
+    onError: (error: Error) => useModalStore.getState().alert(error.message),
   });
 
   const filteredItems = (queueItems || []).filter((q) => {
@@ -171,7 +172,7 @@ export function QueueBoard({ queueItems, teams = [], rosterMembers = [], isLoadi
                         {/* Delete */}
                         {(isAdmin || isOwner) && (
                           <button
-                            onClick={() => { if (!confirm("แน่ใจที่จะลบคิวนี้ใช่ไหม?")) return; actionMutation.mutate({ id: q.bookingId, action: "delete" }); }}
+                            onClick={async () => { if (!await useModalStore.getState().confirm("แน่ใจที่จะลบคิวนี้ใช่ไหม?")) return; actionMutation.mutate({ id: q.bookingId, action: "delete" }); }}
                             disabled={actionMutation.isPending}
                             className="text-red-400 hover:text-red-600 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50 transition-colors"
                             title="ลบคิว"

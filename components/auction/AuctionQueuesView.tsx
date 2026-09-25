@@ -1,4 +1,5 @@
 "use client";
+import { useModalStore } from "@/stores/useModalStore";
 import { formatItemName } from "@/lib/utils";
 
 import { useState, useEffect } from "react";
@@ -68,7 +69,7 @@ export function AuctionQueuesView({ auctions }: Props) {
 
   const awardMutation = useMutation({
     mutationFn: async (reservation: any) => {
-      if (!confirm("ยืนยันว่าผู้ใช้นี้ได้รับของแล้ว?")) throw new Error("Cancelled");
+      if (!await useModalStore.getState().confirm("ยืนยันว่าผู้ใช้นี้ได้รับของแล้ว?")) throw new Error("Cancelled");
       const res = await fetch(`/api/auctions/${selectedAuctionId}/award?reservationId=${reservation.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -109,12 +110,12 @@ export function AuctionQueuesView({ auctions }: Props) {
       setIsAdding(false);
       setSelectedMember("");
     },
-    onError: (err: any) => alert(err.message)
+    onError: (err: any) => useModalStore.getState().alert(err.message)
   });
 
   const cancelMutation = useMutation({
     mutationFn: async (resId: string) => {
-      if (!confirm("Are you sure you want to remove this user from the queue?")) throw new Error("Cancelled");
+      if (!await useModalStore.getState().confirm("Are you sure you want to remove this user from the queue?")) throw new Error("Cancelled");
       const res = await fetch(`/api/auctions/${selectedAuctionId}/reserve`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -127,7 +128,7 @@ export function AuctionQueuesView({ auctions }: Props) {
       queryClient.invalidateQueries({ queryKey: ["auctions"] });
     },
     onError: (err: any) => {
-      if (err.message !== "Cancelled") alert(err.message);
+      if (err.message !== "Cancelled") useModalStore.getState().alert(err.message);
     }
   });
 

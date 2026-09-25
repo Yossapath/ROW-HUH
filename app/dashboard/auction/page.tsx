@@ -1,4 +1,5 @@
 "use client";
+import { useModalStore } from "@/stores/useModalStore";
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -89,13 +90,13 @@ export default function AuctionPage() {
           {isAdmin && auctions.length === 0 && (
               <button
                 onClick={async () => {
-                  if (!confirm('Are you sure you want to seed 32 default items?')) return;
+                  if (!await useModalStore.getState().confirm('Are you sure you want to seed 32 default items?')) return;
                   const res = await fetch('/api/auctions/seed');
                   if (res.ok) {
-                    alert('Success! Please wait 1-2 seconds and click Refresh.');
+                    useModalStore.getState().alert('Success! Please wait 1-2 seconds and click Refresh.');
                     refetch();
                   } else {
-                    alert('Error');
+                    useModalStore.getState().alert('Error');
                   }
                 }}
                 className='flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl font-bold text-sm hover:bg-amber-600 transition-colors shadow-sm'

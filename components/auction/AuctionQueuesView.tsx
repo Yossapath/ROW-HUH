@@ -159,7 +159,16 @@ export function AuctionQueuesView({ auctions }: Props) {
       {/* Sidebar */}
       <div className={`w-full lg:w-1/3 flex-col gap-4 ${isSidebarOpen ? "flex" : "hidden"}`}>
         <div className="bg-white dark:bg-[#1A1D27] p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] flex flex-col gap-4 h-[600px]">
-          <h3 className="font-bold text-slate-800 dark:text-white text-lg">เลือกไอเทม</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-slate-800 dark:text-white text-lg">เลือกไอเทม</h3>
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#2A2F3E] rounded-lg transition-colors"
+              title="ซ่อนแถบเลือกไอเทม"
+            >
+              <Menu size={18} />
+            </button>
+          </div>
           
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -225,9 +234,11 @@ export function AuctionQueuesView({ auctions }: Props) {
             <>
               <div className="p-6 border-b border-slate-200 dark:border-[#2D3342] flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-50 hover:bg-slate-100 dark:bg-[#232733] dark:hover:bg-[#2A2F3E] rounded-lg transition-colors">
-                      <Menu size={20} />
-                    </button>
+                    {!isSidebarOpen && (
+                      <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-50 hover:bg-slate-100 dark:bg-[#232733] dark:hover:bg-[#2A2F3E] rounded-lg transition-colors" title="แสดงแถบเลือกไอเทม">
+                        <Menu size={20} />
+                      </button>
+                    )}
                   <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-[#2D3342] flex items-center justify-center shrink-0 overflow-hidden">
                     {selectedAuction.imageUrl ? (
                       <img src={selectedAuction.imageUrl} alt={selectedAuction.itemName} className="w-full h-full object-cover" />

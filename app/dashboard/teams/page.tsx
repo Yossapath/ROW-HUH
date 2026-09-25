@@ -1433,8 +1433,8 @@ function TeamCard({
             </div>
           </div>
 
-          <div className={`grid ${isAdmin ? "grid-cols-[28px_minmax(0,1fr)_auto_48px_20px] sm:grid-cols-[34px_minmax(0,1fr)_auto_55px_22px]" : "grid-cols-[28px_minmax(0,1fr)_auto_48px] sm:grid-cols-[34px_minmax(0,1fr)_auto_55px]"} gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 bg-slate-50 dark:bg-[#272C38]/60 border-b border-slate-100 dark:border-[#2D3342] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-[#8B93A7]`}>
-            <div></div><div>ชื่อ</div><div className="text-center">อาชีพ</div><div className="text-right">ค่าพลัง</div>{isAdmin && <div></div>}
+          <div className={`grid ${isAdmin ? "grid-cols-[28px_minmax(70px,110px)_1fr_55px_20px] sm:grid-cols-[32px_minmax(80px,120px)_1fr_60px_22px]" : "grid-cols-[28px_minmax(70px,110px)_1fr_55px] sm:grid-cols-[32px_minmax(80px,120px)_1fr_60px]"} gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 bg-slate-50 dark:bg-[#272C38]/60 border-b border-slate-100 dark:border-[#2D3342] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-[#8B93A7]`}>
+            <div></div><div>ชื่อ</div><div className="text-left pl-1">อาชีพ</div><div className="text-right">ค่าพลัง</div>{isAdmin && <div></div>}
           </div>
 
           <div className="p-2 min-h-[220px] flex flex-col gap-1.5 relative bg-white dark:bg-[#232733]">
@@ -1452,17 +1452,16 @@ function TeamCard({
                             const m = members[memberId];
                             const color = (m?.job && JOB_COLORS[m.job]) || "#475569";
                             const rowContent = (
-                              <div id={`member-assigned-${memberId}`} ref={prov.innerRef} {...prov.draggableProps} className={`w-full h-[38px] grid ${isAdmin ? "grid-cols-[30px_minmax(0,1fr)_85px_50px_22px] sm:grid-cols-[36px_minmax(0,1fr)_115px_60px_24px]" : "grid-cols-[30px_minmax(0,1fr)_85px_50px] sm:grid-cols-[36px_minmax(0,1fr)_115px_60px]"} gap-1.5 sm:gap-2 items-center px-2 py-1 rounded-xl bg-white dark:bg-[#272C38] hover:bg-slate-50 dark:hover:bg-[#2A2F3E] group border border-slate-100 dark:border-[#2D3342] transition-all ${snap.isDragging ? "shadow-2xl border-blue-400 dark:border-[#4D73CD] ring-2 ring-[#0b3d63]/20 z-[99999]" : "shadow-xs"}`} style={prov.draggableProps.style}>
+                              <div id={`member-assigned-${memberId}`} ref={prov.innerRef} {...prov.draggableProps} className={`w-full h-[38px] grid ${isAdmin ? "grid-cols-[28px_minmax(70px,110px)_1fr_55px_20px] sm:grid-cols-[32px_minmax(80px,120px)_1fr_60px_22px]" : "grid-cols-[28px_minmax(70px,110px)_1fr_55px] sm:grid-cols-[32px_minmax(80px,120px)_1fr_60px]"} gap-1.5 sm:gap-2 items-center px-2 py-1 rounded-xl bg-white dark:bg-[#272C38] hover:bg-slate-50 dark:hover:bg-[#2A2F3E] group border border-slate-100 dark:border-[#2D3342] transition-all ${snap.isDragging ? "shadow-2xl border-blue-400 dark:border-[#4D73CD] ring-2 ring-[#0b3d63]/20 z-[99999]" : "shadow-xs"}`} style={prov.draggableProps.style}>
                                 <div className="flex items-center gap-0.5 sm:gap-1 text-slate-400 cursor-grab touch-none p-1 -m-1" {...(isAdmin ? prov.dragHandleProps : {})}>{isAdmin ? <GripVertical size={14} className="text-sky-300 dark:text-sky-400 shrink-0" /> : null}<span className="text-xs font-bold text-sky-500 font-mono w-3 text-center">{slotIdx + 1}</span></div>
                                 <div className="min-w-0 pr-1"><span className="text-xs font-bold text-slate-800 dark:text-white truncate block" title={m?.name}>{m ? m.name : (memberId || "Unknown")}</span></div>
                                 {m && (
-                                  <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                                  <div className="flex items-center gap-1.5 min-w-0 pl-1">
                                     {JOB_ICONS[m.job] && (
                                       <img src={JOB_ICONS[m.job]} alt={m.job} className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0 drop-shadow-sm" />
                                     )}
-                                    <div className="h-[22px] sm:h-[24px] px-2 sm:px-2.5 rounded-full text-[10px] sm:text-xs font-bold text-white flex items-center justify-center gap-1 shadow-sm shrink-0" style={{ backgroundColor: color }}>
-                                      <span className="truncate max-w-[65px] sm:max-w-[85px]">{m.job}</span>
-                                      <ChevronDown size={10} className="opacity-80 shrink-0 stroke-[2.5] hidden sm:inline-block" />
+                                    <div className="h-[22px] sm:h-[24px] px-2.5 rounded-full text-[10px] sm:text-xs font-bold text-white flex items-center justify-center shadow-sm shrink-0" style={{ backgroundColor: color }}>
+                                      <span className="whitespace-nowrap">{m.job}</span>
                                     </div>
                                   </div>
                                 )}

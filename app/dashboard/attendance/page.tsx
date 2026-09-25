@@ -90,8 +90,10 @@ function getDayName(dateStr: string): string {
 function flattenRoster(roster: Record<string, { name: string; power?: number }[]>): AttendanceRow[] {
   const rows: AttendanceRow[] = [];
   for (const [job, members] of Object.entries(roster)) {
-    for (const m of members) {
-      rows.push({ name: m.name, job, power: m.power ?? 0, status: "รอเช็ค" });
+    if (Array.isArray(members)) {
+      for (const m of members) {
+        rows.push({ name: m.name, job, power: m.power ?? 0, status: "รอเช็ค" });
+      }
     }
   }
   // Sort by power descending (like the image)
@@ -216,10 +218,12 @@ export default function AttendancePage() {
         if (offlineIds.length > 0) {
           const members: { name: string; job: string }[] = [];
           for (const [job, arr] of Object.entries(rosterData as Record<string, { name: string; id?: string }[]>)) {
-            for (const m of arr) {
+            if (Array.isArray(arr)) {
+              for (const m of arr) {
               const memberId = m.id ?? m.name;
               if (offlineIds.includes(memberId)) {
-                members.push({ name: m.name, job });
+                  members.push({ name: m.name, job });
+                }
               }
             }
           }

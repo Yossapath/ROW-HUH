@@ -95,7 +95,7 @@ export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
             {auction.imageUrl ? <img src={auction.imageUrl} alt={auction.itemName} className="w-full h-full object-cover" /> : <span className="text-xl">📦</span>}
           </div>
           <div className="min-w-0">
-            <h3 className="font-bold text-slate-800 dark:text-white truncate">{auction.itemName}</h3>
+            <h3 className="notranslate font-bold text-slate-800 dark:text-white truncate" translate="no">{auction.itemName}</h3>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#2D3342] text-slate-500 dark:text-[#8B93A7]">
                 {auction.category}

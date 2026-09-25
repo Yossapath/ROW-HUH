@@ -214,7 +214,7 @@ export function AuctionQueuesView({ auctions }: Props) {
                       <span className="text-xs">📦</span>
                     )}
                   </div>
-                  <span className={`text-sm truncate font-bold ${selectedAuctionId === auction.id ? "text-[#0b3d63] dark:text-[#5B86F1]" : "text-slate-700 dark:text-slate-300"}`}>
+                  <span translate="no" className={`notranslate text-sm truncate font-bold ${selectedAuctionId === auction.id ? "text-[#0b3d63] dark:text-[#5B86F1]" : "text-slate-700 dark:text-slate-300"}`}>
                     {auction.itemName}
                   </span>
                 </div>
@@ -247,7 +247,7 @@ export function AuctionQueuesView({ auctions }: Props) {
                     )}
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-white">{selectedAuction.itemName}</h2>
+                    <h2 translate="no" className="notranslate text-xl font-bold text-slate-800 dark:text-white">{selectedAuction.itemName}</h2>
                     <div className="flex gap-2 mt-1">
                       <span className="text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#2D3342] text-slate-500">
                         {selectedAuction.category}

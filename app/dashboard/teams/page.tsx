@@ -840,7 +840,12 @@ export default function TeamsPage() {
     if (unassignedSearch && !m.name?.toLowerCase().includes(unassignedSearch.toLowerCase())) return false;
     if (unassignedPowerFilter !== "" && (m.power || 0) < unassignedPowerFilter) return false;
     return true;
-  }).sort((a, b) => (data.members[b]?.power || 0) - (data.members[a]?.power || 0));
+  }).sort((a, b) => {
+      const jobA = data.members[a]?.job || "";
+      const jobB = data.members[b]?.job || "";
+      if (jobA !== jobB) return jobA.localeCompare(jobB);
+      return (data.members[b]?.power || 0) - (data.members[a]?.power || 0);
+    });
 
   const AutoMatchModal = () => {
     // Modal implementation omitted for brevity

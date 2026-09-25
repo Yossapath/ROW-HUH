@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import { getDb, COLL_USER, rosterRef, teamsRef } from "@/lib/firebase-admin";
-import { requireAuth, requireAdmin } from "@/lib/auth";
+import { requireAuth, requireAdmin, signToken, authCookie } from "@/lib/auth";
 import { ok, err, forbidden, handleServerError, logAction } from "@/lib/server-utils";
 import { rosterMemberUpdateSchema, rosterMemberAddSchema, validateBody } from "@/lib/validations";
 import { updateMemberNameInTeamsData } from "@/lib/team-sync";
@@ -176,7 +176,21 @@ export async function PUT(req: Request) {
       detail: `อัปเดตข้อมูลของ ${name} (เป้าหมาย: ${targetDiscordId || originalName || name})`,
     });
 
-    return ok({ success: true });
+    
+    let response = ok({ success: true });
+    // If the user updated their own profile, issue a new JWT token to reflect changes immediately
+    if (user.discordId === targetDiscordId) {
+      const newToken = await signToken({
+        ...user,
+        gameUsername: name,
+        class: job,
+        power: Number(power),
+        gvgField: gvgField || user.gvgField
+      });
+      response.cookies.set(authCookie(newToken));
+    }
+    return response;
+
   } catch (err: unknown) {
     return handleServerError(err, "Failed to update member");
   }

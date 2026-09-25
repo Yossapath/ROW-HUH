@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "data": {
+    "counts": {
+      "users": 72,
+      "roster": 71
+    },
+    "inUsersNotInRoster": [
+      {
+        "id": "241380990956732416",
+        "discord": "akenakub"
+      },
+      {
+        "id": "822779753362751488",
+        "discord": "whatyoudo8067"
+      }
+    ],
+    "inRosterNotInUsers": [
+      {
+        "id": "1312065194226094153",
+        "name": "‘เฮอร์มอยโอนี๋"
+      }
+    ],
+    "incompleteUsers": [
+      {
+        "id": "241380990956732416",
+        "discord": "akenakub"
+      },
+      {
+        "id": "822779753362751488",
+        "discord": "whatyoudo8067"
+      }
+    ]
+  }
+}

@@ -74,7 +74,10 @@ export default function GoogleTranslate() {
         #google_translate_element { display: none !important; }
         .goog-te-banner-frame { display: none !important; }
         .skiptranslate > iframe.goog-te-banner-frame { display: none !important; }
-        body { top: 0px !important; position: relative !important; }
+        iframe.skiptranslate { display: none !important; }
+        .VIpgJd-ZVi9od-ORHb-OEVmcd { display: none !important; }
+        #goog-gt-tt { display: none !important; }
+        body { top: 0px !important; position: relative !important; min-height: 100vh !important; }
         
         /* Hide tooltips */
         .goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }

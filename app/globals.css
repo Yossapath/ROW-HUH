@@ -157,3 +157,23 @@
     --theme-purple: #8b5cf6;
   }
 }
+
+
+/* HIDE GOOGLE TRANSLATE BANNER */
+iframe.skiptranslate {
+  display: none !important;
+  visibility: hidden !important;
+}
+.skiptranslate.goog-te-banner-frame {
+  display: none !important;
+}
+body {
+  top: 0px !important; 
+  position: relative !important;
+}
+.VIpgJd-ZVi9od-ORHb-OEVmcd { 
+  display: none !important; 
+}
+#goog-gt-tt { 
+  display: none !important; 
+}

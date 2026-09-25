@@ -1,3 +1,4 @@
+import GoogleTranslate from "@/components/GoogleTranslate";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useRouter, usePathname } from "next/navigation";
 import { Menu as MenuIcon, User as UserIcon, LifeBuoy, LogOut, Moon, Sun, Settings, X, Save, Loader2 } from "lucide-react";
@@ -118,6 +119,7 @@ export default function TopHeader({
       </div>
 
       {/* Right section: Notifications + Profile */}
+        <GoogleTranslate />
       <div className="flex items-center space-x-4">
         
         {/* Theme Toggle */}
@@ -196,6 +198,7 @@ export default function TopHeader({
           <div className="bg-theme-panel rounded-2xl w-full max-w-md shadow-2xl border border-theme-border flex flex-col animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-theme-divider flex justify-between items-center bg-theme-bg/50 rounded-t-2xl">
               <div className="flex items-center gap-3">
+          
                 <div className="w-10 h-10 rounded-full bg-theme-primary/10 flex items-center justify-center text-theme-primary">
                   <Settings size={20} />
                 </div>

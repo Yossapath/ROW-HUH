@@ -45,7 +45,7 @@ export async function GET(req: Request) {
 
         // Add back to roster!
         const rDoc = await rosterRef().get();
-        let rData = rDoc.data();
+        let rData: any = rDoc.data() ?? {};
         let isLegacy = false;
         if (rData.data) {
            isLegacy = true;

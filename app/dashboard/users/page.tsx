@@ -249,8 +249,10 @@ export default function UsersPage() {
                           ) : (
                             <select
                               value={u.role || "member"}
-                              onChange={async (e) => { if (await useModalStore.getState().confirm(`ต้องการเปลี่ยนยศของ ${u.discordUsername || 'ผู้ใช้'} เป็น ${e.target.value} ใช่หรือไม่?`)) {
-                                  updateRoleMutation.mutate({ discordId: u.discordId, role: e.target.value });
+                              onChange={async (e) => { 
+                                const newRole = e.target.value;
+                                if (await useModalStore.getState().confirm(`ต้องการเปลี่ยนยศของ ${u.discordUsername || 'ผู้ใช้'} เป็น ${newRole} ใช่หรือไม่?`)) {
+                                  updateRoleMutation.mutate({ discordId: u.discordId, role: newRole });
                                 }
                               }}
                               disabled={updateRoleMutation.isPending}

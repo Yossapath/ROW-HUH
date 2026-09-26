@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { getDb, COLL_USER } from "@/lib/firebase-admin";
+import { getDb, COLL_USER, rosterRef } from "@/lib/firebase-admin";
 import { requireAdmin, invalidateUserRoleCache } from "@/lib/auth";
 import { ok, err, handleServerError, logAction } from "@/lib/server-utils";
 import { userRoleUpdateSchema, userDeleteSchema, validateBody } from "@/lib/validations";
@@ -153,7 +153,44 @@ export async function DELETE(req: Request) {
       }
     }
 
-    await userRef.delete();
+    // 4. Delete user and remove from roster atomically
+    const rRef = rosterRef();
+    await db.runTransaction(async (t) => {
+      // Get roster data
+      const rDoc = await t.get(rRef);
+      if (rDoc.exists) {
+        const docData = rDoc.data() as any;
+        const rosterData = docData.data ? docData.data : docData;
+        const isLegacyWrapper = !!docData.data;
+        const modifiedJobs: string[] = [];
+
+        for (const j of Object.keys(rosterData)) {
+          if (Array.isArray(rosterData[j])) {
+            const originalLen = rosterData[j].length;
+            rosterData[j] = rosterData[j].filter((m: any) => m.discordId !== discordId);
+            if (rosterData[j].length !== originalLen) {
+              modifiedJobs.push(j);
+            }
+          }
+        }
+
+        if (modifiedJobs.length > 0) {
+          if (isLegacyWrapper) {
+            t.set(rRef, { data: rosterData }, { merge: true });
+          } else {
+            const patch: Record<string, any> = {};
+            for (const j of modifiedJobs) {
+              patch[j] = rosterData[j];
+            }
+            t.set(rRef, patch, { merge: true });
+          }
+        }
+      }
+
+      // Delete user
+      t.delete(userRef);
+    });
+
     invalidateUserRoleCache(discordId);
 
     logAction({

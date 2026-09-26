@@ -988,7 +988,7 @@ export default function TeamsPage() {
             />
           </form>
           {playerSearchQuery.trim() !== "" && (
-            <div className="absolute z-[100] w-full mt-2 bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] rounded-xl shadow-lg max-h-60 overflow-y-auto overflow-hidden">
+            <div className="absolute z-40 w-full mt-2 bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] rounded-xl shadow-lg max-h-60 overflow-y-auto overflow-hidden">
               {(() => {
                 const q = playerSearchQuery.trim().toLowerCase();
                 const matches = data ? Object.values(data.members).filter(m => m.name.toLowerCase().includes(q)).sort((a,b) => a.name.localeCompare(b.name)).slice(0, 5) : [];
@@ -1053,7 +1053,7 @@ export default function TeamsPage() {
         <div className="flex flex-col lg:flex-row gap-4 items-start">
           {/* Unassigned Panel */}
           {isAdmin && !isUnassignedCollapsed && (
-            <div className="w-full lg:w-[260px] 2xl:w-[280px] flex-shrink-0 bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] h-[400px] lg:h-[calc(100vh-2rem)] flex flex-col lg:sticky top-4 z-20">
+            <div className="w-full lg:w-[260px] 2xl:w-[280px] flex-shrink-0 bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] h-[400px] lg:h-[calc(100vh-2rem)] flex flex-col lg:sticky top-4 z-30">
               <div className="p-3 border-b border-slate-100 dark:border-[#2D3342] bg-slate-50/70 dark:bg-[#272C38]/50 rounded-t-2xl">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm"><Users size={16} /> ยังไม่ได้จัด ({data.columns["unassigned"].memberIds.length})</h2>
@@ -1079,7 +1079,7 @@ export default function TeamsPage() {
                       </div>
                     </button>
                     {isJobFilterOpen && (
-                      <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-[#232733] border border-slate-200 dark:border-[#2D3342] rounded-xl shadow-xl z-50 p-2 max-h-60 overflow-y-auto space-y-1">
+                      <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-[#232733] border border-slate-200 dark:border-[#2D3342] rounded-xl shadow-xl z-40 p-2 max-h-60 overflow-y-auto space-y-1">
                         <div className="flex items-center justify-between pb-1 mb-1 border-b border-slate-100 dark:border-[#2D3342] text-[11px]">
                           <button type="button" onClick={() => setUnassignedFilterJobs([])} className="font-bold hover:underline text-slate-500">เลือกทั้งหมด</button>
                           {unassignedFilterJobs.length > 0 && <button type="button" onClick={() => setUnassignedFilterJobs([])} className="text-red-500 hover:underline text-[10px] font-bold">ล้าง</button>}
@@ -1246,7 +1246,7 @@ export default function TeamsPage() {
                             <input type="text" placeholder="+ ค้นหาผู้เล่นเพื่อทำให้ออฟไลน์..." className="bg-transparent border-none outline-none text-sm font-bold text-theme-text w-full" value={offlineSearch} onChange={e => { setOfflineSearch(e.target.value); setIsOfflineDropdownOpen(true); }} onFocus={() => setIsOfflineDropdownOpen(true)} />
                           </div>
                           {isOfflineDropdownOpen && (
-                            <div className="absolute z-50 w-full mt-2 bg-theme-panel border border-theme-border rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                            <div className="absolute z-40 w-full mt-2 bg-theme-panel border border-theme-border rounded-lg shadow-xl max-h-60 overflow-y-auto">
                               {Object.values(data.members).filter(m => !data.offlineIds.includes(m.id)).filter(m => m.name.toLowerCase().includes(offlineSearch.toLowerCase()) || m.job.toLowerCase().includes(offlineSearch.toLowerCase())).sort((a, b) => a.name.localeCompare(b.name)).map(m => (
                                 <div key={m.id} className="px-4 py-2.5 hover:bg-theme-bg cursor-pointer text-sm font-bold text-theme-text flex justify-between items-center border-b border-theme-divider last:border-0" onClick={() => { markAsOffline(m.id); setOfflineSearch(""); setIsOfflineDropdownOpen(false); }}>
                                   <div className="flex items-center gap-2">
@@ -1379,7 +1379,7 @@ export default function TeamsPage() {
 
       {/* Fullscreen loading indicator during PNG generation */}
       {isExporting && (
-        <div className="fixed inset-0 z-[99999] bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-3">
+        <div className="fixed inset-0 z-[100] bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-3">
           <Loader2 className="w-10 h-10 animate-spin text-sky-400" />
           <div className="text-lg font-bold">กำลังสร้างภาพสรุป GVG (PNG 1 หน้ากระดาษ)...</div>
           <div className="text-xs text-slate-400">กรุณารอสักครู่ ระบบกำลังเรนเดอร์ภาพความละเอียดสูง</div>
@@ -1404,7 +1404,7 @@ function TeamCard({
   return (
     <Draggable draggableId={column.id} index={index} isDragDisabled={!isAdmin}>
       {(providedTeam, snapshotTeam) => (
-        <div ref={providedTeam.innerRef} {...providedTeam.draggableProps} className={`bg-white dark:bg-[#232733] rounded-2xl shadow-sm border overflow-hidden ${snapshotTeam.isDragging ? "shadow-xl ring-2 ring-[#0b3d63] dark:ring-[#4D73CD] border-[#0b3d63] dark:border-[#4D73CD] z-50" : "border-slate-200 dark:border-[#2D3342]"} ${column.locked ? "opacity-95 border-amber-400 dark:border-amber-500" : ""}`}>
+        <div ref={providedTeam.innerRef} {...providedTeam.draggableProps} className={`bg-white dark:bg-[#232733] rounded-2xl shadow-sm border overflow-hidden ${snapshotTeam.isDragging ? "shadow-xl ring-2 ring-[#0b3d63] dark:ring-[#4D73CD] border-[#0b3d63] dark:border-[#4D73CD] z-[60]" : "border-slate-200 dark:border-[#2D3342]"} ${column.locked ? "opacity-95 border-amber-400 dark:border-amber-500" : ""}`}>
           <div className={`${isSub ? "bg-[#154a72] dark:bg-[#1E2536]" : "bg-[#0b3d63] dark:bg-[#252E42]"} p-3.5 text-white flex items-center justify-between border-b border-transparent dark:border-[#2D3342]`} {...(isAdmin ? providedTeam.dragHandleProps : {})}>
             <div className="flex items-center gap-2">
               {isAdmin && <GripVertical size={16} className="opacity-50 cursor-grab active:cursor-grabbing" />}
@@ -1452,7 +1452,7 @@ function TeamCard({
                             const m = members[memberId];
                             const color = (m?.job && JOB_COLORS[m.job]) || "#475569";
                             const rowContent = (
-                              <div id={`member-assigned-${memberId}`} ref={prov.innerRef} {...prov.draggableProps} className={`w-full h-[38px] grid ${isAdmin ? "grid-cols-[28px_minmax(70px,110px)_1fr_55px_20px] sm:grid-cols-[32px_minmax(80px,120px)_1fr_60px_22px]" : "grid-cols-[28px_minmax(70px,110px)_1fr_55px] sm:grid-cols-[32px_minmax(80px,120px)_1fr_60px]"} gap-1.5 sm:gap-2 items-center px-2 py-1 rounded-xl bg-white dark:bg-[#272C38] hover:bg-slate-50 dark:hover:bg-[#2A2F3E] group border border-slate-100 dark:border-[#2D3342] transition-all ${snap.isDragging ? "shadow-2xl border-blue-400 dark:border-[#4D73CD] ring-2 ring-[#0b3d63]/20 z-[99999]" : "shadow-xs"}`} style={prov.draggableProps.style}>
+                              <div id={`member-assigned-${memberId}`} ref={prov.innerRef} {...prov.draggableProps} className={`w-full h-[38px] grid ${isAdmin ? "grid-cols-[28px_minmax(70px,110px)_1fr_55px_20px] sm:grid-cols-[32px_minmax(80px,120px)_1fr_60px_22px]" : "grid-cols-[28px_minmax(70px,110px)_1fr_55px] sm:grid-cols-[32px_minmax(80px,120px)_1fr_60px]"} gap-1.5 sm:gap-2 items-center px-2 py-1 rounded-xl bg-white dark:bg-[#272C38] hover:bg-slate-50 dark:hover:bg-[#2A2F3E] group border border-slate-100 dark:border-[#2D3342] transition-all ${snap.isDragging ? "shadow-2xl border-blue-400 dark:border-[#4D73CD] ring-2 ring-[#0b3d63]/20 z-[60]" : "shadow-xs"}`} style={prov.draggableProps.style}>
                                 <div className="flex items-center gap-0.5 sm:gap-1 text-slate-400 cursor-grab touch-none p-1 -m-1" {...(isAdmin ? prov.dragHandleProps : {})}>{isAdmin ? <GripVertical size={14} className="text-sky-300 dark:text-sky-400 shrink-0" /> : null}<span className="text-xs font-bold text-sky-500 font-mono w-3 text-center">{slotIdx + 1}</span></div>
                                 <div className="min-w-0 pr-1"><span className="text-xs font-bold text-slate-800 dark:text-white truncate block" title={m?.name}>{m ? m.name : (memberId || "Unknown")}</span></div>
                                 {m && (
@@ -1500,7 +1500,7 @@ function MemberCard({ member, index }: { member?: Member; index: number }) {
       {(provided, snapshot) => {
         const content = (
           <div id={`member-unassigned-${member.id}`} ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}
-            className={`flex items-center justify-between p-2 rounded-xl border shadow-sm select-none transition-all touch-none ${snapshot.isDragging ? "shadow-2xl border-[#0b3d63] dark:border-[#4D73CD] z-[99999] ring-2 ring-[#0b3d63]/20 bg-white dark:bg-[#272C38]" : "border-slate-200 dark:border-[#2D3342] hover:border-slate-300"}`}
+            className={`flex items-center justify-between p-2 rounded-xl border shadow-sm select-none transition-all touch-none ${snapshot.isDragging ? "shadow-2xl border-[#0b3d63] dark:border-[#4D73CD] z-[60] ring-2 ring-[#0b3d63]/20 bg-white dark:bg-[#272C38]" : "border-slate-200 dark:border-[#2D3342] hover:border-slate-300"}`}
             style={{ ...provided.draggableProps.style, backgroundColor: snapshot.isDragging ? undefined : hexToRgba(color, 0.05), borderLeftWidth: "4px", borderLeftColor: color }}>
             <div className="flex flex-col truncate pr-2 min-w-0">
               <span className="text-[12px] font-bold text-slate-800 dark:text-white truncate">{member.name}</span>

@@ -119,9 +119,9 @@ export default function TopHeader({
         <h1 className="text-lg font-bold text-theme-text hidden sm:block">{title}</h1>
       </div>
 
-      {/* Right section: Notifications + Profile */}
-        <GoogleTranslate />
+      {/* Right section: GoogleTranslate + Theme + Profile */}
       <div className="flex items-center space-x-4">
+        <GoogleTranslate />
         
         {/* Theme Toggle */}
         {mounted && (
@@ -154,7 +154,7 @@ export default function TopHeader({
 
           {/* Dropdown Menu */}
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-theme-panel rounded-xl shadow-lg border border-theme-border py-2 z-50 animate-in fade-in slide-in-from-top-2">
+            <div className="absolute right-0 mt-2 w-56 bg-theme-panel rounded-xl shadow-lg border border-theme-border py-2 z-40 animate-in fade-in slide-in-from-top-2">
               <div className="px-4 py-2 border-b border-theme-divider mb-1">
                 <p className="text-[10px] font-bold text-theme-textSecondary tracking-wider">SIGNED IN AS</p>
                 <p className="text-sm font-bold text-theme-text truncate">{user?.gameUsername || user?.discordUsername}</p>
@@ -199,7 +199,7 @@ export default function TopHeader({
 
       {/* Account Settings Modal */}
       {isSettingsOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999] animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-200">
           <div className="bg-theme-panel rounded-2xl w-full max-w-md shadow-2xl border border-theme-border flex flex-col animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-theme-divider flex justify-between items-center bg-theme-bg/50 rounded-t-2xl">
               <div className="flex items-center gap-3">

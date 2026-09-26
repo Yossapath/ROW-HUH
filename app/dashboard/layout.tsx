@@ -51,7 +51,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           toggleSidebar={() => setIsSidebarExpanded(!isSidebarExpanded)} 
         />
         <main className="flex-1">
-          {children}
+          <div className="max-w-[1600px] mx-auto w-full">
+            {children}
+          </div>
         </main>
       </div>
       <CompleteProfilePopup />

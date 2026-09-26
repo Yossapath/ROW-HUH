@@ -565,7 +565,7 @@ export default function AttendancePage() {
               }`}
             >
               <span className="font-bold">อังคาร</span>
-              <span className={`text-[11px] px-1.5 py-0.5 rounded font-semibold ${isSelected ? "bg-white/20" : "bg-slate-100 dark:bg-[#2A2F3E] text-[#0b3d63] dark:text-white"}`}>{roundLabel}</span>
+              <span className={`font-bold ${isSelected ? "opacity-90" : "opacity-80"}`}>{roundLabel}</span>
               <span className={`text-[10px] ${isSelected ? "opacity-80" : "opacity-60"}`}>{formatDateTH(dateStr)}</span>
             </button>
           );

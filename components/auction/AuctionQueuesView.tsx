@@ -27,6 +27,8 @@ export function AuctionQueuesView({ auctions }: Props) {
 
   const [isAdding, setIsAdding] = useState(false);
   const [selectedMember, setSelectedMember] = useState("");
+  const [memberSearchQuery, setMemberSearchQuery] = useState("");
+  const [showMemberDropdown, setShowMemberDropdown] = useState(false);
 
   const selectedAuction = auctions.find(a => a.id === selectedAuctionId);
 
@@ -111,6 +113,7 @@ export function AuctionQueuesView({ auctions }: Props) {
       queryClient.invalidateQueries({ queryKey: ["my-reservations"] });
       setIsAdding(false);
       setSelectedMember("");
+      setMemberSearchQuery("");
     },
     onError: (err: any) => useModalStore.getState().alert(err.message)
   });
@@ -269,7 +272,11 @@ export function AuctionQueuesView({ auctions }: Props) {
                 
                 {isAdmin && (
                   <button 
-                    onClick={() => setIsAdding(!isAdding)}
+                    onClick={() => {
+                      setIsAdding(!isAdding);
+                      setSelectedMember("");
+                      setMemberSearchQuery("");
+                    }}
                     className="flex items-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-xl font-bold text-sm hover:bg-sky-600 transition-colors shadow-sm"
                   >
                     <Plus size={16} />
@@ -280,18 +287,43 @@ export function AuctionQueuesView({ auctions }: Props) {
 
               {isAdmin && isAdding && (
                 <div className="p-4 bg-sky-50 dark:bg-sky-500/10 border-b border-sky-100 dark:border-sky-500/20 flex gap-2 items-center">
-                  <select 
-                    value={selectedMember}
-                    onChange={(e) => setSelectedMember(e.target.value)}
-                    className="flex-1 px-3 py-2 rounded-lg border border-sky-200 dark:border-sky-500/30 bg-white dark:bg-[#1A1D27] text-sm"
-                  >
-                    <option value="">-- เลือกรายชื่อสมาชิก --</option>
-                    {(roster || []).map((r: any) => (
-                      <option key={r.discordId} value={r.discordId}>
-                        {r.name} ({r.job || "Novice"})
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      placeholder="พิมพ์เพื่อค้นหารายชื่อสมาชิก..."
+                      value={memberSearchQuery}
+                      onChange={(e) => {
+                        setMemberSearchQuery(e.target.value);
+                        setSelectedMember("");
+                        setShowMemberDropdown(true);
+                      }}
+                      onFocus={() => setShowMemberDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowMemberDropdown(false), 200)}
+                      className="w-full px-3 py-2 rounded-lg border border-sky-200 dark:border-sky-500/30 bg-white dark:bg-[#1A1D27] text-sm focus:outline-none focus:border-sky-400"
+                    />
+                    {showMemberDropdown && (
+                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-[#1A1D27] border border-sky-200 dark:border-sky-500/30 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {(roster || [])
+                          .filter((r: any) => r.name?.toLowerCase().includes(memberSearchQuery.toLowerCase()))
+                          .map((r: any) => (
+                            <div
+                              key={r.discordId || r.name}
+                              className="px-3 py-2 text-sm cursor-pointer hover:bg-sky-50 dark:hover:bg-sky-500/10 dark:text-white"
+                              onClick={() => {
+                                setSelectedMember(r.discordId);
+                                setMemberSearchQuery(`${r.name} (${r.job || "Novice"})`);
+                                setShowMemberDropdown(false);
+                              }}
+                            >
+                              {r.name} ({r.job || "Novice"})
+                            </div>
+                        ))}
+                        {(roster || []).filter((r: any) => r.name?.toLowerCase().includes(memberSearchQuery.toLowerCase())).length === 0 && (
+                          <div className="px-3 py-2 text-sm text-slate-500 text-center">ไม่พบรายชื่อ</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <button 
                     onClick={() => addManualMutation.mutate(selectedMember)}
                     disabled={!selectedMember || addManualMutation.isPending}

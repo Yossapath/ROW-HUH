@@ -449,6 +449,23 @@ export default function UsersPage() {
 
                   const userGameNames = new Set(users.map(u => (u.gameUsername || "").trim().toLowerCase()).filter(Boolean));
                   
+                  // หาชื่อที่ซ้ำกันในระบบผู้ใช้
+                  const nameCounts = new Map<string, number>();
+                  const duplicateNames = new Set<string>();
+                  users.forEach(u => {
+                    const gameName = (u.gameUsername || "").trim().toLowerCase();
+                    if (gameName) {
+                      const currentCount = nameCounts.get(gameName) || 0;
+                      nameCounts.set(gameName, currentCount + 1);
+                      if (currentCount >= 1) duplicateNames.add(gameName);
+                    }
+                  });
+
+                  const duplicateUsers = users.filter(u => {
+                    const gameName = (u.gameUsername || "").trim().toLowerCase();
+                    return duplicateNames.has(gameName);
+                  });
+                  
                   const rosterNotInUsers = rosterList.filter(r => !userGameNames.has((r.name || "").trim().toLowerCase()));
                   const usersNotInRoster = users.filter(u => {
                     const gameName = (u.gameUsername || "").trim().toLowerCase();
@@ -457,7 +474,34 @@ export default function UsersPage() {
                   });
 
                   return (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex flex-col gap-6">
+                      {duplicateUsers.length > 0 && (
+                        <div className="bg-white dark:bg-[#232733] rounded-xl border border-purple-200 dark:border-purple-900/50 overflow-hidden flex flex-col">
+                          <div className="bg-purple-50 dark:bg-purple-900/20 px-4 py-3 border-b border-purple-100 dark:border-purple-900/30">
+                            <h4 className="font-bold text-purple-700 dark:text-purple-400 flex items-center gap-2">
+                              <span>พบผู้ใช้ที่กรอกชื่อในเกม "ซ้ำกัน" ในระบบ (อาจเป็นสาเหตุที่จำนวนคนไม่เท่ากัน)</span>
+                              <span className="bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 text-xs px-2 py-0.5 rounded-full">{duplicateUsers.length}</span>
+                            </h4>
+                          </div>
+                          <div className="p-4 overflow-y-auto">
+                            <ul className="space-y-2">
+                              {duplicateUsers.map((u, i) => (
+                                <li key={i} className="flex flex-col gap-1 text-sm p-2.5 rounded-lg bg-slate-50 dark:bg-[#2A2F3E] border border-slate-100 dark:border-[#333333]">
+                                  <div className="flex justify-between items-center">
+                                    <span className="font-bold text-purple-700 dark:text-purple-400">{u.gameUsername}</span>
+                                    {u.class && <span className="text-xs font-medium px-2 py-1 rounded bg-white dark:bg-[#1C1F27] text-slate-500 shadow-sm border border-slate-200">{u.class}</span>}
+                                  </div>
+                                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                    <User size={12} /> Discord: {u.discordUsername}
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Left: In Roster but Not In Users */}
                       <div className="bg-white dark:bg-[#232733] rounded-xl border border-red-200 dark:border-red-900/50 overflow-hidden flex flex-col">
                         <div className="bg-red-50 dark:bg-red-900/20 px-4 py-3 border-b border-red-100 dark:border-red-900/30">
@@ -513,6 +557,7 @@ export default function UsersPage() {
                             </ul>
                           )}
                         </div>
+                      </div>
                       </div>
                     </div>
                   );

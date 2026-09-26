@@ -133,7 +133,7 @@ export const attendancePostSchema = z.object({
 // ── User Management Schema ───────────────────────────────────
 export const userRoleUpdateSchema = z.object({
   discordId: z.string().trim().min(1, "ID ไม่ถูกต้อง").max(50),
-  role: z.enum(["admin", "member", "owner"]),
+  role: z.enum(["admin", "member", "owner", "dev"]),
 });
 
 export const userDeleteSchema = z.object({

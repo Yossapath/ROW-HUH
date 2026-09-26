@@ -23,6 +23,13 @@ export default function UsersPage() {
   const queryClient = useQueryClient();
   const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.role === "dev";
   const isOwner = user?.role === "owner";
+  const isDev = user?.role === "dev";
+
+  const canManageRole = (targetRole: string) => {
+    if (isOwner) return true;
+    if (isDev) return targetRole !== "owner" && targetRole !== "dev";
+    return targetRole !== "owner" && targetRole !== "admin" && targetRole !== "dev";
+  };
 
   const { data: users = [], isLoading, isError } = useQuery<UserData[]>({
     queryKey: ["users"],
@@ -238,7 +245,7 @@ export default function UsersPage() {
                             }`}>
                               {u.role === 'owner' ? 'Owner' : (u.role === 'admin' || u.role === 'dev') ? (u.role === 'dev' ? 'Dev' : 'Admin') : 'Member'}
                             </span>
-                          ) : !isOwner && (u.role === 'owner' || u.role === 'admin' || u.role === 'dev') ? (
+                          ) : !canManageRole(u.role || 'member') ? (
                             <span className={`px-3 py-1 rounded-lg font-bold text-xs border ${
                               u.role === 'owner'
                                 ? 'bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
@@ -265,6 +272,7 @@ export default function UsersPage() {
                               }`}
                             >
                               {isOwner && <option value="owner">Owner</option>}
+                              {isOwner && <option value="dev">Dev</option>}
                               <option value="admin">Admin</option>
                               <option value="member">Member</option>
                             </select>
@@ -277,7 +285,7 @@ export default function UsersPage() {
                             <span className="text-xs font-semibold text-slate-400 dark:text-[#8B93A7] bg-slate-100 dark:bg-[#272C38] px-2.5 py-1 rounded-md">
                               คุณเอง
                             </span>
-                          ) : !isOwner && (u.role === 'owner' || u.role === 'admin' || u.role === 'dev') ? (
+                          ) : !canManageRole(u.role || 'member') ? (
                             <span className="text-xs text-slate-400 dark:text-[#6B7280]">
                               -
                             </span>

@@ -125,7 +125,7 @@ export async function requireAdmin(): Promise<
   if (!liveRole) {
     return { user: null, errorResponse: unauthorized() };
   }
-  if (liveRole !== "admin" && liveRole !== "owner") {
+  if (liveRole !== "admin" && liveRole !== "owner" && liveRole !== "dev") {
     return { user: null, errorResponse: forbidden() };
   }
 

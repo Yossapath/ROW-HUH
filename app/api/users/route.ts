@@ -53,17 +53,24 @@ export async function PUT(req: Request) {
     const targetUser = userDoc.data() || {};
     const currentTargetRole = targetUser.role || "member";
     const isCallerOwner = auth.user.role === "owner";
+    const isCallerDev = auth.user.role === "dev";
 
-    // 2. Admin cannot manage Owner or peer Admin:
+    // 2. Role management permissions
     if (!isCallerOwner) {
       if (role === "owner") {
-        return err("แอดมินไม่สามารถแต่งตั้งบทบาท Owner ได้ (เฉพาะ Owner เท่านั้น)", 403);
+        return err("ไม่สามารถแต่งตั้งบทบาท Owner ได้ (เฉพาะ Owner เท่านั้น)", 403);
       }
       if (currentTargetRole === "owner") {
-        return err("แอดมินไม่สามารถแก้ไขบทบาทของผู้ใช้งานระดับ Owner ได้", 403);
+        return err("ไม่สามารถแก้ไขบทบาทของผู้ใช้งานระดับ Owner ได้", 403);
       }
-      if (currentTargetRole === "admin" || currentTargetRole === "dev") {
-        return err("แอดมินไม่สามารถแก้ไขบทบาทของ Admin/Dev คนอื่นได้ (เฉพาะ Owner เท่านั้น)", 403);
+      if (isCallerDev) {
+        if (currentTargetRole === "dev") {
+          return err("Dev ไม่สามารถแก้ไขบทบาทของ Dev คนอื่นได้", 403);
+        }
+      } else {
+        if (currentTargetRole === "admin" || currentTargetRole === "dev") {
+          return err("แอดมินไม่สามารถแก้ไขบทบาทของ Admin/Dev คนอื่นได้", 403);
+        }
       }
     }
 
@@ -120,14 +127,21 @@ export async function DELETE(req: Request) {
     const targetUser = userDoc.data() || {};
     const targetRole = targetUser.role || "member";
     const isCallerOwner = auth.user.role === "owner";
+    const isCallerDev = auth.user.role === "dev";
 
-    // 2. Admin cannot delete Owner or peer Admin:
+    // 2. Role management permissions
     if (!isCallerOwner) {
       if (targetRole === "owner") {
-        return err("แอดมินไม่สามารถลบผู้ใช้งานระดับ Owner ได้", 403);
+        return err("ไม่สามารถลบผู้ใช้งานระดับ Owner ได้", 403);
       }
-      if (targetRole === "admin" || targetRole === "dev") {
-        return err("แอดมินไม่สามารถลบผู้ใช้งานระดับ Admin/Dev ได้ (เฉพาะ Owner เท่านั้น)", 403);
+      if (isCallerDev) {
+        if (targetRole === "dev") {
+          return err("Dev ไม่สามารถลบผู้ใช้งานระดับ Dev คนอื่นได้", 403);
+        }
+      } else {
+        if (targetRole === "admin" || targetRole === "dev") {
+          return err("แอดมินไม่สามารถลบผู้ใช้งานระดับ Admin/Dev ได้", 403);
+        }
       }
     }
 

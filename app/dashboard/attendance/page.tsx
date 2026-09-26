@@ -491,7 +491,7 @@ export default function AttendancePage() {
           <div>
             <h1 className="text-xl font-bold text-slate-800 dark:text-white">เช็คชื่อกิลด์วอร์</h1>
             <p className="text-sm text-slate-500 dark:text-[#8B93A7]">
-              บันทึกการเข้าร่วมวอร์ | รอบ 1/2 · พฤหัสบดี · อาทิตย์
+              บันทึกการเข้าร่วมวอร์ | รอบ 1 / รอบ 2 · พฤหัสบดี · อาทิตย์
             </p>
           </div>
         </div>
@@ -547,34 +547,31 @@ export default function AttendancePage() {
         <span className="text-sm font-semibold text-slate-600 dark:text-white flex items-center gap-1.5">
           วัน:
         </span>
-                {/* อังคาร (รอบ 1 และ รอบ 2) */}
-        <div className="flex flex-col border border-[#0b3d63]/30 dark:border-[#4D73CD]/40 rounded-xl overflow-hidden bg-white dark:bg-[#272C38]">
-          <div className="text-center text-[10px] font-bold bg-slate-50 dark:bg-[#2A2F3E] py-1 text-[#0b3d63] dark:text-white border-b border-[#0b3d63]/10 dark:border-[#4D73CD]/20">
-            อังคาร ({formatDateTH(getWeekDates(weekOffset)["อังคาร (รอบ 1)"])})
-          </div>
-          <div className="flex divide-x divide-[#0b3d63]/20 dark:divide-[#4D73CD]/30">
-            {(["อังคาร (รอบ 1)", "อังคาร (รอบ 2)"] as WarDay[]).map(day => {
-              const dates = getWeekDates(weekOffset);
-              const dateStr = dates[day];
-              const isSelected = selectedDay === day || (!selectedDay && selectedDate === dateStr);
-              return (
-                <button
-                  key={day}
-                  onClick={() => handleDayBtn(day)}
-                  className={`px-4 py-2 text-sm font-semibold transition-all ${
-                    isSelected
-                      ? "bg-[#0b3d63] dark:bg-[#3B66D1] text-white shadow-sm"
-                      : "text-[#0b3d63] dark:text-white hover:bg-blue-50 dark:hover:bg-[#32384A]"
-                  }`}
-                >
-                  {day.includes("รอบ 1") ? "รอบ 1" : "รอบ 2"}
-                </button>
-              )
-            })}
-          </div>
-        </div>
 
-        {/* วันอื่นๆ */}
+        {/* อังคาร รอบ 1 */}
+        {(["อังคาร (รอบ 1)", "อังคาร (รอบ 2)"] as WarDay[]).map((day) => {
+          const dates = getWeekDates(weekOffset);
+          const dateStr = dates[day];
+          const isSelected = selectedDay === day || (!selectedDay && selectedDate === dateStr);
+          const roundLabel = day.includes("รอบ 1") ? "รอบ 1" : "รอบ 2";
+          return (
+            <button
+              key={day}
+              onClick={() => handleDayBtn(day)}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all flex flex-row items-center gap-2 ${
+                isSelected
+                  ? "bg-[#0b3d63] dark:bg-[#3B66D1] text-white border-[#0b3d63] dark:border-[#4D73CD] shadow-sm"
+                  : "bg-white dark:bg-[#272C38] text-[#0b3d63] dark:text-white border-[#0b3d63]/30 dark:border-[#4D73CD]/40 hover:bg-blue-50 dark:hover:bg-[#2A2F3E]"
+              }`}
+            >
+              <span className="font-bold">อังคาร</span>
+              <span className={`text-[11px] px-1.5 py-0.5 rounded font-semibold ${isSelected ? "bg-white/20" : "bg-slate-100 dark:bg-[#2A2F3E] text-[#0b3d63] dark:text-white"}`}>{roundLabel}</span>
+              <span className={`text-[10px] ${isSelected ? "opacity-80" : "opacity-60"}`}>{formatDateTH(dateStr)}</span>
+            </button>
+          );
+        })}
+
+        {/* พฤหัสบดี / อาทิตย์ */}
         {(["พฤหัสบดี", "อาทิตย์"] as WarDay[]).map((day) => {
           const dates = getWeekDates(weekOffset);
           const dateStr = dates[day];
@@ -583,14 +580,14 @@ export default function AttendancePage() {
             <button
               key={day}
               onClick={() => handleDayBtn(day)}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all flex flex-col items-center ${
+              className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all flex flex-row items-center gap-2 ${
                 isSelected
                   ? "bg-[#0b3d63] dark:bg-[#3B66D1] text-white border-[#0b3d63] dark:border-[#4D73CD] shadow-sm"
                   : "bg-white dark:bg-[#272C38] text-[#0b3d63] dark:text-white border-[#0b3d63]/30 dark:border-[#4D73CD]/40 hover:bg-blue-50 dark:hover:bg-[#2A2F3E]"
               }`}
             >
-              <span>{day}</span>
-              <span className="text-[10px] opacity-70">{formatDateTH(dateStr)}</span>
+              <span className="font-bold">{day}</span>
+              <span className={`text-[10px] ${isSelected ? "opacity-80" : "opacity-60"}`}>{formatDateTH(dateStr)}</span>
             </button>
           );
         })}

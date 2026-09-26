@@ -68,7 +68,7 @@ export default function TeamsPage() {
   const initialLoadRef = useRef(true);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [activeTab, setActiveTab] = useState<"main" | "sub" | "leave">("main");
+  
   const [unassignedFilterJobs, setUnassignedFilterJobs] = useState<string[]>([]);
   const [isJobFilterOpen, setIsJobFilterOpen] = useState(false);
   const jobFilterDropdownRef = useRef<HTMLDivElement>(null);
@@ -105,7 +105,7 @@ export default function TeamsPage() {
       return;
     }
 
-    const targetZones = data.zones.filter((z) => z.type === (activeTab === "sub" ? "sub" : "main"));
+    const targetZones = data.zones;
     
     let totalAssigned = 0;
     targetZones.forEach(z => {
@@ -129,7 +129,7 @@ export default function TeamsPage() {
     let htmlContent = `
       <html>
         <head>
-          <title>Export PDF - ${activeTab === 'main' ? 'สนามหลัก' : 'สนามรอง'}</title>
+          <title>Export PDF - ชิงปราสาท</title>
           <style> 
             @media print { 
               @page { size: landscape; margin: 10mm; } 
@@ -147,7 +147,7 @@ export default function TeamsPage() {
           </style>
         </head>
         <body>
-          <h2>รายชื่อทีม${activeTab === 'main' ? 'สนามหลัก' : 'สนามรอง'}</h2>
+          <h2>รายชื่อทีมชิงปราสาท</h2>
           <div class="container">
     `;
 
@@ -468,7 +468,7 @@ export default function TeamsPage() {
              }
            }, 150);
         } else if (data.offlineIds.includes(targetId)) {
-           setActiveTab("leave");
+           
            useModalStore.getState().alert(`ผู้เล่น ${targetMember?.name ?? targetId} อยู่ในสถานะลา/ออฟไลน์`);
         }
       }
@@ -832,8 +832,8 @@ export default function TeamsPage() {
     if (!id || !data.members[id]) return false;
     const m = data.members[id];
     // Filter by gvgField matching activeTab (unless activeTab is leave)
-    if (activeTab === "main" && m.gvgField === "sub") return false;
-    if (activeTab === "sub" && m.gvgField !== "sub") return false;
+    
+    
 
     if (unassignedFilterJobs.length > 0 && !unassignedFilterJobs.includes(m.job)) return false;
     if (unassignedSearch && !m.name?.toLowerCase().includes(unassignedSearch.toLowerCase())) return false;
@@ -1063,7 +1063,7 @@ export default function TeamsPage() {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#0b3d63] dark:bg-[#3B66D1] shadow-sm"><Shield className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
             <div>
-              <h1 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-white">จัดทีม GVG</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-white">จัดทีม ชิงปราสาท</h1>
               <p className="text-xs sm:text-sm text-slate-500 dark:text-[#8B93A7]">{isAdmin ? "ลากและวางเพื่อจัดทีม (ระบบบันทึกอัตโนมัติ)" : "รายชื่อและสมาชิกทีมสำหรับกิลด์วอร์"}</p>
             </div>
           </div>
@@ -1335,10 +1335,10 @@ export default function TeamsPage() {
       >
         <GVGExportLayout
           ref={exportLayoutRef}
-          zones={data.zones.filter((z) => z.type === (activeTab === "sub" ? "sub" : "main"))}
+          zones={data.zones}
           columns={data.columns}
           members={data.members}
-          title={activeTab === "sub" ? "GVG TEAM SETUP (สนามรอง)" : "GVG TEAM SETUP"}
+          title="CASTLE SIEGE SETUP"
         />
       </div>
 
@@ -1346,7 +1346,7 @@ export default function TeamsPage() {
       {isExporting && (
         <div className="fixed inset-0 z-[100] bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-3">
           <Loader2 className="w-10 h-10 animate-spin text-sky-400" />
-          <div className="text-lg font-bold">กำลังสร้างภาพสรุป GVG (PNG 1 หน้ากระดาษ)...</div>
+          <div className="text-lg font-bold">กำลังสร้างภาพสรุป ชิงปราสาท (PNG 1 หน้ากระดาษ)...</div>
           <div className="text-xs text-slate-400">กรุณารอสักครู่ ระบบกำลังเรนเดอร์ภาพความละเอียดสูง</div>
         </div>
       )}

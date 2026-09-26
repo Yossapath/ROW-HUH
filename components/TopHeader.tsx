@@ -12,7 +12,8 @@ import { JOB_LIST, JOB_ICONS } from "@/lib/utils";
 const ROUTE_TITLES: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/dashboard/roster": "รายชื่อสมาชิก",
-  "/dashboard/teams": "จัดทีม GVG",
+  ""/dashboard/teams": "จัดทีม GVG",
+  "/dashboard/castle": "จัดทีม ชิงปราสาท",
   "/dashboard/dungeon": "ดันเจี้ยน",
   "/dashboard/attendance": "เช็คชื่อวอ",
   "/dashboard/auction": "จองคิวประมูล",

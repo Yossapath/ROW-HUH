@@ -39,11 +39,7 @@ function buildDefaultColumns(prefix: string, type: "main" | "sub", count: number
 
 function migrateToZones(savedData: any, cols: Record<string, Column>): Zone[] {
   if (savedData?.zones && Array.isArray(savedData.zones) && savedData.zones.length > 0) {
-    const hasSub = (savedData.zones as Zone[]).some(z => z.type === "sub");
     let resultZones = savedData.zones as Zone[];
-    if (!hasSub) {
-      resultZones = [...resultZones, { id: "zone-sub-1", name: "สนามรอง", type: "sub", teamOrder: [] }];
-    }
     return resultZones.map(z => ({
       ...z,
       teamOrder: Array.isArray(z.teamOrder) ? z.teamOrder : Object.values(z.teamOrder || {})
@@ -52,10 +48,8 @@ function migrateToZones(savedData: any, cols: Record<string, Column>): Zone[] {
   const zones: Zone[] = [];
   const z1 = savedData?.mainZone1Order ?? [];
   const z2 = savedData?.mainZone2Order ?? [];
-  const sub = savedData?.subOrder ?? [];
   zones.push({ id: "zone-main-1", name: "โซน 1", type: "main", teamOrder: z1.length > 0 ? z1 : buildDefaultColumns("main", "main", 6, 1, cols) });
   zones.push({ id: "zone-main-2", name: "โซน 2", type: "main", teamOrder: z2.length > 0 ? z2 : buildDefaultColumns("main", "main", 6, 7, cols) });
-  zones.push({ id: "zone-sub-1", name: "สนามรอง", type: "sub", teamOrder: sub.length > 0 ? sub : buildDefaultColumns("sub", "sub", 6, 1, cols) });
   return zones;
 }
 
@@ -337,6 +331,9 @@ export default function TeamsPage() {
       } else {
         zones = migrateToZones({}, cols);
       }
+
+      // Remove legacy sub zones from the system completely
+      zones = zones.filter(z => z.type !== "sub");
 
       if (!cols["unassigned"]) cols["unassigned"] = { id: "unassigned", title: "ยังไม่ได้จัดทีม", memberIds: [], type: "unassigned", locked: false };
 

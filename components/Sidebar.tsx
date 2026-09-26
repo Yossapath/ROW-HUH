@@ -11,12 +11,14 @@ import {
   ScrollText,
   UserCog,
   Gavel,
+  Flag,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 const MENUS = [
   { name: "รายชื่อสมาชิก", path: "/dashboard/roster", icon: Users },
   { name: "จัดทีม GVG", path: "/dashboard/teams", icon: Shield },
+  { name: "จัดทีม ชิงปราสาท", path: "/dashboard/castle", icon: Flag },
   { name: "ดันเจี้ยน", path: "/dashboard/dungeon", icon: Swords },
   { name: "จองคิวประมูล", path: "/dashboard/auction", icon: Gavel },
   { name: "เช็คชื่อวอ", path: "/dashboard/attendance", icon: CheckSquare },

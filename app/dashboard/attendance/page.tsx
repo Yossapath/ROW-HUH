@@ -850,6 +850,8 @@ export default function AttendancePage() {
                 value={importText}
                 onChange={e => setImportText(e.target.value)}
                 placeholder="Name1\nName2\n..."
+                data-gramm="false"
+                spellCheck={false}
                 className="flex-1 w-full border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38] text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#6B7280] rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#4D73CD] dark:focus:ring-[#4D73CD] resize-none min-h-[150px]"
               />
               

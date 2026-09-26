@@ -894,7 +894,7 @@ export default function TeamsPage() {
                 <span className="font-bold text-sm text-theme-text">ตรวจพบ: {names.length} / 60 คน</span>
                 <button onClick={handlePullTop60} className="text-[#0b3d63] dark:text-white font-bold text-sm bg-[#0b3d63]/10 dark:bg-[#3B66D1]/20 px-4 py-1.5 rounded-lg hover:bg-[#0b3d63]/20 transition-colors border border-[#0b3d63]/20">ดึง 60 พลังสูงสุด</button>
               </div>
-              <textarea className="w-full h-[250px] bg-theme-bg border border-theme-border rounded-lg p-3 text-sm text-theme-text font-mono resize-none focus:ring-2 focus:ring-[#4D73CD] outline-none" value={autoModalText} onChange={e => setAutoModalText(e.target.value)} placeholder="วางรายชื่อที่นี่ (1 บรรทัดต่อ 1 ชื่อ)" />
+              <textarea data-gramm="false" spellCheck={false} className="w-full h-[250px] bg-theme-bg border border-theme-border rounded-lg p-3 text-sm text-theme-text font-mono resize-none focus:ring-2 focus:ring-[#4D73CD] outline-none" value={autoModalText} onChange={e => setAutoModalText(e.target.value)} placeholder="วางรายชื่อที่นี่ (1 บรรทัดต่อ 1 ชื่อ)" />
             </div>
           )}
           <div className="p-4 border-t border-theme-border flex flex-col-reverse sm:flex-row items-center justify-end gap-3 bg-theme-bg/50 shrink-0">
@@ -1050,7 +1050,7 @@ export default function TeamsPage() {
       )}
 
       <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-        <div className="flex flex-col lg:flex-row gap-4 items-start">
+        <div className="flex flex-col lg:flex-row gap-4 items-start notranslate" translate="no">
           {/* Unassigned Panel */}
           {isAdmin && !isUnassignedCollapsed && (
             <div className="w-full lg:w-[260px] 2xl:w-[280px] flex-shrink-0 bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] h-[400px] lg:h-[calc(100vh-2rem)] flex flex-col lg:sticky top-4 z-30">

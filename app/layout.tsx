@@ -57,7 +57,7 @@ export default function RootLayout({
       <head>
         <meta charSet="utf-8" />
       </head>
-      <body className={`min-h-screen bg-background text-foreground antialiased ${prompt.variable} font-sans`}>
+      <body className={`min-h-screen bg-background text-foreground antialiased ${prompt.variable} font-sans`} suppressHydrationWarning>
         <Providers>{children}</Providers>
         <GlobalModal />
       </body>

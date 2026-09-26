@@ -479,7 +479,7 @@ export default function UsersPage() {
                         <div className="bg-white dark:bg-[#232733] rounded-xl border border-purple-200 dark:border-purple-900/50 overflow-hidden flex flex-col">
                           <div className="bg-purple-50 dark:bg-purple-900/20 px-4 py-3 border-b border-purple-100 dark:border-purple-900/30">
                             <h4 className="font-bold text-purple-700 dark:text-purple-400 flex items-center gap-2">
-                              <span>พบผู้ใช้ที่กรอกชื่อในเกม "ซ้ำกัน" ในระบบ (อาจเป็นสาเหตุที่จำนวนคนไม่เท่ากัน)</span>
+                              <span>พบผู้ใช้ที่กรอกชื่อในเกม &quot;ซ้ำกัน&quot; ในระบบ (อาจเป็นสาเหตุที่จำนวนคนไม่เท่ากัน)</span>
                               <span className="bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 text-xs px-2 py-0.5 rounded-full">{duplicateUsers.length}</span>
                             </h4>
                           </div>

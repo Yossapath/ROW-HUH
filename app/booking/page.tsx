@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import {
   Swords,
@@ -645,7 +646,7 @@ export default function BookingPage() {
                               }}
                             >
                               {JOB_ICONS[q.job] ? (
-                                <img src={JOB_ICONS[q.job]} alt={q.job} className="w-4 h-4 object-contain shrink-0" />
+                                <Image src={JOB_ICONS[q.job]} alt={q.job} width={16} height={16} className="object-contain shrink-0" />
                               ) : (
                                 <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: jobColor }} />
                               )}

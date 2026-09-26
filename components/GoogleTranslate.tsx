@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 
@@ -7,6 +7,28 @@ declare global {
     googleTranslateElementInit?: () => void;
     google?: any;
   }
+}
+
+// Monkey-patch Node.prototype.removeChild and insertBefore to prevent React from crashing
+// when Google Translate replaces text nodes with <font> tags.
+if (typeof window !== "undefined") {
+  const originalRemoveChild = Node.prototype.removeChild;
+  Node.prototype.removeChild = function (child: Node) {
+    if (child.parentNode !== this) {
+      // Node was already moved/removed by Google Translate
+      return child;
+    }
+    return originalRemoveChild.apply(this, arguments as any);
+  };
+
+  const originalInsertBefore = Node.prototype.insertBefore;
+  Node.prototype.insertBefore = function (newNode: Node, referenceNode: Node | null) {
+    if (referenceNode && referenceNode.parentNode !== this) {
+      // Node was already moved/removed by Google Translate
+      return newNode;
+    }
+    return originalInsertBefore.apply(this, arguments as any);
+  };
 }
 
 export default function GoogleTranslate() {

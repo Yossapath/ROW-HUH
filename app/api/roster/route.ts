@@ -37,6 +37,51 @@ export async function PUT(req: Request) {
     }
 
     await rosterRef().set(body, { merge: true });
+
+    // Sync power levels to users collection
+    const db = getDb();
+    const usersSnap = await db.collection(COLL_USER).get();
+    
+    const rosterPowerMap = new Map<string, number>();
+    const rosterDataToSync = body.data ? body.data : body;
+    
+    Object.keys(rosterDataToSync).forEach((job) => {
+      const members = rosterDataToSync[job];
+      if (Array.isArray(members)) {
+        members.forEach((m: any) => {
+          if (m.name && m.power !== undefined) {
+            let p = typeof m.power === 'number' ? m.power : parseInt(String(m.power).replace(/,/g, ''), 10);
+            if (!isNaN(p)) {
+              rosterPowerMap.set(m.name.trim().toLowerCase(), p);
+            }
+          }
+        });
+      }
+    });
+
+    if (rosterPowerMap.size > 0) {
+      let batch = db.batch();
+      let updates = 0;
+      for (const doc of usersSnap.docs) {
+        const u = doc.data();
+        if (u.gameUsername) {
+          const gameNameStr = String(u.gameUsername).trim().toLowerCase();
+          const newPower = rosterPowerMap.get(gameNameStr);
+          if (newPower !== undefined && u.power !== newPower) {
+             batch.update(doc.ref, { power: newPower });
+             updates++;
+             if (updates === 500) {
+               await batch.commit();
+               batch = db.batch();
+               updates = 0;
+             }
+          }
+        }
+      }
+      if (updates > 0) {
+        await batch.commit();
+      }
+    }
     
     return ok({ message: "Roster updated successfully" });
   } catch (e: unknown) {

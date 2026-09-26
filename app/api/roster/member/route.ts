@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       return err(validation.error, 400);
     }
 
-    const { name, job, power, warRole, discordId } = validation.data;
+    const { name, job, power, warRole, discordId, gvgField } = validation.data;
     const finalDiscordId = discordId || `manual_${Date.now()}`;
 
     const db = getDb();
@@ -43,6 +43,7 @@ export async function POST(req: Request) {
         power: Number(power),
         role: warRole || "อิสระ (ให้ระบบจัดให้)",
         discordId: finalDiscordId,
+        gvgField,
       };
 
       if (!rosterData[job]) rosterData[job] = [];

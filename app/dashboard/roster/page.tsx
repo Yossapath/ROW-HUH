@@ -32,12 +32,14 @@ export default function RosterPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editPower, setEditPower] = useState("");
   const [editActivity, setEditActivity] = useState("");
+  const [editGvgField, setEditGvgField] = useState("main");
 
   // Add Modal States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addName, setAddName] = useState("");
   const [addJob, setAddJob] = useState(JOB_LIST[0]);
   const [addPower, setAddPower] = useState("");
+  const [addGvgField, setAddGvgField] = useState("main");
 
   const { data: roster, isLoading } = useQuery({
     queryKey: ["roster"],
@@ -68,6 +70,7 @@ export default function RosterPage() {
     setEditTitle(member.title || "");
     setEditPower(member.power?.toString() || "");
     setEditActivity(member.activity?.toString() || "");
+    setEditGvgField(member.gvgField || "main");
   };
 
   const handleSaveEdit = async () => {
@@ -85,7 +88,7 @@ export default function RosterPage() {
         power: Number(editPower) || 0,
         activity: Number(editActivity) || 0,
         warRole: editingMember.role || "อิสระ (ให้ระบบจัดให้)",
-        gvgField: editingMember.gvgField || "main"
+        gvgField: editGvgField
       });
       
       queryClient.invalidateQueries({ queryKey: ["roster"] });
@@ -106,6 +109,7 @@ export default function RosterPage() {
         name: addName,
         job: addJob,
         power: Number(addPower) || 0,
+        gvgField: addGvgField,
         discordId: `manual_${Date.now()}_${Math.floor(Math.random() * 1000)}`
       });
       
@@ -665,6 +669,18 @@ export default function RosterPage() {
                   />
                 </div>
               </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">สิทธิ์สนาม GVG</label>
+                <select 
+                  value={editGvgField}
+                  onChange={e => setEditGvgField(e.target.value)}
+                  className="w-full border border-slate-200 dark:border-[#2D3342] rounded-xl px-4 py-3 text-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-[#4D73CD] focus:border-[#4D73CD] bg-slate-50 dark:bg-[#1C1F27] transition-all outline-none"
+                >
+                  <option value="main">สนามหลัก (Main Field)</option>
+                  <option value="sub">สนามรอง (Sub Field)</option>
+                </select>
+              </div>
             </div>
 
             <div className="px-6 py-4 bg-slate-50 dark:bg-[#1C1F27] flex items-center justify-between border-t border-slate-100 dark:border-[#2D3342]">
@@ -750,6 +766,18 @@ export default function RosterPage() {
                   placeholder="เช่น 150000"
                   className="w-full border border-slate-200 dark:border-[#2D3342] rounded-xl px-4 py-3 text-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-slate-50 dark:bg-[#1C1F27] transition-all outline-none font-mono"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">สิทธิ์สนาม GVG</label>
+                <select 
+                  value={addGvgField}
+                  onChange={e => setAddGvgField(e.target.value)}
+                  className="w-full border border-slate-200 dark:border-[#2D3342] rounded-xl px-4 py-3 text-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-slate-50 dark:bg-[#1C1F27] transition-all outline-none"
+                >
+                  <option value="main">สนามหลัก (Main Field)</option>
+                  <option value="sub">สนามรอง (Sub Field)</option>
+                </select>
               </div>
             </div>
 

@@ -60,6 +60,7 @@ export const rosterMemberAddSchema = z.object({
     .refine((v) => Number.isFinite(v) && v >= 0 && v <= Number.MAX_SAFE_INTEGER, "พลังรบไม่ถูกต้อง"),
   warRole: z.string().trim().max(100).optional().default("อิสระ (ให้ระบบจัดให้)"),
   discordId: z.string().trim().max(100).optional(),
+  gvgField: z.enum(["main", "sub"]).optional().default("main"),
 });
 
 export const rosterMemberUpdateSchema = z.object({

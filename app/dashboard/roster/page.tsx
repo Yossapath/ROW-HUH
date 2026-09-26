@@ -5,7 +5,7 @@ import { useState, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { JOB_LIST, JOB_COLORS, JOB_ICONS } from "@/lib/utils";
-import { Search, X, Users, Upload, FileSpreadsheet, Check } from "lucide-react";
+import { Search, X, Users, Upload, FileSpreadsheet, Check, UserPlus } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import * as XLSX from "xlsx";
 import { MemberProfileModal } from "@/components/MemberProfileModal";
@@ -32,6 +32,12 @@ export default function RosterPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editPower, setEditPower] = useState("");
   const [editActivity, setEditActivity] = useState("");
+
+  // Add Modal States
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addName, setAddName] = useState("");
+  const [addJob, setAddJob] = useState(JOB_LIST[0]);
+  const [addPower, setAddPower] = useState("");
 
   const { data: roster, isLoading } = useQuery({
     queryKey: ["roster"],
@@ -84,6 +90,31 @@ export default function RosterPage() {
       
       queryClient.invalidateQueries({ queryKey: ["roster"] });
       setEditingMember(null);
+    } catch (err: any) {
+      useModalStore.getState().alert("เกิดข้อผิดพลาด: " + (err.response?.data?.error || err.message));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAddMember = async () => {
+    if (!addName || !addJob || !addPower) return useModalStore.getState().alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+    
+    setIsSaving(true);
+    try {
+      await axios.post("/api/roster/member", {
+        name: addName,
+        job: addJob,
+        power: Number(addPower) || 0,
+        discordId: `manual_${Date.now()}_${Math.floor(Math.random() * 1000)}`
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ["roster"] });
+      setIsAddModalOpen(false);
+      setAddName("");
+      setAddJob(JOB_LIST[0]);
+      setAddPower("");
+      useModalStore.getState().alert("เพิ่มสมาชิกสำเร็จ!");
     } catch (err: any) {
       useModalStore.getState().alert("เกิดข้อผิดพลาด: " + (err.response?.data?.error || err.message));
     } finally {
@@ -316,7 +347,16 @@ export default function RosterPage() {
           </div>
 
           {isAdmin && (
-            <div>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setIsAddModalOpen(true)}
+                disabled={isSaving}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-colors shadow-sm text-sm disabled:opacity-50"
+              >
+                <UserPlus className="w-4 h-4" />
+                เพิ่ม (Manual)
+              </button>
+
               <input 
                 type="file" 
                 accept=".xlsx, .xls" 
@@ -650,6 +690,84 @@ export default function RosterPage() {
                   className="bg-[#3B66D1] hover:bg-[#4D73CD] text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow disabled:opacity-70"
                 >
                   {isSaving ? "กำลังบันทึก..." : "บันทึก"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm p-0 sm:p-4">
+          <div className="bg-white dark:bg-[#232733] rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col font-prompt border border-slate-200 dark:border-[#2D3342] animate-in fade-in zoom-in duration-200 max-h-[92vh]">
+            <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100 dark:border-[#2D3342]">
+              <h2 className="text-xl font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+                <UserPlus className="w-5 h-5" /> เพิ่มสมาชิก (Manual)
+              </h2>
+              <button 
+                onClick={() => setIsAddModalOpen(false)}
+                className="text-slate-400 hover:bg-slate-100 dark:hover:bg-[#272C38] rounded-full p-1.5 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
+              <p className="text-sm text-slate-500 dark:text-[#8B93A7] mb-2 font-medium">
+                ใช้สำหรับเพิ่มสมาชิกที่ไม่มีบัญชี Discord (สร้างไอดีจำลองอัตโนมัติ)
+              </p>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">ชื่อสมาชิก (ในเกม)</label>
+                <input 
+                  type="text" 
+                  value={addName}
+                  onChange={e => setAddName(e.target.value)}
+                  placeholder="กรอกชื่อในเกม"
+                  className="w-full border border-slate-200 dark:border-[#2D3342] rounded-xl px-4 py-3 text-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-slate-50 dark:bg-[#1C1F27] transition-all outline-none"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">อาชีพ</label>
+                <select 
+                  value={addJob}
+                  onChange={e => setAddJob(e.target.value)}
+                  className="w-full border border-slate-200 dark:border-[#2D3342] rounded-xl px-4 py-3 text-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-slate-50 dark:bg-[#1C1F27] transition-all outline-none"
+                >
+                  {JOB_LIST.map(job => (
+                    <option key={job} value={job}>{job}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">ค่าพลัง (Power)</label>
+                <input 
+                  type="number" 
+                  value={addPower}
+                  onChange={e => setAddPower(e.target.value)}
+                  placeholder="เช่น 150000"
+                  className="w-full border border-slate-200 dark:border-[#2D3342] rounded-xl px-4 py-3 text-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-slate-50 dark:bg-[#1C1F27] transition-all outline-none font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50 dark:bg-[#1C1F27] flex items-center justify-end border-t border-slate-100 dark:border-[#2D3342]">
+              <div className="flex items-center space-x-3 w-full sm:w-auto">
+                <button 
+                  onClick={() => setIsAddModalOpen(false)}
+                  disabled={isSaving}
+                  className="flex-1 sm:flex-none bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] text-slate-700 dark:text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-[#2A2F3E] transition-all shadow-sm disabled:opacity-50"
+                >
+                  ยกเลิก
+                </button>
+                <button 
+                  onClick={handleAddMember}
+                  disabled={isSaving || !addName || !addJob || !addPower}
+                  className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow disabled:opacity-50"
+                >
+                  {isSaving ? "กำลังเพิ่ม..." : "ยืนยันการเพิ่ม"}
                 </button>
               </div>
             </div>

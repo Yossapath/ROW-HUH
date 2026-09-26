@@ -405,23 +405,25 @@ export default function RosterPage() {
           </span>
         </button>
 
-        <button 
-          onClick={() => setShowManualOnly(!showManualOnly)}
-          className={`rounded-2xl px-4 py-2 flex items-center gap-2.5 shadow-sm border transition-all flex-shrink-0 cursor-pointer ${
-            showManualOnly 
-              ? "bg-rose-50 dark:bg-rose-900/20 border-rose-500 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/30" 
-              : "bg-white dark:bg-[#232733] border-slate-200 dark:border-[#2D3342] hover:bg-slate-50 dark:hover:bg-[#272C38] text-slate-700 dark:text-white"
-          }`}
-        >
-          <span className="font-bold text-sm">ไม่มี Discord (Manual)</span>
-          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-            showManualOnly 
-              ? "bg-rose-500 text-white" 
-              : "bg-slate-100 dark:bg-[#272C38] text-slate-600 dark:text-[#8B93A7]"
-          }`}>
-            {flatMembers.filter(m => !m.discordId || String(m.discordId).startsWith("manual_")).length}
-          </span>
-        </button>
+        {isAdmin && (
+          <button 
+            onClick={() => setShowManualOnly(!showManualOnly)}
+            className={`rounded-2xl px-4 py-2 flex items-center gap-2.5 shadow-sm border transition-all flex-shrink-0 cursor-pointer ${
+              showManualOnly 
+                ? "bg-rose-50 dark:bg-rose-900/20 border-rose-500 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/30" 
+                : "bg-white dark:bg-[#232733] border-slate-200 dark:border-[#2D3342] hover:bg-slate-50 dark:hover:bg-[#272C38] text-slate-700 dark:text-white"
+            }`}
+          >
+            <span className="font-bold text-sm">ไม่มี Discord (Manual)</span>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+              showManualOnly 
+                ? "bg-rose-500 text-white" 
+                : "bg-slate-100 dark:bg-[#272C38] text-slate-600 dark:text-[#8B93A7]"
+            }`}>
+              {flatMembers.filter(m => !m.discordId || String(m.discordId).startsWith("manual_")).length}
+            </span>
+          </button>
+        )}
 
         {JOB_LIST.map(job => {
           const count = flatMembers.filter(m => m.job === job).length;

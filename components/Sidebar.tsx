@@ -12,6 +12,7 @@ import {
   UserCog,
   Gavel,
 } from "lucide-react";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 const MENUS = [
   { name: "รายชื่อสมาชิก", path: "/dashboard/roster", icon: Users },
@@ -32,6 +33,15 @@ interface SidebarProps {
 
 export default function Sidebar({ isExpanded, isMobileOpen, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.role === "dev";
+
+  const visibleMenus = MENUS.filter(menu => {
+    if ((menu.name === "จัดการผู้ใช้" || menu.name === "ประวัติระบบ") && !isAdmin) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <>
@@ -78,7 +88,7 @@ export default function Sidebar({ isExpanded, isMobileOpen, onMobileClose }: Sid
         </div>
 
         <nav className="flex-1 px-3 py-6 space-y-1.5 overflow-y-auto overflow-x-hidden">
-          {MENUS.map((menu) => {
+          {visibleMenus.map((menu) => {
             const isActive = pathname === menu.path;
             const Icon = menu.icon;
             return (

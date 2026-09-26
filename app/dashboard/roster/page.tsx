@@ -401,8 +401,55 @@ export default function RosterPage() {
         )}
       </div>
 
-      <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] overflow-x-auto">
-        <table className="min-w-full text-sm">
+      <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] overflow-x-auto max-w-full">
+        {/* Mobile View (< 640px) */}
+        <div className="sm:hidden flex flex-col p-3 gap-2.5">
+          {filteredMembers.length > 0 ? (
+            filteredMembers.map((member, index) => {
+              const targetUser = user?.gameUsername || user?.discordUsername || "TELLツ";
+              const isCurrentUser = member.name === targetUser || 
+                                    (user?.gameUsername && member.name === user.gameUsername) || 
+                                    member.discordId === user?.discordId;
+              const jobColor = JOB_COLORS[member.job] || "#333";
+              return (
+                <div key={member.discordId || member.name} className={`p-3 rounded-xl border flex flex-col gap-2 shadow-sm ${isCurrentUser ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800" : "bg-white dark:bg-[#272C38] border-slate-100 dark:border-[#2D3342]"}`}>
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-[10px] font-mono text-slate-500 font-bold bg-slate-100 dark:bg-[#232733] px-1.5 py-0.5 rounded">{index + 1}</span>
+                      <button onClick={() => setViewingProfile(member)} className="font-bold text-sm text-slate-800 dark:text-white truncate hover:underline text-left">{member.name}</button>
+                      {isCurrentUser && <span className="text-[9px] bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-700 shrink-0">คุณ</span>}
+                    </div>
+                    {isAdmin && (
+                      <button onClick={() => openEditModal(member)} className="px-2 py-1 bg-slate-100 dark:bg-[#232733] border border-slate-200 dark:border-[#2D3342] rounded text-[10px] font-bold text-slate-700 dark:text-white shrink-0 hover:bg-[#3B66D1] hover:text-white transition-colors">แก้ไข</button>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-1.5 mt-1">
+                    {JOB_ICONS[member.job] && <img src={JOB_ICONS[member.job]} alt={member.job} className="w-5 h-5 object-contain shrink-0 drop-shadow-sm" />}
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm" style={{ backgroundColor: jobColor }}>{mapClassName(member.job)}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">| {member.title || "ไม่มี Title"}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-1 pt-2 border-t border-slate-100 dark:border-[#2D3342]/50">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] text-slate-400">คะแนน Gear</span>
+                      <span className="font-semibold text-xs text-[#0b3d63] dark:text-[#82A0F5]">{member.power != null ? Number(member.power).toLocaleString('en-US') : '-'}</span>
+                    </div>
+                    <div className="flex flex-col text-right">
+                      <span className="text-[9px] text-slate-400">กิจกรรมสัปดาห์</span>
+                      <span className="font-semibold text-xs text-green-600 dark:text-green-400">{member.activity != null ? Number(member.activity).toLocaleString('en-US') : '-'}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="py-8 text-center text-slate-400 text-sm">ไม่พบรายชื่อ</div>
+          )}
+        </div>
+
+        {/* Desktop View (>= 640px) */}
+        <table className="hidden sm:table min-w-full text-sm">
           <thead className="bg-slate-50 dark:bg-[#272C38] text-slate-600 dark:text-[#8B93A7] border-b border-slate-200 dark:border-[#2D3342]">
             <tr>
               <th className="py-3 px-4 font-bold text-center w-16">ลำดับ</th>

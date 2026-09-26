@@ -650,7 +650,7 @@ export default function AttendancePage() {
               <p className="text-sm">ไม่มีข้อมูลสมาชิกใน Roster</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-w-full">
               <table className="w-full">
                 <thead>
                   <tr className="bg-[#eef4fb] dark:bg-[#272C38] text-[#0b3d63] dark:text-white text-xs font-semibold">

@@ -344,7 +344,7 @@ export function AuctionQueuesView({ auctions }: Props) {
                   </div>
                 ) : (
                   <DragDropContext onDragEnd={handleDragEnd}>
-                    <div className="overflow-x-auto w-full">
+                    <div className="overflow-x-auto w-full max-w-full">
                       <table className="w-full text-left border-collapse min-w-[600px]">
                       <thead className="bg-slate-50 dark:bg-[#232733] sticky top-0 z-10 border-b border-slate-200 dark:border-[#2D3342]">
                         <tr>

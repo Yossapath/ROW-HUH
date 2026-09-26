@@ -183,7 +183,7 @@ export default function UsersPage() {
             <p className="text-slate-400 text-sm mt-1">กรุณาลองรีเฟรชหน้าใหม่อีกครั้ง หรือตรวจสอบสิทธิ์ Admin</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-w-full">
             <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-[#2D3342]">

@@ -311,7 +311,7 @@ export default function LogPage() {
                 <EmptyState message="ไม่มีประวัติที่ค้นหา" />
               ) : (
                 <>
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto max-w-full">
                     <table className="w-full text-sm">
                       <thead className="bg-slate-50 dark:bg-[#272C38] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide">
                         <tr>
@@ -444,7 +444,7 @@ export default function LogPage() {
                           {leaveTab === "leave" ? "แจ้งลา" : "ออฟไลน์"} ({targetList.length})
                         </span>
                       </div>
-                      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38]">
+                      <div className="overflow-x-auto max-w-full rounded-xl border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38]">
                         <table className="w-full text-sm">
                             <thead className="bg-slate-50 dark:bg-[#2A2F3E] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide border-b border-slate-200 dark:border-[#2D3342]">
                               <tr>
@@ -536,7 +536,7 @@ export default function LogPage() {
           ) : filteredQueues.length === 0 ? (
             <EmptyState message="ไม่มีรายการจองคิว" />
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-w-full">
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 dark:bg-[#272C38] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide">
                   <tr>

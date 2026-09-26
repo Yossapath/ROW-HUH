@@ -48,20 +48,16 @@ export default function Sidebar({ isExpanded, isMobileOpen, onMobileClose }: Sid
       <aside
         className={`
           bg-[#0b3d63] dark:bg-[#171D27] h-screen flex flex-col
-          transition-all duration-300 shadow-xl
+          transition-transform duration-300 shadow-xl
           border-r border-[#082e4b] dark:border-[#1F2430]
 
           /* Mobile: fixed overlay, slides in/out */
-          fixed top-0 left-0 z-50
-          lg:relative lg:z-30 lg:translate-x-0
-
+          fixed top-0 left-0 z-50 w-64
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-          ${
-            /* Desktop width */
-            isExpanded ? "w-64" : "lg:w-20"
-          }
-          /* Mobile always full sidebar width when open */
-          w-64
+
+          /* Desktop: relative flow, toggle width */
+          lg:relative lg:z-30 lg:translate-x-0 lg:transition-all
+          ${isExpanded ? "lg:w-64" : "lg:w-20"}
         `}
       >
         <div

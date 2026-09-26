@@ -46,13 +46,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!isAuthenticated) return null;
 
   return (
-    <div className="flex h-screen bg-theme-bg text-theme-text overflow-hidden transition-colors duration-300">
+    <div className="flex h-screen bg-theme-bg text-theme-text overflow-hidden overflow-x-hidden transition-colors duration-300">
       <Sidebar
         isExpanded={isSidebarExpanded}
         isMobileOpen={isMobileMenuOpen}
         onMobileClose={() => setIsMobileMenuOpen(false)}
       />
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto overflow-x-hidden">
         <TopHeader
           isSidebarExpanded={isSidebarExpanded}
           toggleSidebar={() => {

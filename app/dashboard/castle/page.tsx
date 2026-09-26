@@ -80,6 +80,7 @@ export default function TeamsPage() {
   const jobFilterDropdownRef = useRef<HTMLDivElement>(null);
   const [isUnassignedCollapsed, setIsUnassignedCollapsed] = useState(false);
   const [isAutoModalOpen, setIsAutoModalOpen] = useState(false);
+  const [autoTargetZone, setAutoTargetZone] = useState<string>("");
   const [autoModalText, setAutoModalText] = useState("");
   const [previewResult, setPreviewResult] = useState<AllocatorResult | null>(null);
   const [leaveRecords, setLeaveRecords] = useState<any[]>([]);
@@ -849,71 +850,168 @@ export default function TeamsPage() {
     });
 
   const AutoMatchModal = () => {
-    // Modal implementation omitted for brevity
     if (!isAutoModalOpen) return null;
+    if (!data) return null;
+
     const names = autoModalText.split("\n").map(n => n.trim()).filter(n => n);
+    
+    // Process matching
+    const processCustomMatch = () => {
+      if (!autoTargetZone) {
+        useModalStore.getState().alert("กรุณาเลือกโซนที่ต้องการจัด");
+        return;
+      }
+      if (names.length === 0) {
+        useModalStore.getState().alert("กรุณาระบุรายชื่อ");
+        return;
+      }
+
+      const notFoundNames: string[] = [];
+      const validMembers: Member[] = [];
+
+      names.forEach(name => {
+        let match = data.members[name];
+        if (!match) {
+          // Case insensitive search
+          const found = Object.values(data.members).find(m => m.name.toLowerCase() === name.toLowerCase());
+          if (found) match = found;
+        }
+
+        if (match) {
+           if (!data.offlineIds.includes(match.id)) {
+              validMembers.push(match);
+           }
+        } else {
+           notFoundNames.push(name);
+        }
+      });
+
+      if (notFoundNames.length > 0) {
+        useModalStore.getState().alert("ไม่พบรายชื่อในระบบ (หรือลา/ออฟไลน์):\n" + notFoundNames.join(", "));
+        return;
+      }
+
+      // Distribute logic
+      const sorted = [...validMembers].sort((a, b) => b.power - a.power);
+      const priests = sorted.filter(m => m.job === "Priest");
+      const paladins = sorted.filter(m => m.job === "Paladin" || m.job === "Crusader");
+      const others = sorted.filter(m => m.job !== "Priest" && m.job !== "Paladin" && m.job !== "Crusader");
+
+      const teamCount = Math.ceil(validMembers.length / 5);
+      
+      const newTeams = Array.from({ length: teamCount }, () => [null, null, null, null, null] as (Member | null)[]);
+      
+      // Distribute Priests evenly
+      priests.forEach((p, idx) => {
+         const tIdx = idx % teamCount;
+         const slotIdx = newTeams[tIdx].findIndex(s => s === null);
+         if (slotIdx !== -1) newTeams[tIdx][slotIdx] = p;
+      });
+
+      // Distribute Paladins
+      paladins.forEach((p, idx) => {
+         const tIdx = (teamCount - 1) - (idx % teamCount); // Reverse order for variety
+         const slotIdx = newTeams[tIdx].findIndex(s => s === null);
+         if (slotIdx !== -1) newTeams[tIdx][slotIdx] = p;
+      });
+
+      // Fill others
+      let teamCursor = 0;
+      others.forEach(p => {
+         while (teamCursor < teamCount && newTeams[teamCursor].findIndex(s => s === null) === -1) {
+            teamCursor++;
+         }
+         if (teamCursor < teamCount) {
+             const slotIdx = newTeams[teamCursor].findIndex(s => s === null);
+             if (slotIdx !== -1) newTeams[teamCursor][slotIdx] = p;
+         }
+      });
+
+      // Apply to State
+      const targetZone = data.zones.find(z => z.id === autoTargetZone);
+      if (!targetZone) return;
+
+      const newData = { ...data };
+      const newCols = { ...newData.columns };
+
+      // Calculate next team numbers
+      const type = targetZone.type;
+      const allTeamNums = Object.keys(newCols)
+        .filter(id => id.startsWith(type === "main" ? "main-" : "sub-"))
+        .map(id => parseInt(id.split("-")[1])).filter(n => !isNaN(n));
+      let nextNum = allTeamNums.length > 0 ? Math.max(...allTeamNums) + 1 : 1;
+
+      const newColIds: string[] = [];
+      newTeams.forEach(teamMembers => {
+          const colId = `${type}-${nextNum}-${genId().slice(0, 4)}`;
+          const title = type === "main" ? `ทีม ${nextNum}` : `ทีมรอง ${nextNum}`;
+          newCols[colId] = {
+             id: colId,
+             title,
+             memberIds: teamMembers.map(m => m ? m.id : null),
+             type,
+             locked: false
+          };
+          newColIds.push(colId);
+          nextNum++;
+      });
+
+      // Filter unassigned
+      const newlyAssigned = validMembers.map(m => m.id);
+      const oldUnassigned = newCols["unassigned"].memberIds.filter(id => id && !newlyAssigned.includes(id as string));
+      newCols["unassigned"] = { ...newCols["unassigned"], memberIds: oldUnassigned };
+
+      newData.columns = newCols;
+      newData.zones = newData.zones.map(z => z.id === autoTargetZone ? { ...z, teamOrder: [...z.teamOrder, ...newColIds] } : z);
+      
+      setData(newData);
+      setIsAutoModalOpen(false);
+      useModalStore.getState().alert(`จัดเสร็จสิ้น! สร้างทั้งหมด ${teamCount} ทีม ใน ${targetZone.name}`);
+    };
+
     return (
-      <div className="fixed inset-0 bg-black/150 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
-        <div className="bg-theme-panel rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col border border-theme-border animate-in zoom-in-95 duration-200 max-h-[90vh]">
-          <div className="p-4 border-b border-theme-border flex items-center justify-between shrink-0">
-            <h3 className="font-bold text-lg text-theme-text">{previewResult ? "ตัวอย่างผลการจัดทีมอัตโนมัติ (Preview)" : "กำหนดรายชื่อสนามหลัก (60 คน)"}</h3>
-            <button onClick={() => { setIsAutoModalOpen(false); setPreviewResult(null); }} className="text-theme-textSecondary hover:text-theme-text"><X size={20} /></button>
+      <div className="fixed inset-0 bg-black/50 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
+        <div className="bg-white dark:bg-[#232733] rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col border border-slate-200 dark:border-[#2D3342] animate-in zoom-in-95 duration-200 max-h-[90vh]">
+          <div className="p-4 border-b border-slate-200 dark:border-[#2D3342] flex items-center justify-between shrink-0">
+            <h3 className="font-bold text-lg text-slate-800 dark:text-white">จัดทีมออโต้ตามโซน</h3>
+            <button onClick={() => setIsAutoModalOpen(false)} className="text-slate-400 hover:text-slate-700"><X size={20} /></button>
           </div>
-          {previewResult ? (
-            <div className="p-4 flex-1 flex flex-col gap-4 overflow-y-auto max-h-[70vh]">
-              <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/150 rounded-xl p-4">
-                <h4 className="font-bold text-emerald-800 dark:text-emerald-300 text-sm mb-3">ผลการคำนวณการจัดทีม</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-white dark:bg-[#232733] p-3 rounded-lg border border-emerald-200/50 dark:border-[#2D3342]">
-                    <span className="text-slate-500 dark:text-slate-400 block text-xs">สนามหลัก</span>
-                    <span className="font-bold text-xl text-slate-800 dark:text-white">{previewResult.stats.mainTotal} / 60 คน</span>
-                    <span className="text-xs text-emerald-600 dark:text-emerald-400 block mt-1">มี Priest {previewResult.stats.priestFullTeams} ทีม</span>
-                  </div>
-                  <div className="bg-white dark:bg-[#232733] p-3 rounded-lg border border-emerald-200/50 dark:border-[#2D3342]">
-                    <span className="text-slate-500 dark:text-slate-400 block text-xs">สนามรอง</span>
-                    <span className="font-bold text-xl text-slate-800 dark:text-white">{previewResult.stats.subTotal} คน</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400 block mt-1">จัดได้ {previewResult.stats.subTeams} ทีม</span>
-                  </div>
+          
+          <div className="p-4 flex-1 flex flex-col gap-4 overflow-y-auto">
+             <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">เลือกโซนเป้าหมาย</label>
+                <select value={autoTargetZone} onChange={e => setAutoTargetZone(e.target.value)} className="w-full bg-slate-50 dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] rounded-xl px-4 py-2 text-sm text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-[#3B66D1]">
+                   <option value="">-- เลือกโซน --</option>
+                   {data.zones.map(z => (
+                      <option key={z.id} value={z.id}>{z.name} ({z.type === "main" ? "สนามหลัก" : "สนามรอง"})</option>
+                   ))}
+                </select>
+             </div>
+
+             <div>
+                <div className="flex justify-between items-end mb-2">
+                   <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">รายชื่อ (บรรทัดละ 1 ชื่อ)</label>
+                   <span className="text-xs text-slate-500 font-bold">พิมพ์มาแล้ว: {names.length} คน</span>
                 </div>
-              </div>
-              {previewResult.warnings.length > 0 && (
-                <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/150 rounded-xl p-3 text-xs text-amber-800 dark:text-amber-300 space-y-1">
-                  <div className="font-bold mb-1">คำเตือน:</div>
-                  {previewResult.warnings.map((w, i) => <div key={i}>โ€ข {w.message}</div>)}
-                </div>
-              )}
-              <p className="text-xs text-slate-500">กด &quot;ยืนยันนำไปใช้งาน&quot; เพื่อแทนที่การจัดทีม (ยังสามารถปรับก่อนบันทึกจริง)</p>
-            </div>
-          ) : (
-            <div className="p-4 flex-1 flex flex-col gap-4">
-              <p className="text-sm text-theme-textSecondary">ระบุรายชื่อ 60 คน สำหรับสนามหลัก (บรรทัดละ 1 ชื่อ)</p>
-              <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/150 rounded-lg p-3 text-sm text-[#0b3d63] dark:text-white flex items-start gap-2">
-                <span className="font-bold">คำแนะนำ:</span> จะคัดเลือก Priest 12 คนสำหรับสนามหลักให้อัตโนมัติ
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-sm text-theme-text">ตรวจพบ: {names.length} / 60 คน</span>
-                <button onClick={handlePullTop150} className="text-[#0b3d63] dark:text-white font-bold text-sm bg-[#0b3d63]/10 dark:bg-[#3B66D1]/20 px-4 py-1.5 rounded-lg hover:bg-[#0b3d63]/20 transition-colors border border-[#0b3d63]/20">ดึง 60 พลังสูงสุด</button>
-              </div>
-              <textarea data-gramm="false" spellCheck={false} className="w-full h-[250px] bg-theme-bg border border-theme-border rounded-lg p-3 text-sm text-theme-text font-mono resize-none focus:ring-2 focus:ring-[#4D73CD] outline-none" value={autoModalText} onChange={e => setAutoModalText(e.target.value)} placeholder="วางรายชื่อที่นี่ (1 บรรทัดต่อ 1 ชื่อ)" />
-            </div>
-          )}
-          <div className="p-4 border-t border-theme-border flex flex-col-reverse sm:flex-row items-center justify-end gap-3 bg-theme-bg/50 shrink-0">
-            {previewResult ? (
-              <>
-                <button onClick={() => setPreviewResult(null)} className="w-full sm:w-auto px-5 py-3 sm:py-2 rounded-lg font-bold text-theme-textSecondary hover:bg-theme-border/50 transition-colors border border-theme-border bg-theme-panel text-sm">กลับไปแก้ไข</button>
-                <button onClick={handleApplyAllocation} className="w-full sm:w-auto px-5 py-3 sm:py-2 rounded-lg font-bold text-white bg-[#10b981] hover:bg-[#059669] transition-colors shadow-sm text-sm">ยืนยันนำไปใช้งาน</button>
-              </>
-            ) : (
-              <>
-                <button onClick={() => setIsAutoModalOpen(false)} className="w-full sm:w-auto px-5 py-3 sm:py-2 rounded-lg font-bold text-theme-textSecondary hover:bg-theme-border/50 transition-colors border border-theme-border bg-theme-panel text-sm">ยกเลิก</button>
-                <button onClick={handleProcessAutoMatch} className="w-full sm:w-auto px-5 py-3 sm:py-2 rounded-lg font-bold text-white bg-[#3B66D1] hover:bg-[#4D73CD] transition-colors shadow-sm text-sm">ประมวลผล (Preview)</button>
-              </>
-            )}
+                <textarea spellCheck={false} className="w-full h-[250px] bg-slate-50 dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] rounded-xl p-3 text-sm text-slate-800 dark:text-white font-mono resize-none outline-none focus:ring-2 focus:ring-[#3B66D1]" value={autoModalText} onChange={e => setAutoModalText(e.target.value)} placeholder="วางรายชื่อที่นี่ (1 บรรทัดต่อ 1 ชื่อ)" />
+             </div>
+             
+             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 p-3 rounded-xl">
+                 <p className="text-xs text-blue-800 dark:text-blue-300">
+                    <span className="font-bold">ระบบจะ:</span> ตรวจสอบชื่อว่ามีในระบบหรือไม่ หากมีระบบจะเฉลี่ยอาชีพ Priest, Paladin ลงในทีมละ 5 คนให้สมดุลที่สุด แล้วนำไปต่อท้ายโซนเป้าหมายทันที
+                 </p>
+             </div>
+          </div>
+          
+          <div className="p-4 border-t border-slate-200 dark:border-[#2D3342] flex items-center justify-end gap-3 bg-slate-50 dark:bg-[#232733] shrink-0">
+             <button onClick={() => setIsAutoModalOpen(false)} className="px-5 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition-colors border border-slate-200 text-sm">ยกเลิก</button>
+             <button onClick={processCustomMatch} className="px-5 py-2 rounded-xl font-bold text-white bg-[#3B66D1] hover:bg-[#4D73CD] transition-colors shadow-sm text-sm">เริ่มจัดทีม</button>
           </div>
         </div>
       </div>
     );
   };
+
 
   const ZoneHeader = ({ zone }: { zone: Zone }) => {
     const isEditing = editingZoneId === zone.id;

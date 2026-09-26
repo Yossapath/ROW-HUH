@@ -69,7 +69,16 @@ export default function UsersPage() {
   });
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSyncModal, setShowSyncModal] = useState(false);
 
+  const { data: rosterData } = useQuery({
+    queryKey: ["roster"],
+    queryFn: async () => {
+      const res = await axios.get("/api/roster");
+      return res.data?.data ?? res.data ?? {};
+    },
+    enabled: showSyncModal && isAdmin,
+  });
   if (!isAdmin) {
     return (
       <div className="space-y-6 bg-[#f0f6fc] dark:bg-[#1C1F27] min-h-screen p-4 lg:py-6 lg:px-6 2xl:px-8 relative">
@@ -130,18 +139,27 @@ export default function UsersPage() {
           </div>
         </div>
         
-        {/* Search Bar */}
-        <div className="relative w-full max-w-sm">
-          <input
-            type="text"
-            placeholder="ค้นหาชื่อในเกม หรือ Discord..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38] text-slate-800 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-[#4D73CD] transition-all placeholder:text-slate-400 dark:placeholder:text-[#6B7280]"
-          />
-          <svg className="w-5 h-5 absolute right-3 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
+        {/* Search & Actions */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-lg">
+          <div className="relative w-full">
+            <input
+              type="text"
+              placeholder="ค้นหาชื่อในเกม หรือ Discord..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38] text-slate-800 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-[#4D73CD] transition-all placeholder:text-slate-400 dark:placeholder:text-[#6B7280]"
+            />
+            <svg className="w-5 h-5 absolute right-3 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <button
+            onClick={() => setShowSyncModal(true)}
+            className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-amber-100 hover:bg-amber-200 text-amber-700 dark:bg-amber-500/20 dark:hover:bg-amber-500/30 dark:text-amber-400 transition-colors border border-amber-200 dark:border-amber-500/30"
+          >
+            <AlertTriangle className="w-4 h-4" />
+            ตรวจสอบรายชื่อตกหล่น
+          </button>
         </div>
       </div>
 
@@ -382,6 +400,124 @@ export default function UsersPage() {
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSyncModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#1C1F27] rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col shadow-xl border border-slate-200 dark:border-[#2D3342] animate-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-[#2D3342] flex justify-between items-center bg-slate-50 dark:bg-[#232733]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                  <AlertTriangle size={20} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-white">รายชื่อที่ไม่ตรงกัน (Sync Check)</h3>
+                  <p className="text-xs text-slate-500 dark:text-[#8B93A7]">เทียบรายชื่อผู้ใช้ที่ลงทะเบียน กับรายชื่อใน Roster กิลด์</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowSyncModal(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#2D3342] rounded-xl transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto bg-slate-50 dark:bg-[#1C1F27]">
+              {!rosterData ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader2 size={32} className="animate-spin text-amber-500 mb-4" />
+                  <p className="font-bold text-slate-600 dark:text-slate-400">กำลังโหลดข้อมูล Roster...</p>
+                </div>
+              ) : (
+                (() => {
+                  const rosterNames = new Set<string>();
+                  const rosterList: any[] = [];
+                  Object.keys(rosterData).forEach(job => {
+                    if (Array.isArray(rosterData[job])) {
+                      rosterData[job].forEach((m: any) => {
+                        if (m.name) {
+                          rosterNames.add(m.name.trim().toLowerCase());
+                          rosterList.push({ name: m.name, job: m.job || job, tier: m.tier });
+                        }
+                      });
+                    }
+                  });
+
+                  const userGameNames = new Set(users.map(u => (u.gameUsername || "").trim().toLowerCase()).filter(Boolean));
+                  
+                  const rosterNotInUsers = rosterList.filter(r => !userGameNames.has((r.name || "").trim().toLowerCase()));
+                  const usersNotInRoster = users.filter(u => {
+                    const gameName = (u.gameUsername || "").trim().toLowerCase();
+                    if (!gameName) return true;
+                    return !rosterNames.has(gameName);
+                  });
+
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Left: In Roster but Not In Users */}
+                      <div className="bg-white dark:bg-[#232733] rounded-xl border border-red-200 dark:border-red-900/50 overflow-hidden flex flex-col">
+                        <div className="bg-red-50 dark:bg-red-900/20 px-4 py-3 border-b border-red-100 dark:border-red-900/30">
+                          <h4 className="font-bold text-red-700 dark:text-red-400 flex items-center gap-2">
+                            <span>มีใน Roster แต่ไม่พบในระบบผู้ใช้</span>
+                            <span className="bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 text-xs px-2 py-0.5 rounded-full">{rosterNotInUsers.length}</span>
+                          </h4>
+                        </div>
+                        <div className="p-4 flex-1 overflow-y-auto max-h-[50vh]">
+                          {rosterNotInUsers.length === 0 ? (
+                            <p className="text-sm text-slate-500 text-center py-8">ไม่มีรายชื่อตกหล่น</p>
+                          ) : (
+                            <ul className="space-y-2">
+                              {rosterNotInUsers.map((r, i) => (
+                                <li key={i} className="flex items-center justify-between text-sm p-2 rounded-lg bg-slate-50 dark:bg-[#2A2F3E] border border-slate-100 dark:border-[#333333]">
+                                  <span className="font-bold text-slate-700 dark:text-slate-200">{r.name}</span>
+                                  <span className="text-xs font-medium px-2 py-1 rounded bg-white dark:bg-[#1C1F27] text-slate-500 dark:text-slate-400 shadow-sm border border-slate-200 dark:border-[#333333]">{r.job}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Right: In Users but Not In Roster */}
+                      <div className="bg-white dark:bg-[#232733] rounded-xl border border-amber-200 dark:border-amber-900/50 overflow-hidden flex flex-col">
+                        <div className="bg-amber-50 dark:bg-amber-900/20 px-4 py-3 border-b border-amber-100 dark:border-amber-900/30">
+                          <h4 className="font-bold text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                            <span>มีในระบบผู้ใช้ แต่ไม่พบใน Roster</span>
+                            <span className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 text-xs px-2 py-0.5 rounded-full">{usersNotInRoster.length}</span>
+                          </h4>
+                        </div>
+                        <div className="p-4 flex-1 overflow-y-auto max-h-[50vh]">
+                          {usersNotInRoster.length === 0 ? (
+                            <p className="text-sm text-slate-500 text-center py-8">รายชื่อตรงกันทั้งหมด</p>
+                          ) : (
+                            <ul className="space-y-2">
+                              {usersNotInRoster.map((u, i) => (
+                                <li key={i} className="flex flex-col gap-1 text-sm p-2.5 rounded-lg bg-slate-50 dark:bg-[#2A2F3E] border border-slate-100 dark:border-[#333333]">
+                                  <div className="flex justify-between items-center">
+                                    <span className="font-bold text-slate-700 dark:text-slate-200">
+                                      {u.gameUsername ? u.gameUsername : <span className="text-red-500 italic">ยังไม่กรอกชื่อในเกม</span>}
+                                    </span>
+                                    {u.class && (
+                                      <span className="text-xs font-medium px-2 py-1 rounded bg-white dark:bg-[#1C1F27] text-slate-500 dark:text-slate-400 shadow-sm border border-slate-200 dark:border-[#333333]">{u.class}</span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                    <User size={12} /> Discord: {u.discordUsername}
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()
+              )}
             </div>
           </div>
         </div>

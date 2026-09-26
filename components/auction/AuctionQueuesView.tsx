@@ -286,7 +286,7 @@ export function AuctionQueuesView({ auctions }: Props) {
               </div>
 
               {isAdmin && isAdding && (
-                <div className="p-4 bg-sky-50 dark:bg-sky-500/10 border-b border-sky-100 dark:border-sky-500/20 flex gap-2 items-center">
+                <div className="p-4 bg-sky-50 dark:bg-sky-500/10 border-b border-sky-100 dark:border-sky-500/20 flex gap-2 items-center relative z-20">
                   <div className="flex-1 relative">
                     <input
                       type="text"

@@ -983,7 +983,7 @@ export default function TeamsPage() {
                 <select value={autoTargetZone} onChange={e => setAutoTargetZone(e.target.value)} className="w-full bg-slate-50 dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] rounded-xl px-4 py-2 text-sm text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-[#3B66D1]">
                    <option value="">-- เลือกโซน --</option>
                    {data.zones.map(z => (
-                      <option key={z.id} value={z.id}>{z.name} ({z.type === "main" ? "สนามหลัก" : "สนามรอง"})</option>
+                      <option key={z.id} value={z.id}>{z.name}</option>
                    ))}
                 </select>
              </div>
@@ -1216,19 +1216,9 @@ export default function TeamsPage() {
           )}
 
           <div className="flex-1 min-w-0 flex flex-col w-full">
-            {/* Tabs */}
-            <div className="flex gap-2 mb-4 bg-white dark:bg-[#232733] p-1.5 rounded-xl border border-slate-200 dark:border-[#2D3342] shadow-sm self-start overflow-x-auto max-w-full">
-              <button onClick={() => setActiveTab("main")} className={`px-4 sm:px-6 py-2 rounded-lg font-bold text-xs sm:text-sm whitespace-nowrap transition-all ${activeTab === "main" ? "bg-[#0b3d63] dark:bg-[#3B66D1] text-white shadow-sm" : "text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-[#2A2F3E]"}`}>
-                สนามหลัก ({mainPlayerCount}/150 คน)
-              </button>
-              <button onClick={() => setActiveTab("sub")} className={`px-4 sm:px-6 py-2 rounded-lg font-bold text-xs sm:text-sm whitespace-nowrap transition-all ${activeTab === "sub" ? "bg-[#0b3d63] dark:bg-[#3B66D1] text-white shadow-sm" : "text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-[#2A2F3E]"}`}>
-                สนามรอง ({data.zones.filter(z => z.type === "sub").flatMap(z => z.teamOrder).reduce((s, colId) => s + (data.columns[colId]?.memberIds?.filter(id => id !== null)?.length || 0), 0)} คน)
-              </button>
-              {isAdmin && <button onClick={() => setActiveTab("leave")} className={`px-4 sm:px-6 py-2 rounded-lg font-bold text-xs sm:text-sm whitespace-nowrap transition-all ${activeTab === "leave" ? "bg-red-600 text-white shadow-sm" : "text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-[#2A2F3E]"}`}>ลา/ออฟไลน์</button>}
-            </div>
 
             <div className="flex-1">
-              {activeTab === "main" && (
+
                 <div className="space-y-10 pb-12 bg-[#f0f6fc] dark:bg-[#1C1F27] print-export-padding">
                   {/* 60-player progress bar */}
                   <div className="bg-white dark:bg-[#232733] rounded-xl border border-slate-200 dark:border-[#2D3342] p-3 flex flex-col gap-3 shadow-sm">
@@ -1289,125 +1279,13 @@ export default function TeamsPage() {
 
                   {isAdmin && (
                     <button onClick={() => addZone("main")} disabled={!canAddMainTeam} className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-colors border ${canAddMainTeam ? "border-[#3B66D1] text-[#3B66D1] dark:text-[#82A0F5] hover:bg-[#3B66D1]/10" : "border-slate-200 text-slate-400 cursor-not-allowed"}`}>
-                      <Plus size={16} /> สร้างโซนใหม่ (สนามหลัก)
+                      <Plus size={16} /> สร้างโซนใหม่
                     </button>
                   )}
                 </div>
-              )}
-
-              {activeTab === "sub" && (
-                <div className="space-y-10 pb-12 bg-[#f0f6fc] dark:bg-[#1C1F27] print-export-padding">
-                  {data.zones.filter(z => z.type === "sub").map(zone => (
-                    <div key={zone.id}>
-                      <ZoneHeader zone={zone} />
-                      <Droppable droppableId={zone.id} direction="horizontal" type="TEAM" isDropDisabled={!isAdmin}>
-                        {(provided) => (
-                          <div ref={provided.innerRef} {...provided.droppableProps} className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 xl:gap-6 min-h-[100px]">
-                            {zone.teamOrder.map((colId, index) => data.columns[colId] ? (
-                              <TeamCard 
-                                key={colId} 
-                                column={data.columns[colId]} 
-                                members={data.members} 
-                                index={index} 
-                                toggleLock={toggleLock} 
-                                clearTeam={clearTeam} 
-                                removeMember={removeMember} 
-                                isAdmin={isAdmin} 
-                                onRemoveFromZone={isAdmin ? () => removeTeamFromZone(zone.id, colId) : undefined} 
-                                renameTeam={renameTeam}
-                                computedTitle={/^ทีมรอง \d+$/.test(data.columns[colId]?.title || "") ? `ทีมรอง ${globalTeamIndexMap[colId]}` : undefined}
-                              />
-                            ) : null)}
-                            {provided.placeholder}
-                            {zone.teamOrder.length === 0 && <div className="col-span-full flex items-center justify-center h-24 rounded-xl border-2 border-dashed border-slate-200 dark:border-[#2D3342] text-slate-400 text-sm">ยังไม่มีทีม โ€” กด &quot;เพิ่มทีม&quot;</div>}
-                          </div>
-                        )}
-                      </Droppable>
-                    </div>
-                  ))}
-                  {isAdmin && (
-                    <button onClick={() => addZone("sub")} className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-colors border border-[#3B66D1] text-[#3B66D1] dark:text-[#82A0F5] hover:bg-[#3B66D1]/10">
-                      <Plus size={16} /> สร้างโซนใหม่ (สนามรอง)
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {activeTab === "leave" && (
-                <div className="pb-12 space-y-12">
-                  <div>
-                    <h2 className="text-lg font-bold text-theme-danger flex items-center gap-2 mb-4"><X size={18} /> รายชื่อผู้เล่นออฟไลน์</h2>
-                    <div className="bg-theme-panel rounded-xl border border-theme-border p-6 shadow-sm">
-                      <div className="flex flex-col md:flex-row gap-4 mb-6">
-                        <div className="relative flex-1" ref={offlineDropdownRef}>
-                          <div className="bg-theme-bg border border-theme-border rounded-lg px-4 py-2 flex items-center justify-between cursor-pointer" onClick={() => setIsOfflineDropdownOpen(true)}>
-                            <input type="text" placeholder="+ ค้นหาผู้เล่นเพื่อทำให้ออฟไลน์..." className="bg-transparent border-none outline-none text-sm font-bold text-theme-text w-full" value={offlineSearch} onChange={e => { setOfflineSearch(e.target.value); setIsOfflineDropdownOpen(true); }} onFocus={() => setIsOfflineDropdownOpen(true)} />
-                          </div>
-                          {isOfflineDropdownOpen && (
-                            <div className="absolute z-40 w-full mt-2 bg-theme-panel border border-theme-border rounded-lg shadow-xl max-h-60 overflow-y-auto">
-                              {Object.values(data.members).filter(m => !data.offlineIds.includes(m.id)).filter(m => m.name.toLowerCase().includes(offlineSearch.toLowerCase()) || m.job.toLowerCase().includes(offlineSearch.toLowerCase())).sort((a, b) => a.name.localeCompare(b.name)).map(m => (
-                                <div key={m.id} className="px-4 py-2.5 hover:bg-theme-bg cursor-pointer text-sm font-bold text-theme-text flex justify-between items-center border-b border-theme-divider last:border-0" onClick={() => { markAsOffline(m.id); setOfflineSearch(""); setIsOfflineDropdownOpen(false); }}>
-                                  <div className="flex items-center gap-2">
-                                    <span>{m.name}</span>
-                                    {m.power > 0 && <span className="text-xs text-amber-500">{m.power.toLocaleString()}</span>}
-                                  </div>
-                                  <span className="inline-flex items-center gap-1 text-[10px] text-white px-2 py-0.5 rounded-full font-bold shadow-sm" style={{ backgroundColor: JOB_COLORS[m.job] || "#475569" }}>
-                                    {JOB_ICONS[m.job] && <img src={JOB_ICONS[m.job]} alt={m.job} className="w-3.5 h-3.5 object-contain" />}
-                                    {m.job}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      {data.offlineIds.length === 0 ? <div className="text-center py-8 text-theme-textMuted font-bold border-2 border-dashed border-theme-divider rounded-lg">ไม่มีผู้เล่นออฟไลน์</div> : (
-                        <div className="flex flex-wrap gap-3">
-                          {data.offlineIds.map(id => {
-                            const m = data.members[id];
-                            if (!m) return null;
-                            return (
-                              <div key={id} className="flex items-center gap-2 bg-theme-bg/80 border border-theme-border rounded-full py-1.5 pl-3 pr-1.5 shadow-sm">
-                                <span className="text-sm font-bold text-theme-text">{m.name}</span>
-                                <span className="text-[10px] font-bold text-white px-2 py-0.5 rounded-full" style={{ backgroundColor: JOB_COLORS[m.job] || "#475569" }}>{m.job}</span>
-                                {m.power > 0 && <span className="text-[11px] font-bold text-amber-500">{m.power.toLocaleString()}</span>}
-                                <button onClick={() => removeFromOffline(id)} className="p-1 hover:bg-theme-danger hover:text-white rounded-full text-theme-textSecondary transition-colors"><X size={14} /></button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-theme-text flex items-center gap-2 mb-4"><LayoutGrid size={18} className="text-[#0b3d63]" /> บันทึกการลา</h2>
-                    {leaveRecords.length === 0 ? <div className="text-center p-12 bg-theme-panel rounded-xl text-theme-textMuted border border-theme-border font-bold">ไม่มีข้อมูลการลา</div> : (
-                      <div className="bg-theme-panel rounded-xl border border-theme-border overflow-hidden">
-                        <table className="w-full text-left">
-                          <thead className="bg-theme-bg/50 border-b border-theme-divider text-xs uppercase tracking-wider text-theme-textMuted">
-                            <tr><th className="p-4 font-bold">ชื่อในเกม</th><th className="p-4 font-bold">วันที่ลา</th><th className="p-4 font-bold">เหตุผล</th><th className="p-4 font-bold w-20 text-center">จัดการ</th></tr>
-                          </thead>
-                          <tbody className="divide-y divide-theme-divider">
-                            {leaveRecords.map((r: any, i) => (
-                              <tr key={r.id || i} className="hover:bg-theme-bg/30">
-                                <td className="p-4 font-bold text-theme-text">{r.name}</td>
-                                <td className="p-4 font-bold text-theme-textSecondary">{r.date || r.day}</td>
-                                <td className="p-4 text-sm text-theme-textMuted">{r.reason || "-"}</td>
-                                <td className="p-4 text-center">
-                                  <button onClick={async () => { if (await useModalStore.getState().confirm(`ลบรายการลาของ ${r.name}?`)) { try { await axios.delete("/api/leave", { data: { id: r.id } }); setLeaveRecords(prev => prev.filter(rec => rec.id !== r.id)); } catch { useModalStore.getState().alert("ลบไม่สำเร็จ"); } } }} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg"><X size={16} /></button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
                   </div>
                 </div>
-              )}
             </div>
-          </div>
-        </div>
       </DragDropContext>
 
       {/* Clear Team Confirmation Modal */}
@@ -1424,18 +1302,10 @@ export default function TeamsPage() {
               <p className="text-sm text-slate-600 dark:text-[#8B93A7] leading-relaxed mb-4">
                 เลือกโซนที่คุณต้องการล้างทีม สมาชิกในโซนที่เลือกจะถูกนำกลับไปที่รายชื่อรอจัดทีม
               </p>
-              <div className="flex flex-col gap-2 w-full">
-                <button type="button" disabled={isClearing} onClick={() => handleConfirmClearAll("main")} className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 transition-colors shadow-sm flex items-center justify-center gap-2">
-                  {isClearing ? <Loader2 size={16} className="animate-spin" /> : null}
-                  ล้างเฉพาะสนามหลัก
-                </button>
-                <button type="button" disabled={isClearing} onClick={() => handleConfirmClearAll("sub")} className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 transition-colors shadow-sm flex items-center justify-center gap-2">
-                  {isClearing ? <Loader2 size={16} className="animate-spin" /> : null}
-                  ล้างเฉพาะสนามรอง
-                </button>
+                            <div className="flex flex-col gap-2 w-full">
                 <button type="button" disabled={isClearing} onClick={() => handleConfirmClearAll("all")} className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:opacity-50 transition-colors shadow-sm flex items-center justify-center gap-2 mt-2">
                   {isClearing ? <Loader2 size={16} className="animate-spin" /> : null}
-                  ล้างทั้งหมด (ทุกสนาม)
+                  ยืนยันล้างทีมทั้งหมด
                 </button>
               </div>
             </div>

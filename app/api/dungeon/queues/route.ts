@@ -251,7 +251,7 @@ export async function DELETE(req: Request) {
   try {
     const auth = await requireAuth();
     if (auth.errorResponse) return auth.errorResponse;
-    if (auth.user.role !== "admin" && auth.user.role !== "owner") {
+    if (auth.user.role !== "admin" && auth.user.role !== "owner" && auth.user.role !== "dev") {
       return err("Permission denied", 403);
     }
     

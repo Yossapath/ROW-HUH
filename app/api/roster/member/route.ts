@@ -85,8 +85,8 @@ export async function PUT(req: Request) {
 
     const { targetDiscordId, originalName, originalJob, name, job, power, warRole, title, activity, gvgField } = validation.data;
 
-    // Check permission: Admin or Self
-    if (user.role !== "admin" && user.role !== "owner" && user.discordId !== targetDiscordId) {
+    // Check permission: Admin, Owner, Dev, or Self
+    if (user.role !== "admin" && user.role !== "owner" && user.role !== "dev" && user.discordId !== targetDiscordId) {
       return forbidden();
     }
 

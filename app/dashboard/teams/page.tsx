@@ -1460,8 +1460,8 @@ function TeamCard({
                                     {JOB_ICONS[m.job] && (
                                       <img src={JOB_ICONS[m.job]} alt={m.job} className="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0 drop-shadow-sm" />
                                     )}
-                                    <div className="h-[22px] sm:h-[24px] px-2.5 rounded-full text-[10px] sm:text-xs font-bold text-white flex items-center justify-center shadow-sm shrink-0" style={{ backgroundColor: color }}>
-                                      <span className="whitespace-nowrap">{m.job}</span>
+                                    <div className="h-[22px] sm:h-[24px] px-2 sm:px-2.5 rounded-full text-[10px] sm:text-xs font-bold text-white flex items-center justify-center shadow-sm min-w-0" style={{ backgroundColor: color }}>
+                                      <span className="truncate">{m.job}</span>
                                     </div>
                                   </div>
                                 )}
@@ -1504,9 +1504,9 @@ function MemberCard({ member, index }: { member?: Member; index: number }) {
             style={{ ...provided.draggableProps.style, backgroundColor: snapshot.isDragging ? undefined : hexToRgba(color, 0.05), borderLeftWidth: "4px", borderLeftColor: color }}>
             <div className="flex flex-col truncate pr-2 min-w-0">
               <span className="text-[12px] font-bold text-slate-800 dark:text-white truncate">{member.name}</span>
-              <span className="text-[10px] font-bold truncate opacity-90 flex items-center gap-1.5" style={{ color }}>
+              <span className="text-[10px] font-bold opacity-90 flex items-center gap-1.5 min-w-0" style={{ color }}>
                 {JOB_ICONS[member.job] && <img src={JOB_ICONS[member.job]} alt={member.job} className="w-4 h-4 object-contain shrink-0 drop-shadow-xs" />}
-                {member.job}
+                <span className="truncate">{member.job}</span>
               </span>
             </div>
             <div className="text-[11px] font-bold tabular-nums tracking-tight flex-shrink-0" style={{ color }}>{(member.power || 0).toLocaleString()}</div>

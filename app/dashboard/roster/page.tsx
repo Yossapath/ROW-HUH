@@ -483,25 +483,25 @@ export default function RosterPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-xl w-full max-w-md p-6 border border-slate-200 dark:border-[#2D3342]">
-            <h2 className="text-lg font-bold text-red-600 mb-2 flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm p-0 sm:p-4">
+          <div className="bg-white dark:bg-[#232733] rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-md p-6 border border-slate-200 dark:border-[#2D3342] max-h-[85vh] flex flex-col">
+            <h2 className="text-lg font-bold text-red-600 mb-2 flex items-center gap-2 flex-shrink-0">
               <X className="w-5 h-5 cursor-pointer" onClick={() => setShowModal(false)} /> แจ้งเตือนการอัปเดต
             </h2>
-            <p className="text-slate-600 dark:text-[#8B93A7] mb-4 text-sm">
+            <p className="text-slate-600 dark:text-[#8B93A7] mb-4 text-sm flex-shrink-0">
               พบรายชื่อใหม่ในไฟล์ Excel ที่ยังไม่มีในเว็บไซต์:
             </p>
-            <div className="max-h-60 overflow-y-auto border border-slate-200 dark:border-[#2D3342] rounded-lg p-3 mb-4 bg-slate-50 dark:bg-[#1C1F27]">
+            <div className="max-h-60 overflow-y-auto border border-slate-200 dark:border-[#2D3342] rounded-lg p-3 mb-4 bg-slate-50 dark:bg-[#1C1F27] flex-1">
               <ul className="list-decimal pl-5 text-sm text-slate-700 dark:text-slate-300 space-y-1">
                 {notFoundNames.map((name, idx) => (
                   <li key={idx} className="font-medium">{name}</li>
                 ))}
               </ul>
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end flex-shrink-0">
               <button 
                 onClick={() => setShowModal(false)}
-                className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold shadow-sm transition-colors text-sm"
+                className="w-full sm:w-auto px-5 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold shadow-sm transition-colors text-sm"
               >
                 รับทราบและปิด
               </button>
@@ -512,8 +512,8 @@ export default function RosterPage() {
 
       {/* Edit Modal */}
       {editingMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col font-prompt border border-slate-200 dark:border-[#2D3342] animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm p-0 sm:p-4">
+          <div className="bg-white dark:bg-[#232733] rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col font-prompt border border-slate-200 dark:border-[#2D3342] animate-in fade-in zoom-in duration-200 max-h-[92vh]">
             <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100 dark:border-[#2D3342]">
               <h2 className="text-xl font-bold text-[#0b3d63] dark:text-white">แก้ไขข้อมูลสมาชิก</h2>
               <button 
@@ -524,7 +524,7 @@ export default function RosterPage() {
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">ชื่อสมาชิก (ในเกม)</label>
                 <input 

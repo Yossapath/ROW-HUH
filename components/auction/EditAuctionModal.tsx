@@ -138,8 +138,8 @@ export function EditAuctionModal({ auction, onClose }: Props) {
     price !== (auction.price !== undefined ? String(auction.price) : "");
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-white dark:bg-[#1A1D27] rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-[#2D3342]">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm">
+      <div className="w-full max-w-md bg-white dark:bg-[#1A1D27] rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-[#2D3342] max-h-[92vh] flex flex-col">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[#2D3342]">
           <h2 className="text-lg font-bold text-slate-800 dark:text-white truncate pr-4">
             แก้ไข: <span translate="no" className="notranslate">{formatItemName(auction.itemName, auction.category)}</span>
@@ -149,7 +149,7 @@ export function EditAuctionModal({ auction, onClose }: Props) {
           </button>
         </div>
 
-        <div className="p-6 flex flex-col gap-6">
+        <div className="p-6 flex flex-col gap-6 overflow-y-auto flex-1">
 
           {/* ── Name & Price ──────────────────────────────── */}
           <div className="flex flex-col gap-3">

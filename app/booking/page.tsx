@@ -322,11 +322,11 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-blue-50 dark:from-[#1C1F27] dark:to-[#1C1F27] py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-blue-50 dark:from-[#1C1F27] dark:to-[#1C1F27] py-4 sm:py-8 px-4">
       <div className="max-w-2xl mx-auto space-y-6">
 
         {/* ── Header Banner ──────────────────────────────────── */}
-        <div className="bg-[#0b3d63] dark:bg-[#3B66D1] text-white rounded-2xl p-8 shadow-xl relative overflow-hidden border border-transparent dark:border-[#2D3342]">
+        <div className="bg-[#0b3d63] dark:bg-[#3B66D1] text-white rounded-2xl p-5 sm:p-8 shadow-xl relative overflow-hidden border border-transparent dark:border-[#2D3342]">
           {/* Decorative circles */}
           <div className="absolute -right-12 -top-12 w-48 h-48 rounded-full bg-white/5" />
           <div className="absolute -right-6 -bottom-8 w-32 h-32 rounded-full bg-white/5" />
@@ -378,8 +378,8 @@ export default function BookingPage() {
         </div>
 
         {/* ── Booking Form Card ───────────────────────────────── */}
-        <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] p-8">
-          <h2 className="text-xl font-bold text-[#0b3d63] dark:text-white mb-6 flex items-center gap-2">
+        <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] p-5 sm:p-8">
+          <h2 className="text-lg sm:text-xl font-bold text-[#0b3d63] dark:text-white mb-6 flex items-center gap-2">
             <Users size={22} className="text-[#0f4b7a] dark:text-white" />
             ลงทะเบียนจองคิว
           </h2>

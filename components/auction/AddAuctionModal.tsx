@@ -74,8 +74,8 @@ export function AddAuctionModal({ onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-white dark:bg-[#1A1D27] rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-[#2D3342]">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm">
+      <div className="w-full max-w-md bg-white dark:bg-[#1A1D27] rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-[#2D3342] max-h-[92vh] flex flex-col">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[#2D3342]">
           <h2 className="text-lg font-bold text-slate-800 dark:text-white">เพิ่มไอเทมประมูล</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
@@ -83,7 +83,7 @@ export function AddAuctionModal({ onClose }: Props) {
           </button>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4 overflow-y-auto flex-1">
           <div>
             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
               ชื่อไอเทม

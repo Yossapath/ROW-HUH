@@ -11,7 +11,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { isAuthenticated, setUser } = useAuthStore();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  // Desktop: ย่อ/ขยาย inline
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  // Mobile (<lg): overlay เปิด/ปิด
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [loadingAuth, setLoadingAuth] = useState(!isAuthenticated);
 
   useEffect(() => {
@@ -44,11 +47,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex h-screen bg-theme-bg text-theme-text overflow-hidden transition-colors duration-300">
-      <Sidebar isExpanded={isSidebarExpanded} />
+      <Sidebar
+        isExpanded={isSidebarExpanded}
+        isMobileOpen={isMobileMenuOpen}
+        onMobileClose={() => setIsMobileMenuOpen(false)}
+      />
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        <TopHeader 
-          isSidebarExpanded={isSidebarExpanded} 
-          toggleSidebar={() => setIsSidebarExpanded(!isSidebarExpanded)} 
+        <TopHeader
+          isSidebarExpanded={isSidebarExpanded}
+          toggleSidebar={() => {
+            // < lg: toggle overlay; >= lg: toggle inline expand
+            if (window.innerWidth < 1024) {
+              setIsMobileMenuOpen(prev => !prev);
+            } else {
+              setIsSidebarExpanded(prev => !prev);
+            }
+          }}
         />
         <main className="flex-1">
           <div className="max-w-[1600px] mx-auto w-full">

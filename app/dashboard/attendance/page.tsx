@@ -827,8 +827,8 @@ export default function AttendancePage() {
       </div>
       {/* Import Modal */}
       {showImport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-xl border border-slate-200 dark:border-[#2D3342] w-full max-w-lg overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm p-0 sm:p-4">
+          <div className="bg-white dark:bg-[#232733] rounded-t-2xl sm:rounded-2xl shadow-xl border border-slate-200 dark:border-[#2D3342] w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
             <div className="px-5 py-4 border-b border-slate-100 dark:border-[#2D3342] flex items-center justify-between">
               <h3 className="font-bold text-slate-800 dark:text-white">นำเข้ารายชื่อผู้เข้าร่วม (มา)</h3>
               <button 

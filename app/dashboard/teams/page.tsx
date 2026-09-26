@@ -853,9 +853,9 @@ export default function TeamsPage() {
     if (!isAutoModalOpen) return null;
     const names = autoModalText.split("\n").map(n => n.trim()).filter(n => n);
     return (
-      <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div className="bg-theme-panel rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col border border-theme-border animate-in zoom-in-95 duration-200">
-          <div className="p-4 border-b border-theme-border flex items-center justify-between">
+      <div className="fixed inset-0 bg-black/60 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
+        <div className="bg-theme-panel rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col border border-theme-border animate-in zoom-in-95 duration-200 max-h-[90vh]">
+          <div className="p-4 border-b border-theme-border flex items-center justify-between shrink-0">
             <h3 className="font-bold text-lg text-theme-text">{previewResult ? "ตัวอย่างผลการจัดทีมอัตโนมัติ (Preview)" : "กำหนดรายชื่อสนามหลัก (60 คน)"}</h3>
             <button onClick={() => { setIsAutoModalOpen(false); setPreviewResult(null); }} className="text-theme-textSecondary hover:text-theme-text"><X size={20} /></button>
           </div>
@@ -897,16 +897,16 @@ export default function TeamsPage() {
               <textarea className="w-full h-[250px] bg-theme-bg border border-theme-border rounded-lg p-3 text-sm text-theme-text font-mono resize-none focus:ring-2 focus:ring-[#4D73CD] outline-none" value={autoModalText} onChange={e => setAutoModalText(e.target.value)} placeholder="วางรายชื่อที่นี่ (1 บรรทัดต่อ 1 ชื่อ)" />
             </div>
           )}
-          <div className="p-4 border-t border-theme-border flex items-center justify-end gap-3 bg-theme-bg/50">
+          <div className="p-4 border-t border-theme-border flex flex-col-reverse sm:flex-row items-center justify-end gap-3 bg-theme-bg/50 shrink-0">
             {previewResult ? (
               <>
-                <button onClick={() => setPreviewResult(null)} className="px-5 py-2 rounded-lg font-bold text-theme-textSecondary hover:bg-theme-border/50 transition-colors border border-theme-border bg-theme-panel text-sm">กลับไปแก้ไข</button>
-                <button onClick={handleApplyAllocation} className="px-5 py-2 rounded-lg font-bold text-white bg-[#10b981] hover:bg-[#059669] transition-colors shadow-sm text-sm">ยืนยันนำไปใช้งาน</button>
+                <button onClick={() => setPreviewResult(null)} className="w-full sm:w-auto px-5 py-3 sm:py-2 rounded-lg font-bold text-theme-textSecondary hover:bg-theme-border/50 transition-colors border border-theme-border bg-theme-panel text-sm">กลับไปแก้ไข</button>
+                <button onClick={handleApplyAllocation} className="w-full sm:w-auto px-5 py-3 sm:py-2 rounded-lg font-bold text-white bg-[#10b981] hover:bg-[#059669] transition-colors shadow-sm text-sm">ยืนยันนำไปใช้งาน</button>
               </>
             ) : (
               <>
-                <button onClick={() => setIsAutoModalOpen(false)} className="px-5 py-2 rounded-lg font-bold text-theme-textSecondary hover:bg-theme-border/50 transition-colors border border-theme-border bg-theme-panel text-sm">ยกเลิก</button>
-                <button onClick={handleProcessAutoMatch} className="px-5 py-2 rounded-lg font-bold text-white bg-[#3B66D1] hover:bg-[#4D73CD] transition-colors shadow-sm text-sm">ประมวลผล (Preview)</button>
+                <button onClick={() => setIsAutoModalOpen(false)} className="w-full sm:w-auto px-5 py-3 sm:py-2 rounded-lg font-bold text-theme-textSecondary hover:bg-theme-border/50 transition-colors border border-theme-border bg-theme-panel text-sm">ยกเลิก</button>
+                <button onClick={handleProcessAutoMatch} className="w-full sm:w-auto px-5 py-3 sm:py-2 rounded-lg font-bold text-white bg-[#3B66D1] hover:bg-[#4D73CD] transition-colors shadow-sm text-sm">ประมวลผล (Preview)</button>
               </>
             )}
           </div>
@@ -1314,8 +1314,8 @@ export default function TeamsPage() {
 
       {/* Clear Team Confirmation Modal */}
       {isClearConfirmOpen && (
-        <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-slate-200 dark:border-[#2D3342] animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-black/60 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#232733] rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-slate-200 dark:border-[#2D3342] animate-in zoom-in-95 duration-200 max-h-[90vh]">
             <div className="p-6 text-center flex flex-col items-center">
               <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center mb-4">
                 <AlertCircle size={32} />
@@ -1405,7 +1405,7 @@ function TeamCard({
     <Draggable draggableId={column.id} index={index} isDragDisabled={!isAdmin}>
       {(providedTeam, snapshotTeam) => (
         <div ref={providedTeam.innerRef} {...providedTeam.draggableProps} className={`bg-white dark:bg-[#232733] rounded-2xl shadow-sm border overflow-hidden ${snapshotTeam.isDragging ? "shadow-xl ring-2 ring-[#0b3d63] dark:ring-[#4D73CD] border-[#0b3d63] dark:border-[#4D73CD] z-[60]" : "border-slate-200 dark:border-[#2D3342]"} ${column.locked ? "opacity-95 border-amber-400 dark:border-amber-500" : ""}`}>
-          <div className={`${isSub ? "bg-[#154a72] dark:bg-[#1E2536]" : "bg-[#0b3d63] dark:bg-[#252E42]"} p-3.5 text-white flex items-center justify-between border-b border-transparent dark:border-[#2D3342]`} {...(isAdmin ? providedTeam.dragHandleProps : {})}>
+          <div className={`${isSub ? "bg-[#154a72] dark:bg-[#1E2536]" : "bg-[#0b3d63] dark:bg-[#252E42]"} p-3.5 text-white flex items-center justify-between border-b border-transparent dark:border-[#2D3342] touch-none`} {...(isAdmin ? providedTeam.dragHandleProps : {})}>
             <div className="flex items-center gap-2">
               {isAdmin && <GripVertical size={16} className="opacity-50 cursor-grab active:cursor-grabbing" />}
                             <h3 
@@ -1466,7 +1466,7 @@ function TeamCard({
                                   </div>
                                 )}
                                 {m && <div className="text-[10px] sm:text-xs font-bold text-[#0b3d63] dark:text-white text-right tabular-nums shrink-0">{(m.power || 0).toLocaleString()}</div>}
-                                {isAdmin && <button onClick={e => { e.stopPropagation(); removeMember(column.id, memberId); }} disabled={column.locked} className="text-sky-300 hover:text-red-500 dark:text-sky-400 dark:hover:text-red-400 opacity-60 hover:opacity-100 transition-opacity flex justify-center disabled:hidden p-0.5" title="นำออกจากทีม"><X size={14} strokeWidth={2.5} /></button>}
+                                {isAdmin && <button onClick={e => { e.stopPropagation(); removeMember(column.id, memberId); }} disabled={column.locked} className="text-sky-300 hover:text-red-500 dark:text-sky-400 dark:hover:text-red-400 opacity-60 hover:opacity-100 transition-opacity flex items-center justify-center disabled:hidden w-8 h-8 -mr-1.5 shrink-0" aria-label="นำออกจากทีม"><X size={16} strokeWidth={2.5} /></button>}
                               </div>
                             );
                             if (snap.isDragging && typeof document !== "undefined") return createPortal(rowContent, document.body);

@@ -112,7 +112,8 @@ export default function TopHeader({
       <div className="flex items-center space-x-4">
         <button 
           onClick={toggleSidebar}
-          className="text-theme-textSecondary hover:text-theme-text p-1 rounded-md hover:bg-theme-bg transition-colors"
+          className="text-theme-textSecondary hover:text-theme-text p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-theme-bg transition-colors"
+          aria-label="Toggle sidebar"
         >
           <MenuIcon size={24} />
         </button>
@@ -127,7 +128,7 @@ export default function TopHeader({
         {mounted && (
           <button 
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="p-2 text-theme-textSecondary hover:text-theme-text rounded-full hover:bg-theme-bg transition-colors"
+            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-theme-textSecondary hover:text-theme-text rounded-full hover:bg-theme-bg transition-colors"
             title="Toggle Theme"
           >
             {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
@@ -154,7 +155,7 @@ export default function TopHeader({
 
           {/* Dropdown Menu */}
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-theme-panel rounded-xl shadow-lg border border-theme-border py-2 z-40 animate-in fade-in slide-in-from-top-2">
+            <div className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] bg-theme-panel rounded-xl shadow-lg border border-theme-border py-2 z-40 animate-in fade-in slide-in-from-top-2">
               <div className="px-4 py-2 border-b border-theme-divider mb-1">
                 <p className="text-[10px] font-bold text-theme-textSecondary tracking-wider">SIGNED IN AS</p>
                 <p className="text-sm font-bold text-theme-text truncate">{user?.gameUsername || user?.discordUsername}</p>
@@ -199,9 +200,9 @@ export default function TopHeader({
 
       {/* Account Settings Modal */}
       {isSettingsOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-200">
-          <div className="bg-theme-panel rounded-2xl w-full max-w-md shadow-2xl border border-theme-border flex flex-col animate-in zoom-in-95 duration-200">
-            <div className="p-5 border-b border-theme-divider flex justify-between items-center bg-theme-bg/50 rounded-t-2xl">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 z-[100] animate-in fade-in duration-200">
+          <div className="bg-theme-panel rounded-t-2xl sm:rounded-2xl w-full max-w-md shadow-2xl border border-theme-border flex flex-col animate-in zoom-in-95 duration-200 max-h-[92vh]">
+            <div className="p-5 border-b border-theme-divider flex justify-between items-center bg-theme-bg/50 rounded-t-2xl flex-shrink-0">
               <div className="flex items-center gap-3">
           
                 <div className="w-10 h-10 rounded-full bg-theme-primary/10 flex items-center justify-center text-theme-primary">
@@ -214,13 +215,13 @@ export default function TopHeader({
               </div>
               <button 
                 onClick={() => setIsSettingsOpen(false)}
-                className="p-2 hover:bg-theme-bg rounded-full text-theme-textSecondary hover:text-theme-text transition-colors"
+                className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-theme-bg rounded-full text-theme-textSecondary hover:text-theme-text transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
             
-            <form onSubmit={handleSaveProfile} className="p-6 space-y-5">
+            <form onSubmit={handleSaveProfile} className="p-6 space-y-5 overflow-y-auto flex-1">
               <div>
                 <label className="block text-sm font-bold text-theme-text mb-1.5">ชื่อในเกม (Game Name)</label>
                 <input 
@@ -269,18 +270,18 @@ export default function TopHeader({
                 </select>
               </div>
 
-              <div className="pt-4 flex justify-end gap-3">
+              <div className="pt-4 flex flex-col-reverse sm:flex-row justify-end gap-3">
                 <button 
                   type="button"
                   onClick={() => setIsSettingsOpen(false)}
-                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-theme-textSecondary hover:text-theme-text hover:bg-theme-bg transition-colors"
+                  className="w-full sm:w-auto px-5 py-3 rounded-xl text-sm font-bold text-theme-textSecondary hover:text-theme-text hover:bg-theme-bg transition-colors"
                 >
                   ยกเลิก
                 </button>
                 <button 
                   type="submit"
                   disabled={isSaving}
-                  className="px-6 py-2.5 bg-[#3B66D1] hover:bg-[#4D73CD] text-white rounded-xl text-sm font-bold shadow-lg shadow-[#3B66D1]/20 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                  className="w-full sm:w-auto px-6 py-3 bg-[#3B66D1] hover:bg-[#4D73CD] text-white rounded-xl text-sm font-bold shadow-lg shadow-[#3B66D1]/20 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                   {isSaving ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}

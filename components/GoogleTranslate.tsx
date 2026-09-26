@@ -13,21 +13,21 @@ declare global {
 // when Google Translate replaces text nodes with <font> tags.
 if (typeof window !== "undefined") {
   const originalRemoveChild = Node.prototype.removeChild;
-  Node.prototype.removeChild = function (child: Node) {
+  Node.prototype.removeChild = function <T extends Node>(child: T): T {
     if (child.parentNode !== this) {
       // Node was already moved/removed by Google Translate
       return child;
     }
-    return originalRemoveChild.apply(this, arguments as any);
+    return originalRemoveChild.apply(this, arguments as any) as T;
   };
 
   const originalInsertBefore = Node.prototype.insertBefore;
-  Node.prototype.insertBefore = function (newNode: Node, referenceNode: Node | null) {
+  Node.prototype.insertBefore = function <T extends Node>(newNode: T, referenceNode: Node | null): T {
     if (referenceNode && referenceNode.parentNode !== this) {
       // Node was already moved/removed by Google Translate
       return newNode;
     }
-    return originalInsertBefore.apply(this, arguments as any);
+    return originalInsertBefore.apply(this, arguments as any) as T;
   };
 }
 

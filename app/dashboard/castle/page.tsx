@@ -1398,7 +1398,7 @@ function TeamCard({
             </div>
           </div>
 
-          <div className={`grid ${isAdmin ? "grid-cols-[28px_minmax(70px,110px)_1fr_55px_20px] sm:grid-cols-[32px_minmax(80px,120px)_1fr_60px_22px]" : "grid-cols-[28px_minmax(70px,110px)_1fr_55px] sm:grid-cols-[32px_minmax(80px,120px)_1fr_60px]"} gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 bg-slate-50 dark:bg-[#272C38]/150 border-b border-slate-100 dark:border-[#2D3342] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-[#8B93A7]`}>
+          <div className={`grid ${isAdmin ? "grid-cols-[28px_minmax(70px,110px)_1fr_55px_20px] sm:grid-cols-[32px_minmax(80px,120px)_1fr_60px_22px]" : "grid-cols-[28px_minmax(70px,110px)_1fr_55px] sm:grid-cols-[32px_minmax(80px,120px)_1fr_60px]"} gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 bg-slate-50 dark:bg-[#272C38]/60 border-b border-slate-100 dark:border-[#2D3342] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-[#8B93A7]`}>
             <div></div><div>ชื่อ</div><div className="text-left pl-1">อาชีพ</div><div className="text-right">ค่าพลัง</div>{isAdmin && <div></div>}
           </div>
 

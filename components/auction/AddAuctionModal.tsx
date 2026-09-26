@@ -3,7 +3,7 @@ import { useModalStore } from "@/stores/useModalStore";
 
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, RefreshCw, Upload, Image as ImageIcon } from "lucide-react";
+import { X, RefreshCw, Upload, Image as ImageIcon, Gem } from "lucide-react";
 import { useRef } from "react";
 import { AuctionCategory } from "@/types";
 
@@ -14,6 +14,7 @@ interface Props {
 export function AddAuctionModal({ onClose }: Props) {
   const queryClient = useQueryClient();
   const [itemName, setItemName] = useState("");
+  const [price, setPrice] = useState("");
   const [category, setCategory] = useState<AuctionCategory>("gear");
   const [imageUrl, setImageUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -42,10 +43,16 @@ export function AddAuctionModal({ onClose }: Props) {
 
   const mutation = useMutation({
     mutationFn: async () => {
+      const payload: Record<string, unknown> = { itemName: itemName.trim(), category, imageUrl };
+      if (price.trim() !== "") {
+        const parsed = parseInt(price, 10);
+        if (isNaN(parsed) || parsed < 0) throw new Error("ราคาต้องเป็นตัวเลขที่ไม่ติดลบ");
+        payload.price = parsed;
+      }
       const res = await fetch("/api/auctions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemName, category, imageUrl }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const error = await res.json();
@@ -90,6 +97,27 @@ export function AddAuctionModal({ onClose }: Props) {
               autoFocus
               required
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+              ราคา (Starstone)
+            </label>
+            <div className="relative">
+              <Gem size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-sky-400 pointer-events-none" />
+              <input
+                type="number"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                min={0}
+                step={1}
+                placeholder="ระบุราคา เช่น 500 (ไม่บังคับ)"
+                className="w-full pl-9 pr-20 py-2 bg-slate-50 dark:bg-[#232733] border border-slate-200 dark:border-[#2D3342] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3B66D1] text-slate-800 dark:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-sky-400 pointer-events-none">
+                Starstone
+              </span>
+            </div>
           </div>
           
           <div>

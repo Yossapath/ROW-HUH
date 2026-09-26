@@ -4,7 +4,7 @@ import { formatItemName } from "@/lib/utils";
 
 import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, RefreshCw, Upload, Image as ImageIcon } from "lucide-react";
+import { X, RefreshCw, Upload, Image as ImageIcon, Save, Gem } from "lucide-react";
 import { AuctionItem } from "@/types";
 
 interface Props {
@@ -17,6 +17,40 @@ export function EditAuctionModal({ auction, onClose }: Props) {
   const [imageUrl, setImageUrl] = useState(auction.imageUrl || "");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Name & Price state ──────────────────────────────────────
+  const [itemName, setItemName] = useState(auction.itemName);
+  const [price, setPrice] = useState<string>(
+    auction.price !== undefined ? String(auction.price) : ""
+  );
+  const [infoSaved, setInfoSaved] = useState(false);
+
+  // Save name + price mutation
+  const infoMutation = useMutation({
+    mutationFn: async () => {
+      const body: Record<string, unknown> = { itemName: itemName.trim() };
+      if (price.trim() !== "") {
+        const parsed = parseInt(price, 10);
+        if (isNaN(parsed) || parsed < 0) throw new Error("ราคาต้องเป็นตัวเลขที่ไม่ติดลบ");
+        body.price = parsed;
+      } else {
+        body.price = null; // clear price
+      }
+      const res = await fetch(`/api/auctions/${auction.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error("ไม่สามารถบันทึกข้อมูลได้");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["auctions"] });
+      setInfoSaved(true);
+      setTimeout(() => setInfoSaved(false), 2500);
+    },
+    onError: (err: any) => useModalStore.getState().alert(err.message),
+  });
 
   // Status mutation
   const statusMutation = useMutation({
@@ -66,7 +100,6 @@ export function EditAuctionModal({ auction, onClose }: Props) {
       return res.json();
     },
     onSuccess: () => {
-      // Refresh auction list but keep modal open so user sees the preview
       queryClient.invalidateQueries({ queryKey: ["auctions"] });
     },
     onError: (err: any) => useModalStore.getState().alert(err.message),
@@ -91,7 +124,6 @@ export function EditAuctionModal({ auction, onClose }: Props) {
       const base64 = ev.target?.result as string;
       setImageUrl(base64);
       setIsUploading(false);
-      // Automatically save
       updateImageMutation.mutate(base64);
     };
     reader.onerror = () => {
@@ -101,18 +133,70 @@ export function EditAuctionModal({ auction, onClose }: Props) {
     reader.readAsDataURL(file);
   };
 
+  const isDirty =
+    itemName.trim() !== auction.itemName ||
+    price !== (auction.price !== undefined ? String(auction.price) : "");
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="w-full max-w-md bg-white dark:bg-[#1A1D27] rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-[#2D3342]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[#2D3342]">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white truncate pr-4">แก้ไข: <span translate="no" className="notranslate">{formatItemName(auction.itemName, auction.category)}</span></h2>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white truncate pr-4">
+            แก้ไข: <span translate="no" className="notranslate">{formatItemName(auction.itemName, auction.category)}</span>
+          </h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors shrink-0">
             <X size={20} />
           </button>
         </div>
-        
+
         <div className="p-6 flex flex-col gap-6">
-          {/* Image Upload Section */}
+
+          {/* ── Name & Price ──────────────────────────────── */}
+          <div className="flex flex-col gap-3">
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
+              ชื่อไอเทม
+            </label>
+            <input
+              type="text"
+              value={itemName}
+              onChange={(e) => setItemName(e.target.value)}
+              maxLength={100}
+              placeholder="ชื่อไอเทม"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#2D3342] bg-slate-50 dark:bg-[#232733] text-slate-800 dark:text-white text-sm focus:ring-2 focus:ring-[#4D73CD] focus:outline-none"
+            />
+
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
+              ราคา (Starstone)
+            </label>
+            <div className="relative">
+              <Gem size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-sky-400 pointer-events-none" />
+              <input
+                type="number"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                min={0}
+                step={1}
+                placeholder="ยังไม่ระบุราคา"
+                className="w-full pl-9 pr-20 py-2.5 rounded-xl border border-slate-200 dark:border-[#2D3342] bg-slate-50 dark:bg-[#232733] text-slate-800 dark:text-white text-sm focus:ring-2 focus:ring-sky-400 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-sky-400 pointer-events-none">
+                Starstone
+              </span>
+            </div>
+
+            <button
+              onClick={() => infoMutation.mutate()}
+              disabled={infoMutation.isPending || !itemName.trim() || !isDirty}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0b3d63] dark:bg-[#3B66D1] text-white font-bold rounded-xl hover:bg-[#093250] dark:hover:bg-[#4D73CD] transition-colors disabled:opacity-40 text-sm"
+            >
+              {infoMutation.isPending ? <RefreshCw className="animate-spin" size={15} /> : <Save size={15} />}
+              {infoSaved ? "✓ บันทึกแล้ว" : "บันทึกชื่อ & ราคา"}
+            </button>
+          </div>
+
+          <div className="h-px bg-slate-100 dark:bg-[#2D3342] w-full" />
+
+          {/* ── Image Upload ──────────────────────────────── */}
           <div>
             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
               รูปภาพไอเทม
@@ -157,12 +241,12 @@ export function EditAuctionModal({ auction, onClose }: Props) {
 
           <div className="h-px bg-slate-100 dark:bg-[#2D3342] w-full" />
 
-          {/* Actions Section */}
+          {/* ── Queue Management ──────────────────────────── */}
           <div className="flex flex-col gap-3">
             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
               การจัดการคิว
             </label>
-            
+
             {auction.status === "open" ? (
               <button
                 onClick={() => statusMutation.mutate("closed")}

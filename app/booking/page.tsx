@@ -157,7 +157,7 @@ export default function BookingPage() {
   const [queues, setQueues] = useState<DungeonQueue[]>([]);
   const [queuesLoading, setQueuesLoading] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<number>(Date.now());
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const [copied, setCopied] = useState(false);
 
   // History / Completed Queues (On-Demand, isolated from 15s polling)
@@ -225,7 +225,7 @@ export default function BookingPage() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const lastFetchTimeRef = useRef<number>(0);
 
-  const fetchQueues = useCallback(async () => {
+  const fetchQueues = useCallback(async (forceRefresh = false) => {
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
     setQueuesLoading(true);
@@ -237,7 +237,10 @@ export default function BookingPage() {
     abortControllerRef.current = controller;
 
     try {
-      const res = await fetch("/api/dungeon/queues?type=current", {
+      const url = forceRefresh
+        ? "/api/dungeon/queues?type=current&refresh=true"
+        : "/api/dungeon/queues?type=current";
+      const res = await fetch(url, {
         signal: controller.signal,
       });
       const d = await res.json();
@@ -256,44 +259,16 @@ export default function BookingPage() {
     }
   }, []);
 
+
   useEffect(() => {
     fetchQueues();
-
-    const startInterval = () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = setInterval(fetchQueues, 15000);
-    };
-    const stopInterval = () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-
-    startInterval();
-
-    const handleVisibility = () => {
-      if (document.hidden) {
-        stopInterval();
-      } else {
-        // Only trigger immediate fetch if it has been >= 10s since last fetch
-        const elapsed = Date.now() - lastFetchTimeRef.current;
-        if (elapsed >= 10000) {
-          fetchQueues();
-        }
-        startInterval();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibility);
     return () => {
-      stopInterval();
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [fetchQueues]);
+
 
   // ── Submit booking ───────────────────────────────────────────
   async function handleSubmit(e: React.FormEvent) {
@@ -600,7 +575,7 @@ export default function BookingPage() {
               คิวปัจจุบัน ({queues.length} คน)
             </span>
             <button
-              onClick={fetchQueues}
+              onClick={() => fetchQueues(true)}
               disabled={queuesLoading}
               className="ml-auto p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#2A2F3E] transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               title="รีเฟรช"

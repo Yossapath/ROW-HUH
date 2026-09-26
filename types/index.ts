@@ -86,6 +86,8 @@ export interface DungeonQueue {
   timestamp: number;
   bookedAt?: number;
   queuedAt?: number;
+  queuePosition?: number;
+  peopleAhead?: number;
   startTime?: number; // set when status transitions to "active" via startRun
 }
 
@@ -210,6 +212,7 @@ export interface AuctionItem {
   description?: string;
   imageUrl?: string;
   status: AuctionStatus;
+  price?: number | null;  // ราคาประมูล หน่วย Starstone (null = ยังไม่ระบุ)
   queueCount: number;
   createdAt: number;
   createdBy: string;
@@ -228,6 +231,9 @@ export interface AuctionReservation {
   job: string;
   queueNumber: number;
   status: ReservationStatus;
+  queuedAt?: number;
+  queuePosition?: number;
+  peopleAhead?: number;
   joinedAt: number;
   updatedAt: number;
 }

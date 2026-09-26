@@ -39,7 +39,7 @@ export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auctions"] });
-      queryClient.invalidateQueries({ queryKey: ["auction-queue", auction.id] });
+      queryClient.invalidateQueries({ queryKey: ["auction_queue", auction.id] });
       queryClient.invalidateQueries({ queryKey: ["my-reservations"] });
     },
     onError: (err: any) => useModalStore.getState().alert(err.message),
@@ -58,7 +58,7 @@ export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auctions"] });
-      queryClient.invalidateQueries({ queryKey: ["auction-queue", auction.id] });
+      queryClient.invalidateQueries({ queryKey: ["auction_queue", auction.id] });
       queryClient.invalidateQueries({ queryKey: ["my-reservations"] });
     },
     onError: (err: any) => useModalStore.getState().alert(err.message),
@@ -80,7 +80,8 @@ export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auctions"] });
-      queryClient.invalidateQueries({ queryKey: ["auction-queue", auction.id] });
+      queryClient.invalidateQueries({ queryKey: ["auction_queue", auction.id] });
+      queryClient.invalidateQueries({ queryKey: ["my-reservations"] });
     },
     onError: (err: any) => {
       if (err.message !== "Cancelled") useModalStore.getState().alert(err.message);
@@ -98,13 +99,23 @@ export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
           </div>
           <div className="min-w-0">
             <h3 className="notranslate font-bold text-slate-800 dark:text-white truncate" translate="no">{formatItemName(auction.itemName, auction.category)}</h3>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex flex-wrap items-center gap-2 mt-1">
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#2D3342] text-slate-500 dark:text-[#8B93A7]">
                 {auction.category}
               </span>
+              {auction.price !== undefined && auction.price !== null && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center gap-1">
+                  💎 {auction.price.toLocaleString()} Starstone
+                </span>
+              )}
               {isMyReservation && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400">
-                  คุณจองคิวที่ {myReservation.queueNumber}
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center gap-1">
+                  <span>คุณอยู่ในคิวที่ {myReservation.queuePosition ?? myReservation.queueNumber}</span>
+                  {typeof myReservation.peopleAhead === "number" && (
+                    <span className="opacity-80">
+                      ({myReservation.peopleAhead === 0 ? "ถึงคิวคุณแล้ว" : `มีคนก่อนหน้า ${myReservation.peopleAhead} คน`})
+                    </span>
+                  )}
                 </span>
               )}
             </div>
@@ -143,7 +154,7 @@ export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
               disabled={joinMutation.isPending}
               className="px-4 py-1.5 bg-[#0b3d63] dark:bg-[#3B66D1] text-white text-xs font-bold rounded-lg hover:bg-[#093250] dark:hover:bg-[#4D73CD] transition-colors disabled:opacity-50"
             >
-              {joinMutation.isPending ? "..." : "Join Queue"}
+              {joinMutation.isPending ? "..." : "จองคิว"}
             </button>
           )}
 
@@ -153,7 +164,7 @@ export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
               disabled={cancelMutation.isPending}
               className="px-4 py-1.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-bold rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors border border-red-200 dark:border-red-500/30 disabled:opacity-50"
             >
-              {cancelMutation.isPending ? "..." : "Cancel"}
+              {cancelMutation.isPending ? "..." : "ยกเลิกจอง"}
             </button>
           )}
           

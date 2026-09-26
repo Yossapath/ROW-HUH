@@ -9,11 +9,21 @@ export async function getAuctionQueue(auctionId: string): Promise<AuctionReserva
     .get();
     
   const docs = snapshot.docs
-    .map(doc => ({ id: doc.id, ...doc.data() }) as AuctionReservation)
+    .map(doc => {
+      const data = doc.data();
+      const queuedAt = typeof data.queuedAt === "number" ? data.queuedAt : (typeof data.joinedAt === "number" ? data.joinedAt : 0);
+      return { id: doc.id, ...data, queuedAt } as AuctionReservation;
+    })
     .filter(r => r.status === "waiting")
-    .sort((a, b) => a.joinedAt - b.joinedAt);
+    .sort((a, b) => (a.queuedAt || 0) - (b.queuedAt || 0));
 
-  return docs;
+  // Dynamically assign 1-based queuePosition, peopleAhead, and update queueNumber based on server queuedAt ASC
+  return docs.map((r, index) => ({
+    ...r,
+    queuePosition: index + 1,
+    peopleAhead: index,
+    queueNumber: index + 1,
+  }));
 }
 
 export async function getMyReservations(userId: string): Promise<AuctionReservation[]> {
@@ -22,12 +32,62 @@ export async function getMyReservations(userId: string): Promise<AuctionReservat
     .where("userId", "==", userId)
     .get();
     
-  const docs = snapshot.docs
-    .map(doc => ({ id: doc.id, ...doc.data() }) as AuctionReservation)
-    .filter(r => r.status === "waiting" || r.status === "won")
-    .sort((a, b) => b.joinedAt - a.joinedAt);
+  const myDocs = snapshot.docs
+    .map(doc => {
+      const data = doc.data();
+      const queuedAt = typeof data.queuedAt === "number" ? data.queuedAt : (typeof data.joinedAt === "number" ? data.joinedAt : 0);
+      return { id: doc.id, ...data, queuedAt } as AuctionReservation;
+    })
+    .filter(r => r.status === "waiting" || r.status === "won");
 
-  return docs;
+  // Calculate dynamic queuePosition & peopleAhead for all waiting reservations based on active queue
+  const waitingDocs = myDocs.filter(r => r.status === "waiting");
+  if (waitingDocs.length > 0) {
+    const uniqueAuctionIds = Array.from(new Set(waitingDocs.map(r => r.auctionId)));
+    const allWaitingSnaps = await Promise.all(
+      uniqueAuctionIds.map(aId =>
+        auctionReservationsRef()
+          .where("auctionId", "==", aId)
+          .get()
+      )
+    );
+
+    const auctionQueuesMap = new Map<string, { id: string; queuedAt: number }[]>();
+    for (let i = 0; i < uniqueAuctionIds.length; i++) {
+      const aId = uniqueAuctionIds[i];
+      const snap = allWaitingSnaps[i];
+      const items = snap.docs
+        .map(d => {
+          const dt = d.data();
+          return {
+            id: d.id,
+            status: dt.status,
+            queuedAt: typeof dt.queuedAt === "number" ? dt.queuedAt : (typeof dt.joinedAt === "number" ? dt.joinedAt : 0),
+          };
+        })
+        .filter(item => item.status === "waiting")
+        .sort((a, b) => a.queuedAt - b.queuedAt);
+      auctionQueuesMap.set(aId, items);
+    }
+
+    for (const r of myDocs) {
+      if (r.status === "waiting") {
+        const queueList = auctionQueuesMap.get(r.auctionId) || [];
+        const idx = queueList.findIndex(item => item.id === r.id);
+        if (idx >= 0) {
+          r.queuePosition = idx + 1;
+          r.peopleAhead = idx;
+          r.queueNumber = idx + 1;
+        } else {
+          r.queuePosition = r.queueNumber || 1;
+          r.peopleAhead = Math.max(0, (r.queuePosition || 1) - 1);
+        }
+      }
+    }
+  }
+
+  myDocs.sort((a, b) => (b.queuedAt || b.joinedAt || 0) - (a.queuedAt || a.joinedAt || 0));
+  return myDocs;
 }
 
 export async function reserveAuction(
@@ -73,6 +133,9 @@ export async function reserveAuction(
       job,
       queueNumber,
       status: "waiting",
+      queuedAt: now,
+      queuePosition: queueNumber,
+      peopleAhead: queueCount,
       joinedAt: now,
       updatedAt: now,
     };
@@ -199,6 +262,9 @@ export async function addManualReservation(
       job,
       queueNumber: queueCount + 1,
       status: "waiting",
+      queuedAt: now,
+      queuePosition: queueCount + 1,
+      peopleAhead: queueCount,
       joinedAt: now,
       updatedAt: now,
     };

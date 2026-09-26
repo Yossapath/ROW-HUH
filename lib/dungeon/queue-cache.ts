@@ -22,7 +22,7 @@ export interface CacheEntry<T> {
   version: number;
 }
 
-export const CURRENT_QUEUES_CACHE_TTL_MS = 7000; // 7 seconds
+export const CURRENT_QUEUES_CACHE_TTL_MS = 60000; // 60 seconds (on-demand cache, no short 7s polling simulation)
 
 interface GlobalQueueCacheState {
   currentQueues: CacheEntry<any[]> | null;

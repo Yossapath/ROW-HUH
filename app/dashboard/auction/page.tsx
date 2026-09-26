@@ -29,11 +29,15 @@ export default function AuctionPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch all auctions
-  const { data: auctionsRes, isLoading: loadingAuctions, refetch } = useQuery({
+  const { data: auctionsRes, isLoading: loadingAuctions, isError: auctionsError, refetch } = useQuery({
     queryKey: ["auctions"],
     queryFn: async () => {
       const res = await fetch("/api/auctions");
-      if (!res.ok) throw new Error("Failed to load auctions");
+      if (!res.ok) {
+        let errMsg = `HTTP ${res.status}`;
+        try { const body = await res.json(); errMsg = body?.error || errMsg; } catch { /* ignore */ }
+        throw new Error(errMsg);
+      }
       return res.json() as Promise<{ data: AuctionItem[] }>;
     },
   });
@@ -91,17 +95,24 @@ export default function AuctionPage() {
               <button
                 onClick={async () => {
                   if (!await useModalStore.getState().confirm('Are you sure you want to seed 32 default items?')) return;
-                  const res = await fetch('/api/auctions/seed');
-                  if (res.ok) {
-                    useModalStore.getState().alert('Success! Please wait 1-2 seconds and click Refresh.');
-                    refetch();
-                  } else {
-                    useModalStore.getState().alert('Error');
+                  try {
+                    const res = await fetch('/api/auctions/seed');
+                    let body: { success?: boolean; error?: string } = {};
+                    try { body = await res.json(); } catch { /* non-JSON body */ }
+                    if (res.ok && body.success) {
+                      useModalStore.getState().alert('Success! Please wait 1-2 seconds and click Refresh.');
+                      refetch();
+                    } else {
+                      const msg = body.error || `Server error (HTTP ${res.status})`;
+                      useModalStore.getState().alert(`เกิดข้อผิดพลาด: ${msg}`);
+                    }
+                  } catch (err: any) {
+                    useModalStore.getState().alert(`เกิดข้อผิดพลาด: ${err?.message || 'Network error'}`);
                   }
                 }}
                 className='flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl font-bold text-sm hover:bg-amber-600 transition-colors shadow-sm'
               >
-                ?? Seed Default Items
+                ⚙ Seed Default Items
               </button>
             )}
             {isAdmin && (
@@ -182,6 +193,18 @@ export default function AuctionPage() {
             <div className="p-8 flex justify-center text-slate-400">
               <RefreshCw className="animate-spin" size={24} />
             </div>
+          ) : auctionsError ? (
+            <div className="p-12 text-center flex flex-col items-center justify-center text-red-500">
+              <PackageOpen size={48} className="mb-3 opacity-40" />
+              <p className="font-bold text-lg">ไม่สามารถโหลดรายการประมูลได้</p>
+              <p className="text-sm opacity-80 mt-1">เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้ง</p>
+              <button
+                onClick={() => refetch()}
+                className="mt-4 flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-[#272C38] text-slate-700 dark:text-white rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-[#2A2F3E] transition-colors"
+              >
+                <RefreshCw size={14} /> ลองใหม่
+              </button>
+            </div>
           ) : displayedAuctions.length === 0 ? (
             <div className="p-12 text-center flex flex-col items-center justify-center text-slate-500 dark:text-[#8B93A7]">
               <PackageOpen size={48} className="mb-3 opacity-20" />
@@ -190,9 +213,9 @@ export default function AuctionPage() {
             </div>
           ) : (
             (displayedAuctions || []).map(auction => (
-              <AuctionItemCard 
-                key={auction.id} 
-                auction={auction} 
+              <AuctionItemCard
+                key={auction.id}
+                auction={auction}
                 isAdmin={isAdmin}
                 myReservations={myReservations}
               />

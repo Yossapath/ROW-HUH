@@ -83,6 +83,7 @@ export function AuctionQueuesView({ auctions }: Props) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auction_queue", selectedAuctionId] });
       queryClient.invalidateQueries({ queryKey: ["auctions"] });
+      queryClient.invalidateQueries({ queryKey: ["my-reservations"] });
     }
   });
 
@@ -107,6 +108,7 @@ export function AuctionQueuesView({ auctions }: Props) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auction_queue", selectedAuctionId] });
       queryClient.invalidateQueries({ queryKey: ["auctions"] });
+      queryClient.invalidateQueries({ queryKey: ["my-reservations"] });
       setIsAdding(false);
       setSelectedMember("");
     },
@@ -116,16 +118,15 @@ export function AuctionQueuesView({ auctions }: Props) {
   const cancelMutation = useMutation({
     mutationFn: async (resId: string) => {
       if (!await useModalStore.getState().confirm("Are you sure you want to remove this user from the queue?")) throw new Error("Cancelled");
-      const res = await fetch(`/api/auctions/${selectedAuctionId}/reserve`, {
+      const res = await fetch(`/api/auctions/${selectedAuctionId}/reserve?reservationId=${resId}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reservationId: resId })
       });
       if (!res.ok) throw new Error("Failed to remove");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auction_queue", selectedAuctionId] });
       queryClient.invalidateQueries({ queryKey: ["auctions"] });
+      queryClient.invalidateQueries({ queryKey: ["my-reservations"] });
     },
     onError: (err: any) => {
       if (err.message !== "Cancelled") useModalStore.getState().alert(err.message);
@@ -250,10 +251,15 @@ export function AuctionQueuesView({ auctions }: Props) {
                   </div>
                   <div>
                     <h2 translate="no" className="notranslate text-xl font-bold text-slate-800 dark:text-white">{formatItemName(selectedAuction.itemName, selectedAuction.category)}</h2>
-                    <div className="flex gap-2 mt-1">
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
                       <span className="text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#2D3342] text-slate-500">
                         {selectedAuction.category}
                       </span>
+                      {selectedAuction.price !== undefined && selectedAuction.price !== null && (
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center gap-1">
+                          💎 {selectedAuction.price.toLocaleString()} Starstone
+                        </span>
+                      )}
                       <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400">
                         คิวรอ: {selectedAuction.queueCount}
                       </span>

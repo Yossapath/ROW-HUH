@@ -35,34 +35,36 @@ function formatPrivateKey(key: string) {
 // Lazy initialize Firebase admin
 export function getDb() {
   if (!admin.apps.length) {
-    try {
-      if (process.env.FIREBASE_PRIVATE_KEY) {
-        const formattedKey = formatPrivateKey(process.env.FIREBASE_PRIVATE_KEY);
-        
+    // Validate all required environment variables upfront
+    const missing: string[] = [];
+    if (!process.env.FIREBASE_PROJECT_ID)    missing.push("FIREBASE_PROJECT_ID");
+    if (!process.env.FIREBASE_CLIENT_EMAIL)  missing.push("FIREBASE_CLIENT_EMAIL");
+    if (!process.env.FIREBASE_PRIVATE_KEY)   missing.push("FIREBASE_PRIVATE_KEY");
+
+    if (missing.length > 0) {
+      initError = `Missing required Firebase environment variables: ${missing.join(", ")}. Please set them in .env.local`;
+    } else {
+      try {
+        const formattedKey = formatPrivateKey(process.env.FIREBASE_PRIVATE_KEY!);
+
         admin.initializeApp({
           credential: admin.credential.cert({
-            projectId: process.env.FIREBASE_PROJECT_ID,
+            projectId:   process.env.FIREBASE_PROJECT_ID,
             clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: formattedKey,
+            privateKey:  formattedKey,
           }),
         });
-      } else {
-        initError = "Missing FIREBASE_PRIVATE_KEY in Environment Variables";
-        admin.initializeApp({ projectId: "topguild-build-demo" });
-      }
-    } catch (error: any) {
-      console.warn("Firebase admin initialization error:", error);
-      initError = error.message || "Unknown Initialization Error";
-      if (!admin.apps.length) {
-        admin.initializeApp({ projectId: "topguild-build-demo" });
+      } catch (error: any) {
+        console.error("Firebase admin initialization error:", error);
+        initError = error.message || "Unknown Firebase initialization error";
       }
     }
   }
-  
+
   if (initError) {
     throw new Error("FIREBASE_INIT_ERROR: " + initError);
   }
-  
+
   return admin.firestore();
 }
 

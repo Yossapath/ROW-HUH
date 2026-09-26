@@ -64,7 +64,16 @@ export async function DELETE(
 
     // Need to parse search params for reservationId
     const { searchParams } = new URL(request.url);
-    const reservationId = searchParams.get("reservationId");
+    let reservationId = searchParams.get("reservationId");
+
+    if (!reservationId) {
+      try {
+        const body = await request.json();
+        reservationId = body?.reservationId;
+      } catch {
+        // ignore body parse failure
+      }
+    }
 
     if (!reservationId) return err("Missing reservationId", 400);
 

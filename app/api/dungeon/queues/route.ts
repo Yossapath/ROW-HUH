@@ -56,7 +56,11 @@ export async function GET(req: Request) {
     }
 
     // 3. Current (Default): ดึงเฉพาะคิวที่ยังต้องแสดงในบอร์ดสด (waiting, active, skipped)
-    // มี In-Memory Server Cache (TTL ~7s) พร้อม Stampede & Race Condition Protection
+    // มี In-Memory Server Cache พร้อม Stampede & Race Condition Protection
+    if (searchParams.get("refresh") === "true") {
+      invalidateCurrentQueuesCache();
+    }
+
     const queues = await getOrSetCurrentQueuesCache(async () => {
       const snap = await trackFirestoreRead(
         "GET /api/dungeon/queues",
@@ -68,9 +72,20 @@ export async function GET(req: Request) {
             .get()
       );
 
-      return snap.docs
+      const sorted = snap.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
         .sort((a: any, b: any) => ((a.queuedAt ?? a.timestamp) || 0) - ((b.queuedAt ?? b.timestamp) || 0));
+
+      let rank = 1;
+      return sorted.map((item: any) => {
+        if (item.status === "waiting" || item.status === "active") {
+          const queuePosition = rank;
+          const peopleAhead = rank - 1;
+          rank++;
+          return { ...item, queuePosition, peopleAhead };
+        }
+        return item;
+      });
     });
 
     return ok(queues);

@@ -179,6 +179,7 @@ export const auctionItemCreateSchema = z.object({
   itemName: z.string().trim().min(1, "กรุณาระบุชื่อไอเทม").max(100),
   category: z.enum(["gear", "card", "pet", "relic"]),
   description: z.string().trim().max(500).optional(),
+  price: z.number().int().min(0).optional(),
 });
 
 export const auctionItemUpdateSchema = z.object({
@@ -187,6 +188,7 @@ export const auctionItemUpdateSchema = z.object({
   category: z.enum(["gear", "card", "pet", "relic"]).optional(),
   description: z.string().trim().max(500).optional(),
   status: z.enum(["open", "closed", "awarded"]).optional(),
+  price: z.number().int().min(0).nullable().optional(),
 });
 
 export const auctionReserveSchema = z.object({

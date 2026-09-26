@@ -374,11 +374,21 @@ export default function DungeonPage() {
             <div className={`px-3 py-1 rounded-full text-[11px] font-bold text-white uppercase tracking-wide ${bookingStatus.open ? 'bg-emerald-500' : 'bg-red-500'}`}>
               {bookingStatus.open ? "เปิดจอง" : "ปิดจอง"}
             </div>
-            <div className="text-xs font-bold text-slate-600 dark:text-[#8B93A7] bg-slate-100 dark:bg-[#2D3342] px-2.5 py-1 rounded-md">
-              จำนวนคิวทั้งหมด: <span className="text-[#0b3d63] dark:text-white text-sm">{dungeonData.queueItems?.length || 0}</span>
+            <div className="flex items-center gap-2">
+              <div className="text-xs font-bold text-slate-600 dark:text-[#8B93A7] bg-slate-100 dark:bg-[#2D3342] px-2.5 py-1 rounded-md">
+                จำนวนคิวทั้งหมด: <span className="text-[#0b3d63] dark:text-white text-sm">{dungeonData.queueItems?.length || 0}</span>
+              </div>
+              <button
+                onClick={() => queryClient.invalidateQueries({ queryKey: ["dungeon_data"] })}
+                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#2D3342] transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                title="รีเฟรชคิว"
+              >
+                <RefreshCw size={15} />
+              </button>
             </div>
           </div>
         )}
+
       </div>
 
       <div className="flex flex-col lg:flex-row gap-5">

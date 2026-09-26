@@ -354,7 +354,7 @@ export default function DungeonPage() {
 
   // ────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#f0f6fc] dark:bg-[#1C1F27] p-4 lg:py-6 lg:px-6 2xl:px-8">
+    <div className="min-h-screen bg-[#f0f6fc] dark:bg-[#1C1F27] p-4 lg:p-6">
 
       {/* Header Card */}
       <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] p-5 mb-5 flex items-center justify-between gap-3">

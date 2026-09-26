@@ -244,7 +244,7 @@ export default function LogPage() {
 
   return (
     <div
-      className="space-y-6 bg-[#f0f6fc] dark:bg-[#1C1F27] min-h-screen p-4 lg:py-6 lg:px-6 2xl:px-8 relative"
+      className="space-y-6 bg-[#f0f6fc] dark:bg-[#1C1F27] min-h-screen p-4 lg:p-6 relative"
       style={{ zoom: 0.85 }}
     >
       {/* ── Header Card ──────────────────────────────────────── */}

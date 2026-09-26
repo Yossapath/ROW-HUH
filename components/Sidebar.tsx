@@ -52,12 +52,12 @@ export default function Sidebar({ isExpanded, isMobileOpen, onMobileClose }: Sid
           border-r border-[#082e4b] dark:border-[#1F2430]
 
           /* Mobile: fixed overlay, slides in/out */
-          fixed top-0 left-0 z-50 w-64
+          fixed top-0 left-0 z-50 w-56
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
 
           /* Desktop: relative flow, toggle width */
           lg:relative lg:z-30 lg:translate-x-0 lg:transition-all
-          ${isExpanded ? "lg:w-64" : "lg:w-20"}
+          ${isExpanded ? "lg:w-56" : "lg:w-20"}
         `}
       >
         <div

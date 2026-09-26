@@ -120,9 +120,11 @@ export default function TopHeader({
         <h1 className="text-lg font-bold text-theme-text hidden sm:block">{title}</h1>
       </div>
 
-      {/* Right section: GoogleTranslate + Theme + Profile */}
-      <div className="flex items-center space-x-4">
-        <GoogleTranslate />
+      {/* Right section: Theme + Profile */}
+      <div className="flex items-center space-x-2 sm:space-x-4">
+        <div className="flex items-center">
+          <GoogleTranslate />
+        </div>
         
         {/* Theme Toggle */}
         {mounted && (

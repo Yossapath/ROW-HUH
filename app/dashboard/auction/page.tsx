@@ -68,7 +68,7 @@ export default function AuctionPage() {
   const isLoading = loadingAuctions || (activeTab === "my" && loadingMy);
 
   return (
-    <div className="space-y-6 bg-[#f0f6fc] dark:bg-[#1C1F27] min-h-screen p-4 lg:py-6 lg:px-6 2xl:px-8 relative">
+    <div className="space-y-6 bg-[#f0f6fc] dark:bg-[#1C1F27] min-h-screen p-4 lg:p-6 relative">
       <div className="bg-slate-800 dark:bg-[#1A1D27] rounded-xl p-4 sm:p-6 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-slate-700 dark:border-[#2D3342]">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-blue-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20">

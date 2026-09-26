@@ -959,7 +959,7 @@ export default function TeamsPage() {
   }
 
   return (
-    <div className="space-y-6 bg-[#f0f6fc] dark:bg-[#1C1F27] min-h-screen p-4 lg:py-6 lg:px-6 2xl:px-8 relative">
+    <div className="space-y-6 bg-[#f0f6fc] dark:bg-[#1C1F27] min-h-screen p-4 lg:p-6 relative">
       <AutoMatchModal />
 
       {/* Header */}

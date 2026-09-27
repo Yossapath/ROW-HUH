@@ -221,6 +221,8 @@ export default function AuctionPage() {
                 auction={auction}
                 isAdmin={isAdmin}
                 myReservations={myReservations}
+                  isFavorite={favorites.includes(auction.id)}
+                  onToggleFavorite={(e) => toggleFavorite(auction.id, e)}
               />
             ))
           )}

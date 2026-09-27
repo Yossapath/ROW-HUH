@@ -79,6 +79,7 @@ export default function TeamsPage() {
   const [isJobFilterOpen, setIsJobFilterOpen] = useState(false);
   const jobFilterDropdownRef = useRef<HTMLDivElement>(null);
   const [isUnassignedCollapsed, setIsUnassignedCollapsed] = useState(false);
+  const [collapsedZones, setCollapsedZones] = useState<Record<string, boolean>>({});
   const [isAutoModalOpen, setIsAutoModalOpen] = useState(false);
   const [autoModalText, setAutoModalText] = useState("");
   const [previewResult, setPreviewResult] = useState<AllocatorResult | null>(null);
@@ -918,8 +919,13 @@ export default function TeamsPage() {
   const ZoneHeader = ({ zone }: { zone: Zone }) => {
     const isEditing = editingZoneId === zone.id;
     const mainCap = zone.type === "main" && !canAddMainTeam;
+    const isCollapsed = !!collapsedZones[zone.id];
+    const toggleCollapse = () => setCollapsedZones(prev => ({ ...prev, [zone.id]: !prev[zone.id] }));
     return (
       <div className="flex items-center gap-3 mb-4">
+        <button onClick={toggleCollapse} className="text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors" title={isCollapsed ? "ขยาย" : "หุบ"}>
+          {isCollapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
+        </button>
         <LayoutGrid size={18} className="text-[#0b3d63] dark:text-white shrink-0" />
         {isEditing ? (
           <div className="flex items-center gap-2 flex-1">
@@ -1163,7 +1169,8 @@ export default function TeamsPage() {
                   {data.zones.filter(z => z.type === "main").map(zone => (
                     <div key={zone.id}>
                       <ZoneHeader zone={zone} />
-                      <Droppable droppableId={zone.id} direction="horizontal" type="TEAM" isDropDisabled={!isAdmin}>
+                      {!collapsedZones[zone.id] && (
+                        <Droppable droppableId={zone.id} direction="horizontal" type="TEAM" isDropDisabled={!isAdmin}>
                         {(provided) => (
                           <div ref={provided.innerRef} {...provided.droppableProps} className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 xl:gap-6 min-h-[100px]">
                             {zone.teamOrder.map((colId, index) => data.columns[colId] ? (
@@ -1186,6 +1193,7 @@ export default function TeamsPage() {
                           </div>
                         )}
                       </Droppable>
+                      )}
                     </div>
                   ))}
 
@@ -1202,7 +1210,8 @@ export default function TeamsPage() {
                   {data.zones.filter(z => z.type === "sub").map(zone => (
                     <div key={zone.id}>
                       <ZoneHeader zone={zone} />
-                      <Droppable droppableId={zone.id} direction="horizontal" type="TEAM" isDropDisabled={!isAdmin}>
+                      {!collapsedZones[zone.id] && (
+                        <Droppable droppableId={zone.id} direction="horizontal" type="TEAM" isDropDisabled={!isAdmin}>
                         {(provided) => (
                           <div ref={provided.innerRef} {...provided.droppableProps} className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 xl:gap-6 min-h-[100px]">
                             {zone.teamOrder.map((colId, index) => data.columns[colId] ? (
@@ -1225,6 +1234,7 @@ export default function TeamsPage() {
                           </div>
                         )}
                       </Droppable>
+                      )}
                     </div>
                   ))}
                   {isAdmin && (

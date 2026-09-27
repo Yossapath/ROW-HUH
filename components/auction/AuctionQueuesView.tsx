@@ -236,15 +236,15 @@ export function AuctionQueuesView({ auctions }: Props) {
                       }}
                 className={`w-full text-left px-3 py-2.5 rounded-xl flex items-center justify-between transition-colors ${selectedAuctionId === auction.id ? "bg-[#3B66D1]/10 border border-[#3B66D1]/30" : "hover:bg-slate-50 dark:hover:bg-[#232733] border border-transparent"}`}
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded bg-slate-100 dark:bg-[#2D3342] flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="flex items-start gap-3 min-w-0 pr-2">
+                  <div className="w-8 h-8 rounded bg-slate-100 dark:bg-[#2D3342] flex items-center justify-center shrink-0 overflow-hidden mt-0.5">
                     {auction.imageUrl ? (
                       <img src={auction.imageUrl} alt={formatItemName(auction.itemName, auction.category)} className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-xs">📦</span>
                     )}
                   </div>
-                  <span translate="no" className={`notranslate text-sm truncate font-bold ${selectedAuctionId === auction.id ? "text-[#0b3d63] dark:text-[#5B86F1]" : "text-slate-700 dark:text-slate-300"}`}>
+                  <span translate="no" className={`notranslate text-sm line-clamp-2 text-wrap leading-tight font-bold ${selectedAuctionId === auction.id ? "text-[#0b3d63] dark:text-[#5B86F1]" : "text-slate-700 dark:text-slate-300"}`}>
                     {formatItemName(auction.itemName, auction.category)}
                   </span>
                 </div>

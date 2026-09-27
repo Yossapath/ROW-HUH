@@ -5,7 +5,7 @@ import { formatItemName, JOB_ICONS, JOB_COLORS } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AuctionItem, AuctionReservation } from "@/types";
-import { Search, PackageOpen, Users, GripVertical, Check, Plus, Loader2, Menu, X as CloseIcon, Filter, Star } from "lucide-react";
+import { Search, PackageOpen, Users, GripVertical, Check, Plus, Loader2, Menu, X as CloseIcon, Filter, Star, Copy, X } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 
@@ -17,8 +17,47 @@ interface Props {
 
 export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }: Props) {
   const [isMounted, setIsMounted] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [isCopying, setIsCopying] = useState(false);
   useEffect(() => { setIsMounted(true); }, []);
   const handleToggleFav = (id: string, e: React.MouseEvent) => { if (onToggleFavorite) onToggleFavorite(id, e); };
+
+  const handleCopyTags = async () => {
+    if (selectedItems.length === 0) return;
+    setIsCopying(true);
+    try {
+      const promises = selectedItems.map(id => fetch(`/api/auctions/${id}/reserve`).then(r => r.json()));
+      const results = await Promise.all(promises);
+      
+      let copyText = "";
+      selectedItems.forEach((id, index) => {
+        const auction = auctions.find(a => a.id === id);
+        if (!auction) return;
+        
+        const queueData = results[index]?.data || [];
+        const waiting = queueData.filter((q: any) => q.status === "waiting");
+        
+        if (waiting.length > 0) {
+          copyText += `📦 ${formatItemName(auction.itemName, auction.category)}\n`;
+          waiting.forEach((q: any, qIdx: number) => {
+            copyText += `@${q.characterName} [Queue ${qIdx + 1}]\n`;
+          });
+          copyText += `\n`;
+        }
+      });
+      
+      if (copyText.trim()) {
+        await navigator.clipboard.writeText(copyText.trim());
+        useModalStore.getState().alert("คัดลอกข้อความสำเร็จแล้ว!");
+      } else {
+        useModalStore.getState().alert("ไม่มีคิวที่กำลังรอในไอเทมที่เลือกเลยครับ");
+      }
+    } catch (err: any) {
+      useModalStore.getState().alert("เกิดข้อผิดพลาด: " + err.message);
+    } finally {
+      setIsCopying(false);
+    }
+  };
 
   const [selectedAuctionId, setSelectedAuctionId] = useState<string>(auctions[0]?.id || "");
   const [searchQuery, setSearchQuery] = useState("");
@@ -246,6 +285,23 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
               </button>
             ))}
           </div>
+          
+          {selectedItems.length > 0 && (
+            <div className="mt-2 p-3 bg-[#3B66D1]/10 border border-[#3B66D1]/30 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-bottom-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-[#3B66D1] dark:text-[#82A0F5]">{selectedItems.length} รายการ</span>
+                <button onClick={() => setSelectedItems([])} className="p-1 hover:bg-[#3B66D1]/20 rounded-lg text-[#3B66D1] dark:text-[#82A0F5] transition-colors" title="ยกเลิกการเลือก"><X size={14} /></button>
+              </div>
+              <button 
+                onClick={handleCopyTags} 
+                disabled={isCopying}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#3B66D1] hover:bg-[#2c4d9e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors disabled:opacity-50"
+              >
+                {isCopying ? <Loader2 size={14} className="animate-spin" /> : <Copy size={14} />}
+                คัดลอกแจ้งเตือน
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

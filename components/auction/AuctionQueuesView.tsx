@@ -40,7 +40,7 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
         if (waiting.length > 0) {
           copyText += `📦 ${formatItemName(auction.itemName, auction.category)}\n`;
           waiting.forEach((q: any, qIdx: number) => {
-            copyText += `@${q.characterName} [Queue ${qIdx + 1}]\n`;
+            copyText += `@${q.discordUsername || q.characterName} [${q.characterName}] [Queue ${qIdx + 1}]\n`;
           });
           copyText += `\n`;
         }

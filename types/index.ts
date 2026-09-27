@@ -227,6 +227,7 @@ export interface AuctionReservation {
   id: string;
   auctionId: string;
   userId: string;
+  discordUsername?: string;
   characterName: string;
   job: string;
   queueNumber: number;

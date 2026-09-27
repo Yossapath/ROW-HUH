@@ -89,10 +89,10 @@ export async function POST(request: Request) {
       action: "ANNOUNCE_DISCORD",
       actor: createdBy,
       target: "Discord Webhook",
-      detail: `ประกาศคิวประมูลเข้า Discord จำนวน ${embeds.length} ไอเทม`,
+      detail: `ประกาศคิวประมูลเข้า Discord จำนวน ${auctionIds.length} ไอเทม`,
     });
 
-    return ok({ success: true, count: embeds.length });
+    return ok({ success: true, count: auctionIds.length });
   } catch (error) {
     return handleServerError(error, "Failed to send to Discord");
   }

@@ -77,7 +77,7 @@ export default function AuctionPage() {
       if (!res.ok) throw new Error("Failed to load my reservations");
       return res.json() as Promise<{ data: any[] }>;
     },
-    enabled: activeTab === "my" && !!user,
+    enabled: !!user,
   });
 
   const auctions = Array.isArray(auctionsRes?.data) ? auctionsRes.data : [];

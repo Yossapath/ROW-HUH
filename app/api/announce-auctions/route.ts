@@ -26,6 +26,7 @@ export async function POST(request: Request) {
     // We will build one large text payload or multiple embeds.
     // Discord message limit is 2000 chars, so let's use Embeds for better formatting.
     const embeds = [];
+    const mentionIds = new Set<string>();
     
     for (const id of auctionIds) {
       const auction = allAuctions.find(a => a.id === id);
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
       let desc = "";
       waiting.forEach((q, idx) => {
         desc += `<@${q.userId}> | ${q.characterName} | Queue ${idx + 1}\n`;
+        mentionIds.add(q.userId);
       });
 
       // Discord only accepts http:// or https:// URLs for embed thumbnails. Data URIs and relative paths are rejected (HTTP 400 {"embeds": ["0"]}).
@@ -56,6 +58,8 @@ export async function POST(request: Request) {
       return err("ไม่มีคิวที่กำลังรอในไอเทมที่เลือกเลยครับ", 400);
     }
 
+    const mentionsString = Array.from(mentionIds).map(id => `<@${id}>`).join(" ");
+
     // Discord allows up to 10 embeds per message
     // If we have more than 10, we'll slice or send multiple. Let's just send up to 10 for now.
     const chunks = [];
@@ -65,7 +69,7 @@ export async function POST(request: Request) {
 
     for (const chunk of chunks) {
       const discordPayload = {
-        content: "📢 **ประกาศคิวประมูลไอเทมกิลด์**",
+        content: `📢 **ประกาศคิวประมูลไอเทมกิลด์**\n${mentionsString}`,
         embeds: chunk
       };
 

@@ -15,26 +15,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   // Mobile (<lg): overlay เปิด/ปิด
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(true);
   const [loadingAuth, setLoadingAuth] = useState(!isAuthenticated);
-
-  // Resize listener for breakpoint
-  useEffect(() => {
-    const mql = window.matchMedia("(min-width: 1024px)");
-    const onChange = (e: MediaQueryListEvent | MediaQueryList) => {
-      setIsDesktop(e.matches);
-      if (e.matches) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-    onChange(mql);
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
 
   // Body scroll lock
   useEffect(() => {
-    if (isMobileMenuOpen && !isDesktop) {
+    if (isMobileMenuOpen && window.innerWidth < 1024) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -42,7 +27,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isMobileMenuOpen, isDesktop]);
+  }, [isMobileMenuOpen]);
 
   useEffect(() => {
     setMounted(true);
@@ -85,7 +70,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           isMobileMenuOpen={isMobileMenuOpen}
           toggleSidebar={() => {
             // < lg: toggle overlay; >= lg: toggle inline expand
-            if (!isDesktop) {
+            if (window.innerWidth < 1024) {
               setIsMobileMenuOpen(prev => !prev);
             } else {
               setIsSidebarExpanded(prev => !prev);

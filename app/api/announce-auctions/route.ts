@@ -22,11 +22,9 @@ export async function POST(request: Request) {
 
     const allAuctions = await getAuctions();
     
-    // Process items in chunks or all at once? 
-    // We will build one large text payload or multiple embeds.
-    // Discord message limit is 2000 chars, so let's use Embeds for better formatting.
-    const embeds = [];
-    const mentionIds = new Set<string>();
+    const chunks: string[] = [];
+    let currentChunk = "📢 **ประกาศคิวประมูลไอเทมกิลด์**\n\n";
+    let hasAnyWaiting = false;
     
     for (const id of auctionIds) {
       const auction = allAuctions.find(a => a.id === id);
@@ -36,41 +34,33 @@ export async function POST(request: Request) {
       const waiting = queue.filter(q => q.status === "waiting");
       
       if (waiting.length === 0) continue;
+      hasAnyWaiting = true;
 
-      let desc = "";
+      let itemText = `**${auction.itemName}** ${auction.category ? `(${auction.category.toUpperCase()})` : ''}\n`;
       waiting.forEach((q, idx) => {
-        desc += `<@${q.userId}> | ${q.characterName} | Queue ${idx + 1}\n`;
-        mentionIds.add(q.userId);
+        itemText += `<@${q.userId}> | ${q.characterName} | Queue ${idx + 1}\n`;
       });
+      itemText += "\n";
 
-      // Discord only accepts http:// or https:// URLs for embed thumbnails. Data URIs and relative paths are rejected (HTTP 400 {"embeds": ["0"]}).
-      const isValidImageUrl = auction.imageUrl && auction.imageUrl.startsWith("http");
-
-      embeds.push({
-        title: `${auction.itemName} ${auction.category ? `(${auction.category.toUpperCase()})` : ''}`,
-        description: desc,
-        color: 0x3B66D1,
-        thumbnail: isValidImageUrl ? { url: auction.imageUrl } : undefined,
-      });
+      if (currentChunk.length + itemText.length > 1900) {
+        chunks.push(currentChunk);
+        currentChunk = itemText;
+      } else {
+        currentChunk += itemText;
+      }
     }
 
-    if (embeds.length === 0) {
+    if (!hasAnyWaiting) {
       return err("ไม่มีคิวที่กำลังรอในไอเทมที่เลือกเลยครับ", 400);
     }
 
-    const mentionsString = Array.from(mentionIds).map(id => `<@${id}>`).join(" ");
-
-    // Discord allows up to 10 embeds per message
-    // If we have more than 10, we'll slice or send multiple. Let's just send up to 10 for now.
-    const chunks = [];
-    for (let i = 0; i < embeds.length; i += 10) {
-      chunks.push(embeds.slice(i, i + 10));
+    if (currentChunk.trim().length > 0) {
+      chunks.push(currentChunk);
     }
 
     for (const chunk of chunks) {
       const discordPayload = {
-        content: `📢 **ประกาศคิวประมูลไอเทมกิลด์**\n${mentionsString}`,
-        embeds: chunk
+        content: chunk.trim()
       };
 
       const res = await fetch(webhookUrl, {

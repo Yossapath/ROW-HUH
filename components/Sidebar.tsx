@@ -58,6 +58,7 @@ export default function Sidebar({ isExpanded, isMobileOpen, onMobileClose }: Sid
 
       {/* ─── Sidebar panel ───────────────────────────────────── */}
       <aside
+        id="sidebar"
         className={`
           bg-[#0b3d63] dark:bg-[#171D27] h-screen flex flex-col
           transition-transform duration-300 shadow-xl

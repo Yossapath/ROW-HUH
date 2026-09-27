@@ -19,8 +19,9 @@ export async function POST(
     const baseTime = Date.now();
 
     orderedIds.forEach((id: string, index: number) => {
-      // Each gets a progressively larger joinedAt so they stay in this order
+      // Each gets a progressively larger queuedAt/joinedAt so they stay in this order
       batch.update(auctionReservationsRef().doc(id), {
+        queuedAt: baseTime + index * 1000,
         joinedAt: baseTime + index * 1000,
         updatedAt: baseTime
       });

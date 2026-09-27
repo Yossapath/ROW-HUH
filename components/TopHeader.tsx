@@ -23,10 +23,12 @@ const ROUTE_TITLES: Record<string, string> = {
 };
 
 export default function TopHeader({ 
-  isSidebarExpanded, 
+  isSidebarExpanded,
+  isMobileMenuOpen,
   toggleSidebar 
 }: { 
   isSidebarExpanded: boolean;
+  isMobileMenuOpen: boolean;
   toggleSidebar: () => void;
 }) {
   const { user, logout, setUser } = useAuthStore();
@@ -107,7 +109,7 @@ export default function TopHeader({
   };
 
   return (
-    <header className="h-16 flex-shrink-0 bg-theme-panel border-b border-theme-border flex items-center justify-between px-4 lg:px-6 shadow-sm transition-colors duration-300">
+    <header className="relative z-50 h-16 flex-shrink-0 bg-theme-panel border-b border-theme-border flex items-center justify-between px-4 lg:px-6 shadow-sm transition-colors duration-300">
       
       {/* Left section: Hamburger + Title */}
       <div className="flex items-center space-x-4">
@@ -115,6 +117,8 @@ export default function TopHeader({
           onClick={toggleSidebar}
           className="text-theme-textSecondary hover:text-theme-text p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-theme-bg transition-colors"
           aria-label="Toggle sidebar"
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="sidebar"
         >
           <MenuIcon size={24} />
         </button>

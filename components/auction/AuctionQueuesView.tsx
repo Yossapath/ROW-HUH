@@ -28,7 +28,7 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
     if (!await useModalStore.getState().confirm("ต้องการประกาศไอเทมที่เลือกเข้า Discord ใช่หรือไม่?")) return;
     setIsAnnouncing(true);
     try {
-      const res = await fetch("/api/auctions/announce", {
+      const res = await fetch("/api/announce-auctions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ auctionIds: selectedItems })

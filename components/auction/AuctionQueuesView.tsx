@@ -11,31 +11,14 @@ import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea
 
 interface Props {
   auctions: AuctionItem[];
+  favorites?: string[];
+  onToggleFavorite?: (id: string, e: React.MouseEvent) => void;
 }
 
-export function AuctionQueuesView({ auctions }: Props) {
+export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }: Props) {
   const [isMounted, setIsMounted] = useState(false);
-  const [favorites, setFavorites] = useState<string[]>([]);
-  
-  useEffect(() => { 
-    try {
-      const stored = localStorage.getItem("huh_auction_favorites");
-      if (stored) setFavorites(JSON.parse(stored));
-    } catch {}
-    setIsMounted(true); 
-  }, []);
-
-  const toggleFavorite = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    let next;
-    if (favorites.includes(id)) {
-      next = favorites.filter(f => f !== id);
-    } else {
-      next = [...favorites, id];
-    }
-    setFavorites(next);
-    localStorage.setItem("huh_auction_favorites", JSON.stringify(next));
-  };
+  useEffect(() => { setIsMounted(true); }, []);
+  const handleToggleFav = (id: string, e: React.MouseEvent) => { if (onToggleFavorite) onToggleFavorite(id, e); };
 
   const [selectedAuctionId, setSelectedAuctionId] = useState<string>(auctions[0]?.id || "");
   const [searchQuery, setSearchQuery] = useState("");
@@ -251,7 +234,7 @@ export function AuctionQueuesView({ auctions }: Props) {
                 <div className="flex items-center gap-2">
                   <button 
                     type="button"
-                    onClick={(e) => toggleFavorite(auction.id, e)}
+                    onClick={(e) => handleToggleFav(auction.id, e)}
                     className="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-[#32394A] transition-colors shrink-0"
                   >
                     <Star size={14} className={favorites.includes(auction.id) ? "fill-yellow-400 text-yellow-400" : "text-slate-300 dark:text-slate-600"} />

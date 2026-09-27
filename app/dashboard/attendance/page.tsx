@@ -665,13 +665,38 @@ export default function AttendancePage() {
                           {iconSrc ? <img src={iconSrc} alt={r.job} className="w-5 h-5 object-contain" /> : <Users size={16} color={jobColor} />}
                           <span translate="no" className="notranslate font-bold text-slate-800 dark:text-white">{r.name}</span>
                         </div>
-                        {sc && (
-                          <span className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${sc.bg} ${sc.text} border ${sc.border}`}>{sc.label}</span>
-                        )}
                       </div>
-                      <div className="flex justify-between items-center text-xs text-slate-500">
+                      <div className="flex justify-between items-center text-xs text-slate-500 mb-3">
                         <span>{r.job}</span>
                         <span className="font-medium text-slate-700 dark:text-slate-300">{(r.power ?? 0).toLocaleString()}</span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {isAdmin ? (
+                          <div className="flex flex-wrap gap-2">
+                            {Object.entries(STATUS_CONFIG).map(([st, conf]) => {
+                              const isSelected = r.status === st;
+                              return (
+                                <button
+                                  key={st}
+                                  onClick={() => setStatus(i, st as any)}
+                                  className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${
+                                    isSelected
+                                      ? `${conf.bg} ${conf.text} ${conf.border}`
+                                      : "bg-white dark:bg-[#272C38] text-slate-500 border-slate-200 dark:border-[#333] hover:bg-slate-50 dark:hover:bg-[#323847]"
+                                  }`}
+                                >
+                                  {conf.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="flex justify-end">
+                            <span className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${sc ? `${sc.bg} ${sc.text} border ${sc.border}` : "bg-slate-100 text-slate-400"}`}>
+                              {sc ? sc.label : "รอเช็ค"}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

@@ -8,15 +8,17 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { ChevronDown, ChevronUp, Check, X, Shield, Users, Clock, RefreshCw } from "lucide-react";
 import { AuctionItem, AuctionReservation } from "@/types";
 import { EditAuctionModal } from "./EditAuctionModal";
-import { Edit2 } from "lucide-react";
+import { Edit2, Star } from "lucide-react";
 
 interface Props {
   auction: AuctionItem;
   isAdmin: boolean;
   myReservations: any[];
+  isFavorite?: boolean;
+  onToggleFavorite?: (e: React.MouseEvent) => void;
 }
 
-export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
+export function AuctionItemCard({ auction, isAdmin, myReservations, isFavorite, onToggleFavorite }: Props) {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -98,7 +100,16 @@ export function AuctionItemCard({ auction, isAdmin, myReservations }: Props) {
             {auction.imageUrl ? <img src={auction.imageUrl} alt={formatItemName(auction.itemName, auction.category)} className="w-full h-full object-cover" /> : <span className="text-xl">📦</span>}
           </div>
           <div className="min-w-0">
-            <h3 className="notranslate font-bold text-slate-800 dark:text-white truncate" translate="no">{formatItemName(auction.itemName, auction.category)}</h3>
+            <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={onToggleFavorite}
+                  className="p-1 -ml-1 rounded-md hover:bg-slate-200 dark:hover:bg-[#32394A] transition-colors shrink-0"
+                >
+                  <Star size={16} className={isFavorite ? "fill-yellow-400 text-yellow-400" : "text-slate-300 dark:text-slate-600"} />
+                </button>
+                <h3 className="notranslate font-bold text-slate-800 dark:text-white truncate" translate="no">{formatItemName(auction.itemName, auction.category)}</h3>
+              </div>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#2D3342] text-slate-500 dark:text-[#8B93A7]">
                 {auction.category}

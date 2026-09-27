@@ -1,7 +1,7 @@
 "use client";
 import { useModalStore } from "@/stores/useModalStore";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Gavel, RefreshCw, PackageOpen, LayoutGrid, Sword, Layers, Plus, Search } from "lucide-react";
@@ -27,6 +27,9 @@ export default function AuctionPage() {
   const [viewMode, setViewMode] = useState<"reserve" | "queues">("reserve");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [favorites, setFavorites] = useState<string[]>([]);
+  useEffect(() => { try { const stored = localStorage.getItem("huh_auction_favorites"); if (stored) setFavorites(JSON.parse(stored)); } catch {} }, []);
+  const toggleFavorite = (id: string, e: React.MouseEvent) => { e.stopPropagation(); let next; if (favorites.includes(id)) next = favorites.filter(f => f !== id); else next = [...favorites, id]; setFavorites(next); localStorage.setItem("huh_auction_favorites", JSON.stringify(next)); };
 
   // Fetch all auctions
   const { data: auctionsRes, isLoading: loadingAuctions, isError: auctionsError, refetch } = useQuery({
@@ -226,7 +229,7 @@ export default function AuctionPage() {
       </>)}
 
       {viewMode === "queues" && (
-        <AuctionQueuesView auctions={auctions} />
+        <AuctionQueuesView auctions={auctions} favorites={favorites} onToggleFavorite={toggleFavorite} />
       )}
 
       {isAddModalOpen && (

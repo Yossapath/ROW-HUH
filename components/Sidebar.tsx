@@ -69,8 +69,8 @@ export default function Sidebar({ isExpanded, isMobileOpen, onMobileClose }: Sid
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
 
           /* Desktop: relative flow, toggle width */
-          lg:relative lg:z-30 lg:translate-x-0 lg:transition-all
-          ${isExpanded ? "lg:w-56" : "lg:w-20"}
+          lg:relative lg:z-30 lg:transition-all
+          ${isExpanded ? "lg:w-56 lg:translate-x-0 lg:opacity-100" : "lg:w-0 lg:-translate-x-full lg:opacity-0 lg:overflow-hidden lg:border-none"}
         `}
       >
         <div

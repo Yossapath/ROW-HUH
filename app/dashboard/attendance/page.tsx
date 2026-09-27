@@ -279,7 +279,9 @@ export default function AttendancePage() {
     const leaveNames = new Set<string>();
     const baseDayName = dayName.split(" ")[0];
     for (const lr of leaveRecords) {
-      if (lr.date === selectedDate || (lr.day && (lr.day === dayName || lr.day === baseDayName))) {
+      if (lr.date) {
+        if (lr.date === selectedDate) leaveNames.add(lr.name);
+      } else if (lr.day && (lr.day === dayName || lr.day === baseDayName)) {
         leaveNames.add(lr.name);
       }
     }

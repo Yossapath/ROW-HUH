@@ -68,6 +68,8 @@ export default function AuctionPage() {
     displayedAuctions = auctions.filter(a => a.category === activeTab && a.itemName.toLowerCase().includes(searchQuery.toLowerCase()));
   }
 
+  displayedAuctions.sort((a, b) => { const aFav = favorites.includes(a.id) ? 1 : 0; const bFav = favorites.includes(b.id) ? 1 : 0; if (aFav !== bFav) return bFav - aFav; return 0; });
+
   const isLoading = loadingAuctions || (activeTab === "my" && loadingMy);
 
   return (

@@ -33,7 +33,9 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ auctionIds: selectedItems })
       });
-      const text = await res.text(); const data = text ? JSON.parse(text) : {};
+      const text = await res.text();
+        let data = {};
+        try { data = text ? JSON.parse(text) : {}; } catch(e) { throw new Error(`HTTP ${res.status} ${res.statusText}: ${text.substring(0, 100)}`); }
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status} ${res.statusText}: ${text ? text.substring(0, 100) : "Empty response"}`);
       useModalStore.getState().alert(`ประกาศเข้า Discord สำเร็จ ${data.count} รายการ!`);
       setSelectedItems([]);

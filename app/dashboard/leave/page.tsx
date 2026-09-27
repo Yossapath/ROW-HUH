@@ -259,8 +259,46 @@ export default function LeavePage() {
             <p className="text-sm">ไม่มีรายการแจ้งลา</p>
           </div>
         ) : (
-          <div className="overflow-x-auto max-w-full">
-            <table className="w-full text-sm">
+          <>
+            <div className="lg:hidden flex flex-col gap-3 p-3">
+              {allRecords.map((rec) => {
+                const dayName = rec.day || getDayName(rec.date ?? "");
+                const isDeleting = deletingId === rec.id;
+                const power = rosterMembers.find(m => m.name === rec.name)?.power;
+                return (
+                  <div key={`${rec.id}-mob`} className="bg-white dark:bg-[#232733] rounded-xl border border-slate-200 dark:border-[#2D3342] p-4 shadow-sm flex flex-col gap-2">
+                    <div className="flex justify-between items-start">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-slate-800 dark:text-white text-base">{rec.name}</span>
+                        <span className="text-xs text-slate-500 dark:text-[#8B93A7]">{rec.job} {power ? `(${power.toLocaleString()})` : ""}</span>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="font-semibold text-[#4D73CD] bg-[#eef4fb] dark:bg-[#3B66D1]/10 px-2 py-0.5 rounded text-xs">{rec.date ? formatDateTH(rec.date) : "ลากิจ"}</span>
+                        <span className="text-[10px] text-slate-400 mt-1">วัน{dayName}</span>
+                      </div>
+                    </div>
+                    {rec.reason && (
+                      <div className="bg-slate-50 dark:bg-[#1C1F27] rounded-lg p-2 mt-1">
+                        <p className="text-xs text-slate-600 dark:text-slate-300"><span className="font-semibold mr-1">เหตุผล:</span>{rec.reason}</p>
+                      </div>
+                    )}
+                    {isAdmin && (
+                      <div className="flex justify-end mt-1 pt-2 border-t border-slate-100 dark:border-[#2D3342]">
+                        <button
+                          onClick={() => handleDelete(rec.id)}
+                          disabled={isDeleting}
+                          className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 px-2 py-1 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={12} /> ลบ
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="hidden lg:block overflow-x-auto max-w-full">
+              <table className="w-full text-sm">
               <thead>
                 <tr className="bg-[#eef4fb] dark:bg-[#272C38] text-[#0b3d63] dark:text-white text-xs font-semibold border-b border-slate-100 dark:border-[#2D3342]">
                   <th className="px-5 py-3 text-left">วันที่ลา</th>
@@ -328,6 +366,7 @@ export default function LeavePage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 

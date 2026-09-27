@@ -183,8 +183,67 @@ export default function UsersPage() {
             <p className="text-slate-400 text-sm mt-1">กรุณาลองรีเฟรชหน้าใหม่อีกครั้ง หรือตรวจสอบสิทธิ์ Admin</p>
           </div>
         ) : (
-          <div className="overflow-x-auto max-w-full">
-            <table className="w-full text-left border-collapse min-w-[600px]">
+          <>
+            <div className="lg:hidden flex flex-col gap-3 p-3">
+              {sortedUsers.length === 0 ? (
+                <div className="py-8 text-center text-slate-400 dark:text-[#6B7280] font-medium bg-slate-50 dark:bg-[#232733] rounded-xl border border-slate-200 dark:border-[#2D3342]">
+                  {searchQuery ? "ไม่พบผู้ใช้ที่ตรงกับคำค้นหา" : "ไม่มีข้อมูลผู้ใช้ในระบบ"}
+                </div>
+              ) : (
+                sortedUsers.map((u, index) => (
+                  <div key={u.discordId || `user-mob-${index}`} className={`bg-white dark:bg-[#232733] border border-slate-200 dark:border-[#2D3342] rounded-xl p-4 shadow-sm flex flex-col gap-3 ${(u.role === 'admin' || u.role === 'dev') ? 'ring-1 ring-[#3B66D1]' : ''}`}>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white ${(u.role === "admin" || u.role === "dev") ? "bg-theme-warning" : "bg-slate-400"}`}>{u.discordUsername ? u.discordUsername.charAt(0).toUpperCase() : "U"}</div>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="font-bold text-slate-800 dark:text-white truncate">{u.discordUsername || "Unknown"}</span>
+                        <span className="text-xs text-slate-400 truncate">เกม: {u.gameUsername || "-"}</span>
+                      </div>
+                      {u.role === "owner" ? (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700">OWNER</span>
+                      ) : u.role === "admin" || u.role === "dev" ? (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#3B66D1] text-white">{u.role.toUpperCase()}</span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-[#2D3342] text-slate-600 dark:text-slate-300">MEMBER</span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between mt-1 text-sm bg-slate-50 dark:bg-[#1C1F27] p-2 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        {u.class && JOB_ICONS[u.class] ? <img src={JOB_ICONS[u.class]} className="w-5 h-5 object-contain" alt="class" /> : null}
+                        <span className="text-slate-700 dark:text-slate-300 font-bold">{u.class || "ไม่ได้ตั้งอาชีพ"}</span>
+                      </div>
+                      <span className="text-slate-500 font-medium">{u.power ? u.power.toLocaleString() + " CP" : "-"}</span>
+                    </div>
+                    {isAdmin && (
+                      <div className="flex justify-end items-center mt-1 border-t border-slate-100 dark:border-[#2D3342] pt-3 gap-2">
+                        <select
+                          value={u.role || "member"}
+                          onChange={async (e) => { 
+                            const newRole = e.target.value;
+                            if (await useModalStore.getState().confirm(`ต้องการเปลี่ยนยศของ ${u.discordUsername || 'ผู้ใช้'} เป็น ${newRole} ใช่หรือไม่?`)) {
+                              updateRoleMutation.mutate({ discordId: u.discordId, role: newRole });
+                            }
+                          }}
+                          disabled={updateRoleMutation.isPending || (u.discordId === user?.discordId) || !canManageRole(u.role || 'member')}
+                          className="bg-slate-50 dark:bg-[#2A2F3E] border border-slate-200 dark:border-[#333333] rounded-lg px-2 py-1 text-xs font-bold"
+                        >
+                          {isOwner && <option value="owner">Owner</option>}
+                          {isOwner && <option value="dev">Dev</option>}
+                          <option value="admin">Admin</option>
+                          <option value="member">Member</option>
+                        </select>
+                        {u.discordId !== user?.discordId && canManageRole(u.role || 'member') && (
+                          <button onClick={() => { setUserToDelete(u); setConfirmInput(""); }} className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors">
+                            <Trash2 size={14} /> ลบ
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="hidden lg:block overflow-x-auto max-w-full">
+              <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-[#2D3342]">
                   <th className="py-3 px-4 font-bold text-slate-400 dark:text-[#8B93A7] uppercase tracking-wider text-xs">Discord</th>
@@ -311,6 +370,7 @@ export default function UsersPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 

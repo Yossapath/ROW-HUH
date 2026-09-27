@@ -652,7 +652,32 @@ export default function AttendancePage() {
               <p className="text-sm">ไม่มีข้อมูลสมาชิกใน Roster</p>
             </div>
           ) : (
-            <div className="overflow-x-auto max-w-full">
+            <>
+              <div className="lg:hidden flex flex-col gap-2 p-3 pb-6">
+                {rows.filter(r => !search || r.name.toLowerCase().includes(search.toLowerCase())).map((r, i) => {
+                  const jobColor = JOB_COLORS[r.job] ?? "#64748b";
+                  const sc = r.status ? STATUS_CONFIG[r.status] : null;
+                  const iconSrc = JOB_ICONS[r.job];
+                  return (
+                    <div key={`${r.name}-${i}-mob`} className="flex flex-col bg-white dark:bg-[#232733] border border-slate-200 dark:border-[#2D3342] rounded-xl p-3 shadow-sm">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-2">
+                          {iconSrc ? <img src={iconSrc} alt={r.job} className="w-5 h-5 object-contain" /> : <Users size={16} color={jobColor} />}
+                          <span translate="no" className="notranslate font-bold text-slate-800 dark:text-white">{r.name}</span>
+                        </div>
+                        {sc && (
+                          <span className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${sc.bg} ${sc.text} border ${sc.border}`}>{sc.label}</span>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center text-xs text-slate-500">
+                        <span>{r.job}</span>
+                        <span className="font-medium text-slate-700 dark:text-slate-300">{(r.power ?? 0).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="hidden lg:block overflow-x-auto max-w-full">
               <table className="w-full">
                 <thead>
                   <tr className="bg-[#eef4fb] dark:bg-[#272C38] text-[#0b3d63] dark:text-white text-xs font-semibold">
@@ -722,6 +747,7 @@ export default function AttendancePage() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
 
           {isAdmin && rows.length > 0 && (

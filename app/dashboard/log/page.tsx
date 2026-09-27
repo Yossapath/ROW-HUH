@@ -311,7 +311,25 @@ export default function LogPage() {
                 <EmptyState message="ไม่มีประวัติที่ค้นหา" />
               ) : (
                 <>
-                  <div className="overflow-x-auto max-w-full">
+                  <div className="lg:hidden flex flex-col gap-3 p-3">
+                    {pagedLogs.map((log) => (
+                      <div key={log.id + '-mob'} className="bg-white dark:bg-[#232733] border border-slate-200 dark:border-[#2D3342] rounded-xl p-3 shadow-sm flex flex-col gap-2">
+                        <div className="flex justify-between items-start">
+                          <span className="font-bold text-[#0b3d63] dark:text-[#82A0F5] text-sm">{log.action}</span>
+                          <div className="flex flex-col items-end text-[10px] text-slate-400">
+                            <span>{formatDateOnly(log.timestamp)}</span>
+                            <span>{formatTimeOnly(log.timestamp)}</span>
+                          </div>
+                        </div>
+                        <div className="text-sm flex items-center gap-2">
+                          <span className="font-semibold text-slate-700 dark:text-white">{log.target}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded border border-slate-200 dark:border-[#333] bg-slate-50 dark:bg-[#1C1F27] text-slate-500">{log.module}</span>
+                        </div>
+                        {log.detail && <div className="text-xs text-slate-500 mt-1">{log.detail}</div>}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="hidden lg:block overflow-x-auto max-w-full">
                     <table className="w-full text-sm">
                       <thead className="bg-slate-50 dark:bg-[#272C38] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide">
                         <tr>
@@ -444,8 +462,44 @@ export default function LogPage() {
                           {leaveTab === "leave" ? "แจ้งลา" : "ออฟไลน์"} ({targetList.length})
                         </span>
                       </div>
-                      <div className="overflow-x-auto max-w-full rounded-xl border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38]">
-                        <table className="w-full text-sm">
+                      <>
+                        <div className="lg:hidden flex flex-col gap-3 mt-3">
+                          {targetList.map((leave, idx) => {
+                            const power = rosterMembers.find(m => m.name === leave.name)?.power;
+                            return (
+                              <div key={leave.id + '-mob'} className="bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] rounded-xl p-3 shadow-sm flex flex-col gap-2">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex flex-col">
+                                    <span className="font-bold text-slate-800 dark:text-white">{leave.name}</span>
+                                    <span className="text-xs text-slate-500">{leave.job} {power ? `(${power.toLocaleString()})` : ""}</span>
+                                  </div>
+                                  <div className="flex flex-col items-end text-[10px] text-slate-400">
+                                    <span>แจ้งเมื่อ {formatDateOnly(leave.timestamp)}</span>
+                                    <span>{formatTimeOnly(leave.timestamp)}</span>
+                                  </div>
+                                </div>
+                                <div className="text-xs text-slate-600 dark:text-slate-300">
+                                  <span className="font-semibold text-slate-800 dark:text-white mr-1">วัน:</span>
+                                  {leave.day || ""}
+                                </div>
+                                {leave.reason && (
+                                  <div className="text-xs text-slate-500 bg-slate-50 dark:bg-[#1C1F27] p-2 rounded-lg truncate">
+                                    {leave.reason}
+                                  </div>
+                                )}
+                                {isAdmin && (
+                                  <div className="flex justify-end mt-1 pt-2 border-t border-slate-100 dark:border-[#333]">
+                                    <button onClick={() => handleDeleteLeave(leave.id)} disabled={false} className="flex items-center gap-1 text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md transition-colors">
+                                      ลบ
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="hidden lg:block overflow-x-auto max-w-full rounded-xl border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38] mt-3">
+                          <table className="w-full text-sm">
                             <thead className="bg-slate-50 dark:bg-[#2A2F3E] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide border-b border-slate-200 dark:border-[#2D3342]">
                               <tr>
                                 <th className="px-4 py-3 text-center w-10">#</th>
@@ -500,6 +554,7 @@ export default function LogPage() {
                           </tbody>
                         </table>
                       </div>
+                      </>
                     </div>
                   </div>
                 );
@@ -536,8 +591,33 @@ export default function LogPage() {
           ) : filteredQueues.length === 0 ? (
             <EmptyState message="ไม่มีรายการจองคิว" />
           ) : (
-            <div className="overflow-x-auto max-w-full">
-              <table className="w-full text-sm">
+            <>
+              <div className="lg:hidden flex flex-col gap-3 p-3">
+                {filteredQueues.map((qr, idx) => (
+                  <div key={qr.id + '-mob'} className="bg-white dark:bg-[#232733] border border-slate-200 dark:border-[#2D3342] rounded-xl p-3 shadow-sm flex flex-col gap-2">
+                    <div className="flex justify-between items-start">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-slate-800 dark:text-white">{qr.name}</span>
+                        <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-500">
+                          {JOB_ICONS[qr.job] ? (
+                            <img src={JOB_ICONS[qr.job]} alt={qr.job} className="w-4 h-4 object-contain" />
+                          ) : null}
+                          <span>{qr.job} ({qr.power.toLocaleString()})</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="font-bold bg-[#0b3d63] dark:bg-[#3B66D1] text-white px-2 py-0.5 rounded text-xs">{qr.rounds}</span>
+                        <div className="flex flex-col items-end text-[10px] text-slate-400 mt-1">
+                          <span>{formatDateOnly(qr.timestamp)}</span>
+                          <span>{formatTimeOnly(qr.timestamp)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="hidden lg:block overflow-x-auto max-w-full">
+                <table className="w-full text-sm">
                 <thead className="bg-slate-50 dark:bg-[#272C38] text-slate-500 dark:text-[#8B93A7] font-bold text-xs uppercase tracking-wide">
                   <tr>
                     <th className="px-4 py-3 text-center w-10">#</th>
@@ -591,6 +671,7 @@ export default function LogPage() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </div>
       )}

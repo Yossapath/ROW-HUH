@@ -5,7 +5,7 @@ import { formatItemName, JOB_ICONS, JOB_COLORS } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AuctionItem, AuctionReservation } from "@/types";
-import { Search, PackageOpen, Users, GripVertical, Check, Plus, Loader2, Menu, X as CloseIcon, Filter, Star, Copy, X } from "lucide-react";
+import { Search, PackageOpen, Users, GripVertical, Check, Plus, Loader2, Menu, X as CloseIcon, Filter, Star, Copy, X, Send } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 
@@ -19,8 +19,30 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
   const [isMounted, setIsMounted] = useState(false);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isCopying, setIsCopying] = useState(false);
+  const [isAnnouncing, setIsAnnouncing] = useState(false);
   useEffect(() => { setIsMounted(true); }, []);
   const handleToggleFav = (id: string, e: React.MouseEvent) => { if (onToggleFavorite) onToggleFavorite(id, e); };
+
+  const handleAnnounce = async () => {
+    if (selectedItems.length === 0) return;
+    if (!await useModalStore.getState().confirm("ต้องการประกาศไอเทมที่เลือกเข้า Discord ใช่หรือไม่?")) return;
+    setIsAnnouncing(true);
+    try {
+      const res = await fetch("/api/auctions/announce", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ auctionIds: selectedItems })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
+      useModalStore.getState().alert(`ประกาศเข้า Discord สำเร็จ ${data.count} รายการ!`);
+      setSelectedItems([]);
+    } catch (err: any) {
+      useModalStore.getState().alert("เกิดข้อผิดพลาด: " + err.message);
+    } finally {
+      setIsAnnouncing(false);
+    }
+  };
 
   const handleCopyTags = async () => {
     if (selectedItems.length === 0) return;
@@ -303,6 +325,15 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
                 <span className="text-sm font-bold text-[#3B66D1] dark:text-[#82A0F5]">{selectedItems.length} รายการ</span>
                 <button onClick={() => setSelectedItems([])} className="p-1 hover:bg-[#3B66D1]/20 rounded-lg text-[#3B66D1] dark:text-[#82A0F5] transition-colors" title="ยกเลิกการเลือก"><X size={14} /></button>
               </div>
+              <div className="flex items-center gap-2">
+              <button 
+                onClick={handleAnnounce} 
+                disabled={isAnnouncing || isCopying}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#5865F2] hover:bg-[#4752C4] text-white text-xs font-bold rounded-lg shadow-sm transition-colors disabled:opacity-50"
+              >
+                {isAnnouncing ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                แจ้งลงดิสคอร์ด
+              </button>
               <button 
                 onClick={handleCopyTags} 
                 disabled={isCopying}
@@ -311,6 +342,7 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
                 {isCopying ? <Loader2 size={14} className="animate-spin" /> : <Copy size={14} />}
                 คัดลอกแจ้งเตือน
               </button>
+              </div>
             </div>
           )}
         </div>

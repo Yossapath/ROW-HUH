@@ -236,7 +236,7 @@ export async function awardAuction(
 
     // Mark auction as awarded
     t.update(auctionDoc.ref, { 
-      status: "awarded",
+      
       winnerId: reservation.userId,
       winnerName: reservation.characterName,
       awardedBy: adminName,

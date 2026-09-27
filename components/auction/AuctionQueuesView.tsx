@@ -33,7 +33,7 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ auctionIds: selectedItems })
       });
-      const data = await res.json();
+      const text = await res.text(); const data = text ? JSON.parse(text) : {};
       if (!res.ok) throw new Error(data.error || "Failed");
       useModalStore.getState().alert(`ประกาศเข้า Discord สำเร็จ ${data.count} รายการ!`);
       setSelectedItems([]);
@@ -272,7 +272,16 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
 
           <div className="flex-1 overflow-y-auto space-y-1 pr-1">
             {(filteredAuctions || []).map(auction => (
-              <button
+              <div
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedAuctionId(auction.id);
+                    if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                  }
+                }}
                 key={auction.id}
                 onClick={() => {
                         setSelectedAuctionId(auction.id);
@@ -315,7 +324,7 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
                     {auction.queueCount}
                   </span>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
           
@@ -513,20 +522,35 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
                                     </td>
                                     <td className="py-4 px-6 text-sm text-right">
                                       {isAdmin ? (
-                                        <div className="flex justify-end gap-2">
+                                        <div className="flex flex-wrap justify-end gap-2">
                                           {res.status !== "won" && (
                                             <button 
                                               onClick={() => awardMutation.mutate(res)}
-                                              className="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded"
+                                              className="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-200 transition-colors shadow-sm"
                                             >
                                               ได้รับของ
                                             </button>
                                           )}
+                                          {res.status !== "won" && idx < (queue || []).length - 1 && (
+                                            <button 
+                                              onClick={() => {
+                                                const newQueue = [...(queue || [])];
+                                                const temp = newQueue[idx];
+                                                newQueue[idx] = newQueue[idx + 1];
+                                                newQueue[idx + 1] = temp;
+                                                queryClient.setQueryData(["auction_queue", selectedAuctionId], newQueue);
+                                                reorderMutation.mutate(newQueue.map(q => q.id));
+                                              }}
+                                              className="text-xs font-bold text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg border border-amber-200 transition-colors shadow-sm"
+                                            >
+                                              ข้ามคิว
+                                            </button>
+                                          )}
                                           <button 
                                             onClick={() => cancelMutation.mutate(res.id)}
-                                            className="text-xs font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded"
+                                            className="text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 transition-colors shadow-sm"
                                           >
-                                            ลบทิ้ง
+                                            สละคิว
                                           </button>
                                         </div>
                                       ) : (

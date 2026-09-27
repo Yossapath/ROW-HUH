@@ -73,7 +73,16 @@ export async function POST(request: Request) {
       });
 
       if (!res.ok) {
-        throw new Error(`Discord API responded with status ${res.status}`);
+        let errorMsg = `Discord API Error ${res.status}`;
+        try {
+          const discordErr = await res.json();
+          if (discordErr && discordErr.message) {
+            errorMsg += `: ${discordErr.message}`;
+          } else {
+            errorMsg += `: ${JSON.stringify(discordErr)}`;
+          }
+        } catch(e) {}
+        return err(errorMsg, 400);
       }
     }
 

@@ -5,7 +5,7 @@ import { formatItemName, JOB_ICONS, JOB_COLORS } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AuctionItem, AuctionReservation } from "@/types";
-import { Search, PackageOpen, Users, GripVertical, Check, Plus, Loader2, Menu, X as CloseIcon, Filter } from "lucide-react";
+import { Search, PackageOpen, Users, GripVertical, Check, Plus, Loader2, Menu, X as CloseIcon, Filter, Star } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 
@@ -15,7 +15,27 @@ interface Props {
 
 export function AuctionQueuesView({ auctions }: Props) {
   const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => { setIsMounted(true); }, []);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  
+  useEffect(() => { 
+    try {
+      const stored = localStorage.getItem("huh_auction_favorites");
+      if (stored) setFavorites(JSON.parse(stored));
+    } catch {}
+    setIsMounted(true); 
+  }, []);
+
+  const toggleFavorite = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    let next;
+    if (favorites.includes(id)) {
+      next = favorites.filter(f => f !== id);
+    } else {
+      next = [...favorites, id];
+    }
+    setFavorites(next);
+    localStorage.setItem("huh_auction_favorites", JSON.stringify(next));
+  };
 
   const [selectedAuctionId, setSelectedAuctionId] = useState<string>(auctions[0]?.id || "");
   const [searchQuery, setSearchQuery] = useState("");
@@ -139,7 +159,11 @@ export function AuctionQueuesView({ auctions }: Props) {
   const filteredAuctions = auctions.filter(a => 
     a.itemName.toLowerCase().includes(searchQuery.toLowerCase()) &&
     (filterCategory === "all" || a.category === filterCategory)
-  );
+  ).sort((a, b) => {
+    const aFav = favorites.includes(a.id) ? 1 : 0;
+    const bFav = favorites.includes(b.id) ? 1 : 0;
+    return bFav - aFav;
+  });
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination || !queue) return;
@@ -224,9 +248,18 @@ export function AuctionQueuesView({ auctions }: Props) {
                     {formatItemName(auction.itemName, auction.category)}
                   </span>
                 </div>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#2D3342] text-slate-500">
-                  {auction.queueCount}
-                </span>
+                <div className="flex items-center gap-2">
+                  <button 
+                    type="button"
+                    onClick={(e) => toggleFavorite(auction.id, e)}
+                    className="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-[#32394A] transition-colors shrink-0"
+                  >
+                    <Star size={14} className={favorites.includes(auction.id) ? "fill-yellow-400 text-yellow-400" : "text-slate-300 dark:text-slate-600"} />
+                  </button>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#2D3342] text-slate-500 shrink-0">
+                    {auction.queueCount}
+                  </span>
+                </div>
               </button>
             ))}
           </div>

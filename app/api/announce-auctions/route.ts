@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
       let desc = "";
       waiting.forEach((q, idx) => {
-        desc += `> <@${q.userId}> [Queue ${idx + 1}]\n`;
+        desc += `<@${q.userId}> | ${q.characterName} | Queue ${idx + 1}\n`;
       });
 
       // Discord only accepts http:// or https:// URLs for embed thumbnails. Data URIs and relative paths are rejected (HTTP 400 {"embeds": ["0"]}).

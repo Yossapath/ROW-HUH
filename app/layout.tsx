@@ -12,6 +12,12 @@ const prompt = Prompt({
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://row-huh.vercel.app";
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {

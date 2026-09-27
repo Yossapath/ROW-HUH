@@ -47,6 +47,7 @@ export function EditAuctionModal({ auction, onClose }: Props) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auctions"] });
       setInfoSaved(true);
+        onClose();
       setTimeout(() => setInfoSaved(false), 2500);
     },
     onError: (err: any) => useModalStore.getState().alert(err.message),

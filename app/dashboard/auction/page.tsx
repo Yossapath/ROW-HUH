@@ -4,14 +4,15 @@ import { useModalStore } from "@/stores/useModalStore";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { Gavel, RefreshCw, PackageOpen, LayoutGrid, Sword, Layers, Plus, Search } from "lucide-react";
+import { Gavel, RefreshCw, PackageOpen, LayoutGrid, Sword, Layers, Plus, Search, Star } from "lucide-react";
 import { AuctionItem, AuctionCategory } from "@/types";
 import { AuctionItemCard } from "@/components/auction/AuctionItemCard";
 import { AddAuctionModal } from "@/components/auction/AddAuctionModal";
 import { AuctionQueuesView } from "@/components/auction/AuctionQueuesView";
 
-const CATEGORIES: { id: AuctionCategory | "all" | "my"; label: string; icon: any }[] = [
+const CATEGORIES: { id: AuctionCategory | "all" | "my" | "favorites"; label: string; icon: any }[] = [
   { id: "all", label: "ทั้งหมด", icon: LayoutGrid },
+  { id: "favorites", label: "รายการโปรด", icon: Star },
   { id: "gear", label: "Gear", icon: Sword },
   { id: "card", label: "Card", icon: Layers },
   { id: "pet", label: "Pet", icon: PackageOpen },
@@ -23,12 +24,35 @@ export default function AuctionPage() {
   const { user } = useAuthStore();
   const isAdmin = user?.role === "admin" || user?.role === "owner";
   
-  const [activeTab, setActiveTab] = useState<AuctionCategory | "all" | "my">("all");
+  const [activeTab, setActiveTab] = useState<AuctionCategory | "all" | "my" | "favorites">("all");
   const [viewMode, setViewMode] = useState<"reserve" | "queues">("reserve");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [favorites, setFavorites] = useState<string[]>([]);
-  useEffect(() => { try { const stored = localStorage.getItem("huh_auction_favorites"); if (stored) setFavorites(JSON.parse(stored)); } catch {} }, []);
+  
+  useEffect(() => {
+    try {
+      const storedFav = localStorage.getItem("huh_auction_favorites");
+      if (storedFav) setFavorites(JSON.parse(storedFav));
+      
+      const storedTab = localStorage.getItem("huh_auction_activeTab");
+      if (storedTab) setActiveTab(storedTab as any);
+      
+      const storedView = localStorage.getItem("huh_auction_viewMode");
+      if (storedView) setViewMode(storedView as any);
+    } catch {}
+  }, []);
+
+  const handleTabChange = (tab: any) => {
+    setActiveTab(tab);
+    localStorage.setItem("huh_auction_activeTab", tab);
+  };
+
+  const handleViewModeChange = (mode: any) => {
+    setViewMode(mode);
+    localStorage.setItem("huh_auction_viewMode", mode);
+  };
+
   const toggleFavorite = (id: string, e: React.MouseEvent) => { e.stopPropagation(); let next; if (favorites.includes(id)) next = favorites.filter(f => f !== id); else next = [...favorites, id]; setFavorites(next); localStorage.setItem("huh_auction_favorites", JSON.stringify(next)); };
 
   // Fetch all auctions
@@ -64,7 +88,9 @@ export default function AuctionPage() {
   if (activeTab === "my") {
     const myAuctionIds = (Array.isArray(myReservations) ? myReservations : []).map(r => r.auctionId);
     displayedAuctions = auctions.filter(a => myAuctionIds.includes(a.id) && a.itemName.toLowerCase().includes(searchQuery.toLowerCase()));
-  } else if (activeTab !== "all") {
+  } else if (activeTab === "favorites") {
+      displayedAuctions = auctions.filter(a => favorites.includes(a.id) && a.itemName.toLowerCase().includes(searchQuery.toLowerCase()));
+    } else if (activeTab !== "all") {
     displayedAuctions = auctions.filter(a => a.category === activeTab && a.itemName.toLowerCase().includes(searchQuery.toLowerCase()));
   }
 
@@ -134,13 +160,13 @@ export default function AuctionPage() {
 
       <div className="flex bg-slate-100 dark:bg-[#272C38] p-1 rounded-xl w-full sm:w-fit mb-6">
         <button 
-          onClick={() => setViewMode("reserve")}
+          onClick={() => handleViewModeChange("reserve")}
           className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === "reserve" ? "bg-white dark:bg-[#3B66D1] text-[#0b3d63] dark:text-white shadow-sm" : "text-slate-500 dark:text-[#8B93A7] hover:text-slate-700 dark:hover:text-slate-300"}`}
         >
           จองคิว
         </button>
         <button 
-          onClick={() => setViewMode("queues")}
+          onClick={() => handleViewModeChange("queues")}
           className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === "queues" ? "bg-white dark:bg-[#3B66D1] text-[#0b3d63] dark:text-white shadow-sm" : "text-slate-500 dark:text-[#8B93A7] hover:text-slate-700 dark:hover:text-slate-300"}`}
         >
           ดูคิว
@@ -154,7 +180,7 @@ export default function AuctionPage() {
           return (
             <button
               key={cat.id}
-              onClick={() => setActiveTab(cat.id)}
+              onClick={() => handleTabChange(cat.id)}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap transition-all flex-shrink-0 ${
                 activeTab === cat.id
                   ? "bg-[#0b3d63] dark:bg-[#3B66D1] text-white shadow-md"

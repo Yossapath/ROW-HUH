@@ -175,7 +175,7 @@ export function AuctionItemCard({ auction, isAdmin, myReservations, isFavorite, 
               disabled={cancelMutation.isPending}
               className="px-4 py-1.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-bold rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors border border-red-200 dark:border-red-500/30 disabled:opacity-50"
             >
-              {cancelMutation.isPending ? "..." : "ยกเลิกจอง"}
+              {cancelMutation.isPending ? "..." : "ยกเลิกคิว"}
             </button>
           )}
           

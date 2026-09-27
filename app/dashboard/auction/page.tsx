@@ -35,7 +35,7 @@ export default function AuctionPage() {
   const { data: auctionsRes, isLoading: loadingAuctions, isError: auctionsError, refetch } = useQuery({
     queryKey: ["auctions"],
     queryFn: async () => {
-      const res = await fetch("/api/auctions");
+      const res = await fetch("/api/auctions?_=" + Date.now());
       if (!res.ok) {
         let errMsg = `HTTP ${res.status}`;
         try { const body = await res.json(); errMsg = body?.error || errMsg; } catch { /* ignore */ }
@@ -49,7 +49,7 @@ export default function AuctionPage() {
   const { data: myRes, isLoading: loadingMy } = useQuery({
     queryKey: ["my-reservations"],
     queryFn: async () => {
-      const res = await fetch("/api/auctions/my");
+      const res = await fetch("/api/auctions/my?_=" + Date.now());
       if (!res.ok) throw new Error("Failed to load my reservations");
       return res.json() as Promise<{ data: any[] }>;
     },

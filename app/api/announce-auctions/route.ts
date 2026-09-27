@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       const isValidImageUrl = auction.imageUrl && auction.imageUrl.startsWith("http");
 
       embeds.push({
-        title: `📦 ${auction.itemName} ${auction.category ? `(${auction.category.toUpperCase()})` : ''}`,
+        title: `${auction.itemName} ${auction.category ? `(${auction.category.toUpperCase()})` : ''}`,
         description: desc,
         color: 0x3B66D1,
         thumbnail: isValidImageUrl ? { url: auction.imageUrl } : undefined,

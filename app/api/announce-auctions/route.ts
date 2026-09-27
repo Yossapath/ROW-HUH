@@ -41,11 +41,14 @@ export async function POST(request: Request) {
         desc += `> <@${q.userId}> [Queue ${idx + 1}]\n`;
       });
 
+      // Discord only accepts http:// or https:// URLs for embed thumbnails. Data URIs and relative paths are rejected (HTTP 400 {"embeds": ["0"]}).
+      const isValidImageUrl = auction.imageUrl && auction.imageUrl.startsWith("http");
+
       embeds.push({
         title: `📦 ${auction.itemName} ${auction.category ? `(${auction.category.toUpperCase()})` : ''}`,
         description: desc,
         color: 0x3B66D1,
-        thumbnail: auction.imageUrl ? { url: auction.imageUrl } : undefined,
+        thumbnail: isValidImageUrl ? { url: auction.imageUrl } : undefined,
       });
     }
 

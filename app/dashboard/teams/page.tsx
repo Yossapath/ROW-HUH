@@ -254,7 +254,10 @@ export default function TeamsPage() {
       const membersMap: Record<string, Member> = {};
       const fetchedLeaves = leaveRes.data?.data || leaveRes.data || [];
       if (leaveRes.data) setLeaveRecords(fetchedLeaves);
-      const leaveNames = new Set(fetchedLeaves.map((r: any) => r.name));
+      
+      const todayStr = new Date(Date.now() + 7 * 3600 * 1000).toISOString().split('T')[0];
+      const activeLeaves = fetchedLeaves.filter((r: any) => !r.date || r.date === todayStr);
+      const leaveNames = new Set(activeLeaves.map((r: any) => r.name));
 
       if (savedTeams && typeof savedTeams.version === "number") {
         setServerVersion(savedTeams.version);

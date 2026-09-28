@@ -72,13 +72,16 @@ export async function POST(req: Request) {
 
     const docRef = await leaveRef().collection("records").add(newLeave);
 
-    // Auto-remove from GVG Teams via atomic transaction to prevent Lost Updates
-    try {
-      const db = getDb();
-      const tRef = teamsRef();
-      await removeMemberFromTeamsTransaction(db, tRef, name);
-    } catch (e) {
-      console.error("Error auto-removing from teams:", e);
+    // Auto-remove from GVG Teams via atomic transaction ONLY if leave is for today
+    const todayStr = new Date(Date.now() + 7 * 3600 * 1000).toISOString().split('T')[0];
+    if (!date || date === todayStr) {
+      try {
+        const db = getDb();
+        const tRef = teamsRef();
+        await removeMemberFromTeamsTransaction(db, tRef, name);
+      } catch (e) {
+        console.error("Error auto-removing from teams:", e);
+      }
     }
 
     // Save audit log to database

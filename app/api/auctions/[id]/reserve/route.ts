@@ -44,8 +44,8 @@ export async function POST(
       module: "SYSTEM",
       action: "JOIN_AUCTION_QUEUE",
       actor: characterName,
-      target: params.id,
-      detail: `ลงชื่อจองไอเทมประมูล`,
+      target: result.itemName || params.id,
+      detail: `ลงชื่อจองไอเทมประมูล ${result.itemName || ""}`,
     });
 
     return ok({ success: true, data: result.reservation });
@@ -89,8 +89,8 @@ export async function DELETE(
       module: "SYSTEM",
       action: isAdmin ? "REMOVE_AUCTION_QUEUE" : "CANCEL_AUCTION_QUEUE",
       actor: actor,
-      target: reservationId,
-      detail: isAdmin ? `แอดมินลบผู้ใช้ออกจากคิว` : `ยกเลิกการจองไอเทมด้วยตัวเอง`,
+      target: result.itemName || reservationId,
+      detail: isAdmin ? `แอดมินลบผู้ใช้ออกจากคิว (${result.characterName}) ของไอเทม ${result.itemName}` : `ยกเลิกการจองไอเทม ${result.itemName} ด้วยตัวเอง`,
     });
 
     return ok({ success: true });

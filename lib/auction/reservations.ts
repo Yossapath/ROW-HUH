@@ -112,7 +112,7 @@ export async function reserveAuction(
   userId: string,
   characterName: string,
   job: string
-): Promise<{ success: boolean; error?: string; reservation?: AuctionReservation }> {
+): Promise<{ success: boolean; error?: string; reservation?: AuctionReservation; itemName?: string }> {
   const db = getDb();
   
   return await db.runTransaction(async (t) => {
@@ -163,7 +163,7 @@ export async function reserveAuction(
       updatedAt: now 
     });
 
-    return { success: true, reservation: newReservation };
+    return { success: true, reservation: newReservation, itemName: auction.itemName };
   });
 }
 
@@ -171,7 +171,7 @@ export async function cancelReservation(
   reservationId: string,
   userId: string,
   isAdmin: boolean
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; itemName?: string; characterName?: string }> {
   const db = getDb();
   
   return await db.runTransaction(async (t) => {
@@ -207,7 +207,43 @@ export async function cancelReservation(
       updatedAt: Date.now() 
     });
 
-    return { success: true };
+    const auctionDoc = await t.get(auctionsRef().doc(auctionId));
+    let itemName = auctionId;
+    if (auctionDoc.exists) itemName = auctionDoc.data()?.itemName || itemName;
+
+    return { success: true, itemName, characterName: reservation.characterName };
+  });
+}
+
+export async function skipReservation(
+  reservationId: string,
+  adminId: string,
+  adminName: string
+): Promise<{ success: boolean; error?: string; itemName?: string; characterName?: string }> {
+  const db = getDb();
+  
+  return await db.runTransaction(async (t) => {
+    const resDoc = await t.get(auctionReservationsRef().doc(reservationId));
+    if (!resDoc.exists) return { success: false, error: "Reservation not found" };
+    
+    const reservation = resDoc.data() as AuctionReservation;
+    if (reservation.status !== "waiting") {
+      return { success: false, error: "Only waiting reservations can be skipped" };
+    }
+
+    const auctionDoc = await t.get(auctionsRef().doc(reservation.auctionId));
+    let itemName = reservation.auctionId;
+    if (auctionDoc.exists) {
+      itemName = auctionDoc.data()?.itemName || itemName;
+    }
+
+    // Set queuedAt to current time so they go to the back of the line
+    t.update(resDoc.ref, { 
+      queuedAt: Date.now(),
+      updatedAt: Date.now() 
+    });
+
+    return { success: true, itemName, characterName: reservation.characterName };
   });
 }
 
@@ -253,7 +289,7 @@ export async function addManualReservation(
   userId: string,
   characterName: string,
   job: string
-): Promise<AuctionReservation> {
+): Promise<AuctionReservation & { itemName?: string }> {
   const db = getDb();
   return await db.runTransaction(async (t) => {
     const existingSnapshot = await t.get(
@@ -293,7 +329,11 @@ export async function addManualReservation(
       queueCount: queueCount + 1,
       updatedAt: now,
     });
+    
+    let itemName = auctionId;
+    const aucDoc = await t.get(aucRef);
+    if (aucDoc.exists) itemName = aucDoc.data()?.itemName || itemName;
 
-    return reservation;
+    return { ...reservation, itemName };
   });
 }

@@ -35,7 +35,7 @@ export async function POST(
       module: "SYSTEM",
       action: "AWARD_AUCTION",
       actor: adminName,
-      target: params.id,
+      target: auction?.itemName || params.id,
       detail: `มอบไอเทม ${auction?.itemName || params.id} ให้กับ ${validation.data.characterName}`,
     });
 

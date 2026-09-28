@@ -27,7 +27,7 @@ export async function POST(
       module: "SYSTEM",
       action: "MANUAL_RESERVE",
       actor: auth.user.gameUsername || "Admin",
-      target: params.id,
+      target: auction.itemName,
       detail: `แอดมินเพิ่ม ${characterName} เข้าร่วมคิว ${auction.itemName}`,
     });
 

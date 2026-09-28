@@ -184,6 +184,23 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
     onError: (err: any) => useModalStore.getState().alert(err.message)
   });
 
+  const skipMutation = useMutation({
+    mutationFn: async (resId: string) => {
+      if (!await useModalStore.getState().confirm("ยืนยันการข้ามคิว (ย้ายไปต่อท้ายสุด)?")) throw new Error("Cancelled");
+      const res = await fetch(`/api/auctions/${selectedAuctionId}/skip?reservationId=${resId}`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Failed to skip");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["auction_queue", selectedAuctionId] });
+      queryClient.invalidateQueries({ queryKey: ["auctions"] });
+    },
+    onError: (err: any) => {
+      if (err.message !== "Cancelled") useModalStore.getState().alert(err.message);
+    }
+  });
+
   const cancelMutation = useMutation({
     mutationFn: async (resId: string) => {
       if (!await useModalStore.getState().confirm("Are you sure you want to remove this user from the queue?")) throw new Error("Cancelled");
@@ -535,14 +552,7 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
                                           )}
                                           {res.status !== "won" && idx < (queue || []).length - 1 && (
                                             <button 
-                                              onClick={() => {
-                                                const newQueue = [...(queue || [])];
-                                                const temp = newQueue[idx];
-                                                newQueue[idx] = newQueue[idx + 1];
-                                                newQueue[idx + 1] = temp;
-                                                queryClient.setQueryData(["auction_queue", selectedAuctionId], newQueue);
-                                                reorderMutation.mutate(newQueue.map(q => q.id));
-                                              }}
+                                              onClick={() => skipMutation.mutate(res.id)}
                                               className="text-xs font-bold text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg border border-amber-200 transition-colors shadow-sm"
                                             >
                                               ข้ามคิว

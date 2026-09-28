@@ -270,9 +270,16 @@ export async function awardAuction(
       updatedAt: Date.now() 
     });
 
-    // Mark auction as awarded
+    const queueSnapshot = await t.get(
+      auctionReservationsRef().where("auctionId", "==", auctionId)
+    );
+    const newCount = Math.max(0,
+      queueSnapshot.docs.filter(d => d.data().status === "waiting" && d.id !== reservationId).length
+    );
+
+    // Mark auction as awarded and update queueCount
     t.update(auctionDoc.ref, { 
-      
+      queueCount: newCount,
       winnerId: reservation.userId,
       winnerName: reservation.characterName,
       awardedBy: adminName,

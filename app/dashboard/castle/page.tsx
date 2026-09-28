@@ -99,6 +99,7 @@ export default function TeamsPage() {
   // PNG Export state
   const exportLayoutRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
 
   const handleExportPDF = () => {
     if (!data) {
@@ -249,7 +250,10 @@ export default function TeamsPage() {
       const membersMap: Record<string, Member> = {};
       const fetchedLeaves = leaveRes.data?.data || leaveRes.data || [];
       if (leaveRes.data) setLeaveRecords(fetchedLeaves);
-      const leaveNames = new Set(fetchedLeaves.map((r: any) => r.name));
+      
+      const todayStr = new Date(Date.now() + 7 * 3600 * 1000).toISOString().split('T')[0];
+      const activeLeaves = fetchedLeaves.filter((r: any) => !r.date || r.date === todayStr);
+      const leaveNames = new Set(activeLeaves.map((r: any) => r.name));
 
       if (savedTeams && typeof savedTeams.version === "number") {
         setServerVersion(savedTeams.version);
@@ -1121,6 +1125,9 @@ export default function TeamsPage() {
             <button onClick={() => setIsAutoModalOpen(true)} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-[#272C38] text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-900/50 rounded-xl font-bold hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-colors text-xs sm:text-sm shadow-sm">
               <Wand2 size={16} /> จัดทีมอัตโนมัติ
             </button>
+            <button onClick={() => setIsLeaveModalOpen(true)} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-[#272C38] text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 rounded-xl font-bold hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors text-xs sm:text-sm shadow-sm">
+              <Users size={16} /> ลา/ออฟไลน์
+            </button>
             <button onClick={() => setIsClearConfirmOpen(true)} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-[#272C38] text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-xl font-bold hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-xs sm:text-sm shadow-sm">
               <Trash2 size={16} /> ล้างทีม
             </button>
@@ -1292,6 +1299,87 @@ export default function TeamsPage() {
                 </div>
             </div>
       </DragDropContext>
+
+      {/* Leave/Offline Modal */}
+      {isLeaveModalOpen && data && (
+        <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[#f0f6fc] dark:bg-[#1C1F27] rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col border border-slate-200 dark:border-[#2D3342] animate-in zoom-in-95 duration-200 max-h-[90vh]">
+            <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-[#2D3342] flex justify-between items-center bg-white dark:bg-[#232733] rounded-t-2xl">
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2"><Users size={20} className="text-amber-500" /> จัดการลา/ออฟไลน์</h2>
+              <button onClick={() => setIsLeaveModalOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-[#2D3342] rounded-xl transition-colors"><X size={20} /></button>
+            </div>
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-8">
+              {/* Offline Section */}
+              <div>
+                <h3 className="text-base font-bold text-red-500 mb-3 flex items-center gap-2"><X size={16} /> รายชื่อผู้เล่นออฟไลน์</h3>
+                <div className="bg-white dark:bg-[#232733] rounded-xl border border-slate-200 dark:border-[#2D3342] p-4 sm:p-5 shadow-sm">
+                  {/* Input Search */}
+                  <div className="relative mb-4" ref={offlineDropdownRef}>
+                    <div className="bg-slate-50 dark:bg-[#1A1D27] border border-slate-200 dark:border-[#2D3342] rounded-lg px-4 py-2.5 flex items-center justify-between cursor-pointer" onClick={() => setIsOfflineDropdownOpen(true)}>
+                      <input type="text" placeholder="+ ค้นหาผู้เล่นเพื่อทำให้ออฟไลน์..." className="bg-transparent border-none outline-none text-sm font-bold text-slate-800 dark:text-white w-full" value={offlineSearch} onChange={e => { setOfflineSearch(e.target.value); setIsOfflineDropdownOpen(true); }} onFocus={() => setIsOfflineDropdownOpen(true)} />
+                    </div>
+                    {isOfflineDropdownOpen && (
+                      <div className="absolute z-40 w-full mt-2 bg-white dark:bg-[#232733] border border-slate-200 dark:border-[#2D3342] rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                        {Object.values(data.members).filter(m => !data.offlineIds.includes(m.id)).filter(m => m.name.toLowerCase().includes(offlineSearch.toLowerCase()) || m.job.toLowerCase().includes(offlineSearch.toLowerCase())).sort((a, b) => a.name.localeCompare(b.name)).map(m => (
+                          <div key={m.id} className="px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-[#2A2F3E] cursor-pointer text-sm font-bold text-slate-700 dark:text-slate-300 flex justify-between items-center border-b border-slate-100 dark:border-[#2D3342] last:border-0" onClick={() => { markAsOffline(m.id); setOfflineSearch(""); setIsOfflineDropdownOpen(false); }}>
+                            <div className="flex items-center gap-2"><span>{m.name}</span>{m.power > 0 && <span className="text-xs text-amber-500">{m.power.toLocaleString()}</span>}</div>
+                            <span className="inline-flex items-center gap-1 text-[10px] text-white px-2 py-0.5 rounded-full font-bold shadow-sm" style={{ backgroundColor: JOB_COLORS[m.job] || "#475569" }}>
+                              {JOB_ICONS[m.job] && <img src={JOB_ICONS[m.job]} alt={m.job} className="w-3.5 h-3.5 object-contain" />}
+                              {m.job}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {data.offlineIds.length === 0 ? <div className="text-center py-6 text-slate-400 font-bold border-2 border-dashed border-slate-200 dark:border-[#2D3342] rounded-lg">ไม่มีผู้เล่นออฟไลน์</div> : (
+                    <div className="flex flex-wrap gap-2.5">
+                      {data.offlineIds.map(id => {
+                        const m = data.members[id];
+                        if (!m) return null;
+                        return (
+                          <div key={id} className="flex items-center gap-2 bg-slate-50 dark:bg-[#1A1D27] border border-slate-200 dark:border-[#2D3342] rounded-full py-1.5 pl-3 pr-1.5 shadow-sm">
+                            <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{m.name}</span>
+                            <span className="text-[10px] font-bold text-white px-2 py-0.5 rounded-full" style={{ backgroundColor: JOB_COLORS[m.job] || "#475569" }}>{m.job}</span>
+                            <button onClick={() => removeFromOffline(id)} className="p-1 hover:bg-red-500 hover:text-white rounded-full text-slate-400 transition-colors"><X size={14} /></button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Leave Records Section */}
+              <div>
+                <h3 className="text-base font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2"><LayoutGrid size={16} className="text-[#0b3d63] dark:text-[#4D73CD]" /> บันทึกการลา</h3>
+                {leaveRecords.length === 0 ? <div className="text-center p-8 bg-white dark:bg-[#232733] rounded-xl text-slate-400 border border-slate-200 dark:border-[#2D3342] font-bold shadow-sm">ไม่มีข้อมูลการลา</div> : (
+                  <div className="bg-white dark:bg-[#232733] rounded-xl border border-slate-200 dark:border-[#2D3342] overflow-hidden shadow-sm">
+                    <table className="w-full text-left">
+                      <thead className="bg-slate-50 dark:bg-[#1A1D27] border-b border-slate-200 dark:border-[#2D3342] text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        <tr><th className="p-3 sm:p-4 font-bold">ชื่อในเกม</th><th className="p-3 sm:p-4 font-bold">วันที่ลา</th><th className="hidden sm:table-cell p-3 sm:p-4 font-bold">เหตุผล</th><th className="p-3 sm:p-4 font-bold w-16 text-center">จัดการ</th></tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-[#2D3342]">
+                        {leaveRecords.map((r: any, i) => (
+                          <tr key={r.id || i} className="hover:bg-slate-50 dark:hover:bg-[#2A2F3E]">
+                            <td className="p-3 sm:p-4 font-bold text-slate-800 dark:text-slate-200">{r.name}</td>
+                            <td className="p-3 sm:p-4 font-bold text-slate-500 dark:text-slate-400">{r.date || r.day}</td>
+                            <td className="hidden sm:table-cell p-3 sm:p-4 text-sm text-slate-400">{r.reason || "-"}</td>
+                            <td className="p-3 sm:p-4 text-center">
+                              <button onClick={async () => { if (await useModalStore.getState().confirm(`ลบรายการลาของ ${r.name}?`)) { try { await axios.delete("/api/leave", { data: { id: r.id } }); setLeaveRecords(prev => prev.filter(rec => rec.id !== r.id)); } catch { useModalStore.getState().alert("ลบไม่สำเร็จ"); } } }} className="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 p-2 rounded-lg transition-colors"><X size={16} /></button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Clear Team Confirmation Modal */}
       {isClearConfirmOpen && (

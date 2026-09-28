@@ -1300,16 +1300,17 @@ export default function TeamsPage() {
                       <div className="bg-theme-panel rounded-xl border border-theme-border overflow-hidden">
                         <table className="w-full text-left">
                           <thead className="bg-theme-bg/50 border-b border-theme-divider text-xs uppercase tracking-wider text-theme-textMuted">
-                            <tr><th className="p-4 font-bold">ชื่อในเกม</th><th className="p-4 font-bold">วันที่ลา</th><th className="p-4 font-bold">เหตุผล</th><th className="p-4 font-bold w-20 text-center">จัดการ</th></tr>
+                            <tr><th className="p-4 font-bold">ชื่อในเกม</th><th className="p-4 font-bold">อาชีพ</th><th className="p-4 font-bold">วันที่ลา</th><th className="p-4 font-bold">เหตุผล</th><th className="p-4 font-bold w-20 text-center">จัดการ</th></tr>
                           </thead>
                           <tbody className="divide-y divide-theme-divider">
                             {leaveRecords.map((r: any, i) => (
                               <tr key={r.id || i} className="hover:bg-theme-bg/30">
                                 <td className="p-4 font-bold text-theme-text">{r.name}</td>
+                                <td className="p-4 text-theme-textSecondary">{r.job || "- "}</td>
                                 <td className="p-4 font-bold text-theme-textSecondary">{r.date || r.day}</td>
-                                <td className="p-4 text-sm text-theme-textMuted">{r.reason || "-"}</td>
+                                <td className="p-4 text-sm text-theme-textMuted">{r.reason || "- "}</td>
                                 <td className="p-4 text-center">
-                                  <button onClick={async () => { if (await useModalStore.getState().confirm(`ลบรายการลาของ ${r.name}?`)) { try { await axios.delete("/api/leave", { data: { id: r.id } }); setLeaveRecords(prev => prev.filter(rec => rec.id !== r.id)); } catch { useModalStore.getState().alert("ลบไม่สำเร็จ"); } } }} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg"><X size={16} /></button>
+                                  <button onClick={async () => { if (await useModalStore.getState().confirm(`ลบรายการลาของ ${r.name}?`)) { try { await axios.delete("/api/leave", { data: { id: r.id } }); setLeaveRecords(prev => prev.filter(rec => rec.id !== r.id)); } catch { useModalStore.getState().alert("ลบไม่สำเร็จ"); } } }} className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors">ลบ</button>
                                 </td>
                               </tr>
                             ))}

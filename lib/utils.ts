@@ -7,19 +7,19 @@ export function cn(...inputs: ClassValue[]) {
 
 // ── Job class → color ─────────────────────────────────────────
 export const JOB_COLORS: Record<string, string> = {
-  "Lord Knight":    "#c13829",
-  "Paladin":        "#e18028",
-  "High Wizard":    "#2c7eb9",
-  "Sniper":         "#d4a015",
-  "Priest":         "#25ae62",
-  "Champion":       "#15a083",
-  "Assassin Cross": "#8b46af",
-  "Merchant":       "#c2185d",
-  "Gunslinger":     "#894517",
-  "Druid":          "#41b388",
-  "Biosmith":       "#607d8b",
-  "Bard":           "#ff9800",
-  "Dancer":         "#e91e63",
+  "Lord Knight":    "#dc2626", // Red
+  "Paladin":        "#dc2626", // Red
+  "High Wizard":    "#3b82f6", // Blue
+  "Sniper":         "#eab308", // Yellow
+  "Priest":         "#4ade80", // Light Green
+  "Champion":       "#4ade80", // Light Green
+  "Assassin Cross": "#a855f7", // Purple
+  "Merchant":       "#f97316", // Orange
+  "Gunslinger":     "#a16207", // Sugar (Brown)
+  "Druid":          "#15803d", // Dark Green
+  "Biosmith":       "#f97316", // Orange
+  "Bard":           "#eab308", // Yellow
+  "Dancer":         "#eab308", // Yellow
 };
 
 export const JOB_ICONS: Record<string, string> = {

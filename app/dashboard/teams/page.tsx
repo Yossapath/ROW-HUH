@@ -838,8 +838,11 @@ export default function TeamsPage() {
     if (!id || !data.members[id]) return false;
     const m = data.members[id];
     // Filter by gvgField matching activeTab (unless activeTab is leave)
+    // Main tab only shows people who chose "main" (which is the default, so anything not "sub")
     if (activeTab === "main" && m.gvgField === "sub") return false;
-    if (activeTab === "sub" && m.gvgField !== "sub") return false;
+    
+    // Sub tab shows everyone (people who chose "sub" AND people who chose "main" but couldn't fit)
+    // So we don't filter out anyone based on gvgField when activeTab === "sub"
 
     if (unassignedFilterJobs.length > 0 && !unassignedFilterJobs.includes(m.job)) return false;
     if (unassignedSearch && !m.name?.toLowerCase().includes(unassignedSearch.toLowerCase())) return false;

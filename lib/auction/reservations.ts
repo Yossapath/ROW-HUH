@@ -193,6 +193,11 @@ export async function cancelReservation(
       auctionReservationsRef().where("auctionId", "==", auctionId)
     );
 
+    const auctionDoc = await t.get(auctionsRef().doc(auctionId));
+    let itemName = auctionId;
+    if (auctionDoc.exists) itemName = auctionDoc.data()?.itemName || itemName;
+
+    // DO ALL WRITES AT THE END
     t.update(resDoc.ref, { 
       status: isAdmin && reservation.userId !== userId ? "removed" : "cancelled", 
       updatedAt: Date.now() 
@@ -206,10 +211,6 @@ export async function cancelReservation(
       queueCount: newCount,
       updatedAt: Date.now() 
     });
-
-    const auctionDoc = await t.get(auctionsRef().doc(auctionId));
-    let itemName = auctionId;
-    if (auctionDoc.exists) itemName = auctionDoc.data()?.itemName || itemName;
 
     return { success: true, itemName, characterName: reservation.characterName };
   });
@@ -264,18 +265,19 @@ export async function awardAuction(
     
     const reservation = resDoc.data() as AuctionReservation;
 
-    // Mark reservation as won
-    t.update(resDoc.ref, { 
-      status: "won", 
-      updatedAt: Date.now() 
-    });
-
     const queueSnapshot = await t.get(
       auctionReservationsRef().where("auctionId", "==", auctionId)
     );
     const newCount = Math.max(0,
       queueSnapshot.docs.filter(d => d.data().status === "waiting" && d.id !== reservationId).length
     );
+
+    // DO ALL WRITES AT THE END
+    // Mark reservation as won
+    t.update(resDoc.ref, { 
+      status: "won", 
+      updatedAt: Date.now() 
+    });
 
     // Mark auction as awarded and update queueCount
     t.update(auctionDoc.ref, { 
@@ -329,17 +331,18 @@ export async function addManualReservation(
       updatedAt: now,
     };
 
+    const aucRef = auctionsRef().doc(auctionId);
+    let itemName = auctionId;
+    const aucDoc = await t.get(aucRef);
+    if (aucDoc.exists) itemName = aucDoc.data()?.itemName || itemName;
+
+    // DO ALL WRITES AT THE END
     t.set(resRef, reservation);
 
-    const aucRef = auctionsRef().doc(auctionId);
     t.update(aucRef, {
       queueCount: queueCount + 1,
       updatedAt: now,
     });
-    
-    let itemName = auctionId;
-    const aucDoc = await t.get(aucRef);
-    if (aucDoc.exists) itemName = aucDoc.data()?.itemName || itemName;
 
     return { ...reservation, itemName };
   });

@@ -128,7 +128,7 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderedIds })
       });
-      if (!res.ok) throw new Error("Failed to reorder");
+      if (!res.ok) throw new Error("ไม่สามารถจัดลำดับคิวได้");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auction_queue", selectedAuctionId] });
@@ -146,7 +146,7 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
           characterName: reservation.characterName
         })
       });
-      if (!res.ok) throw new Error("Failed to award");
+      if (!res.ok) throw new Error("ไม่สามารถบันทึกการรับของได้");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auction_queue", selectedAuctionId] });
@@ -158,7 +158,7 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
   const addManualMutation = useMutation({
     mutationFn: async (memberId: string) => {
       const member = roster.find((m: any) => m.discordId === memberId);
-      if (!member) throw new Error("Member not found");
+      if (!member) throw new Error("ไม่พบรายชื่อ");
       const res = await fetch(`/api/auctions/${selectedAuctionId}/reserve-manual`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -170,7 +170,7 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
       });
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.error || "Failed to add");
+        throw new Error(error.error || "ไม่สามารถเพิ่มคิวได้");
       }
     },
     onSuccess: () => {
@@ -190,7 +190,7 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
       const res = await fetch(`/api/auctions/${selectedAuctionId}/skip?reservationId=${resId}`, {
         method: "POST",
       });
-      if (!res.ok) throw new Error("Failed to skip");
+      if (!res.ok) throw new Error("ไม่สามารถข้ามคิวได้");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auction_queue", selectedAuctionId] });
@@ -203,11 +203,11 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
 
   const cancelMutation = useMutation({
     mutationFn: async (resId: string) => {
-      if (!await useModalStore.getState().confirm("Are you sure you want to remove this user from the queue?")) throw new Error("Cancelled");
+      if (!await useModalStore.getState().confirm("ยืนยันการสละคิว (หรือลบผู้ใช้ออกจากคิว)?")) throw new Error("Cancelled");
       const res = await fetch(`/api/auctions/${selectedAuctionId}/reserve?reservationId=${resId}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error("Failed to remove");
+      if (!res.ok) throw new Error("ไม่สามารถสละคิวได้");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auction_queue", selectedAuctionId] });

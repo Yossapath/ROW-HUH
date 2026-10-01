@@ -20,18 +20,20 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isCopying, setIsCopying] = useState(false);
   const [isAnnouncing, setIsAnnouncing] = useState(false);
+  const [showAnnounceOptions, setShowAnnounceOptions] = useState(false);
   useEffect(() => { setIsMounted(true); }, []);
   const handleToggleFav = (id: string, e: React.MouseEvent) => { if (onToggleFavorite) onToggleFavorite(id, e); };
 
-  const handleAnnounce = async () => {
+  const handleAnnounce = async (mode: 'all' | 'first') => {
+    setShowAnnounceOptions(false);
     if (selectedItems.length === 0) return;
-    if (!await useModalStore.getState().confirm("ต้องการประกาศไอเทมที่เลือกเข้า Discord ใช่หรือไม่?")) return;
+    if (!await useModalStore.getState().confirm(`ต้องการประกาศไอเทมที่เลือกเข้า Discord (${mode === 'all' ? 'ทุกคิว' : 'เฉพาะคิว 1'}) ใช่หรือไม่?`)) return;
     setIsAnnouncing(true);
     try {
       const res = await fetch("/api/announce-auctions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ auctionIds: selectedItems })
+        body: JSON.stringify({ auctionIds: selectedItems, mode })
       });
       const text = await res.text();
         let data: any = {};
@@ -364,14 +366,32 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
                 <button onClick={() => setSelectedItems([])} className="p-1 hover:bg-[#3B66D1]/20 rounded-lg text-[#3B66D1] dark:text-[#82A0F5] transition-colors" title="ยกเลิกการเลือก"><X size={14} /></button>
               </div>
               <div className="flex items-center gap-2">
-              <button 
-                onClick={handleAnnounce} 
-                disabled={isAnnouncing || isCopying}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#5865F2] hover:bg-[#4752C4] text-white text-xs font-bold rounded-lg shadow-sm transition-colors disabled:opacity-50"
-              >
-                {isAnnouncing ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                แจ้งลงดิสคอร์ด
-              </button>
+              <div className="relative">
+                <button 
+                  onClick={() => setShowAnnounceOptions(!showAnnounceOptions)} 
+                  disabled={isAnnouncing || isCopying}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#5865F2] hover:bg-[#4752C4] text-white text-xs font-bold rounded-lg shadow-sm transition-colors disabled:opacity-50"
+                >
+                  {isAnnouncing ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                  แจ้งลงดิสคอร์ด
+                </button>
+                {showAnnounceOptions && (
+                  <div className="absolute right-0 bottom-full mb-1 w-48 bg-white dark:bg-[#1A1D27] rounded-xl shadow-lg border border-slate-200 dark:border-[#2D3342] overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2">
+                    <button 
+                      onClick={() => handleAnnounce('all')}
+                      className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#2D3342] transition-colors"
+                    >
+                      ส่งรายชื่อทั้งหมด
+                    </button>
+                    <button 
+                      onClick={() => handleAnnounce('first')}
+                      className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#2D3342] transition-colors border-t border-slate-100 dark:border-[#2D3342]"
+                    >
+                      ส่งรายชื่อคิว 1
+                    </button>
+                  </div>
+                )}
+              </div>
               <button 
                 onClick={handleCopyTags} 
                 disabled={isCopying}

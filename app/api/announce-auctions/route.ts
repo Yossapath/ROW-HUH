@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { auctionIds } = body;
+    const { auctionIds, mode = 'all' } = body;
 
     if (!auctionIds || !Array.isArray(auctionIds) || auctionIds.length === 0) {
       return err("กรุณาเลือกไอเทมอย่างน้อย 1 รายการ", 400);
@@ -32,7 +32,10 @@ export async function POST(request: Request) {
       if (!auction) continue;
 
       const queue = await getAuctionQueue(id);
-      const waiting = queue.filter(q => q.status === "waiting");
+      let waiting = queue.filter(q => q.status === "waiting");
+      if (mode === 'first' && waiting.length > 0) {
+        waiting = [waiting[0]];
+      }
       
       if (waiting.length === 0) continue;
       hasAnyWaiting = true;

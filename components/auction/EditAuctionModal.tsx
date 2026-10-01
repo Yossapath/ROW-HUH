@@ -187,19 +187,22 @@ export function EditAuctionModal({ auction, onClose }: Props) {
               </span>
             </div>
 
-            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
-              ��Ǵ����
-            </label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value as AuctionCategory)}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#2D3342] bg-slate-50 dark:bg-[#232733] text-slate-800 dark:text-white text-sm focus:ring-2 focus:ring-[#4D73CD] focus:outline-none appearance-none"
-            >
-              <option value="gear80">Gear Lv.80 (�ػ�ó�)</option>
-              <option value="gear90">Gear Lv.90 (�ػ�ó�)</option>
-              <option value="card">Card (����)</option>
-              <option value="relic">Relic (���Ԥ)</option>
-            </select>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                หมวดหมู่
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as AuctionCategory)}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#2D3342] bg-slate-50 dark:bg-[#232733] text-slate-800 dark:text-white text-sm focus:ring-2 focus:ring-[#4D73CD] focus:outline-none appearance-none"
+              >
+                <option value="gear80">Gear Lv.80 (อุปกรณ์)</option>
+                <option value="gear90">Gear Lv.90 (อุปกรณ์)</option>
+                <option value="card">Card (การ์ด)</option>
+                <option value="relic">Relic (เรลิค)</option>
+              </select>
+            </div>
 
             <button
               onClick={() => infoMutation.mutate()}
@@ -207,7 +210,7 @@ export function EditAuctionModal({ auction, onClose }: Props) {
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0b3d63] dark:bg-[#3B66D1] text-white font-bold rounded-xl hover:bg-[#093250] dark:hover:bg-[#4D73CD] transition-colors disabled:opacity-40 text-sm"
             >
               {infoMutation.isPending ? <RefreshCw className="animate-spin" size={15} /> : <Save size={15} />}
-              {infoSaved ? "✓ บันทึกแล้ว" : "บันทึกชื่อ & ราคา"}
+              {infoSaved ? "✓ บันทึกแล้ว" : "บันทึกข้อมูลทั่วไป"}
             </button>
           </div>
 

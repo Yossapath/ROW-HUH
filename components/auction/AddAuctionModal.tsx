@@ -119,6 +119,23 @@ export function AddAuctionModal({ onClose }: Props) {
               </span>
             </div>
           </div>
+
+          
+<div>
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+               หมวดหมู่
+            </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as AuctionCategory)}
+              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#232733] border border-slate-200 dark:border-[#2D3342] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3B66D1] text-slate-800 dark:text-white appearance-none"
+            >
+              <option value="gear80">Gear Lv.80 (อุปกรณ์)</option>
+              <option value="gear90">Gear Lv.90 (อุปกรณ์)</option>
+              <option value="card">Card (การ์ด)</option>
+              <option value="relic">Relic (เรลิค)</option>
+            </select>
+          </div>
           
           <div>
             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
@@ -154,22 +171,7 @@ export function AddAuctionModal({ onClose }: Props) {
             </div>
           </div>
 
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
-              หมวดหมู่
-            </label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value as AuctionCategory)}
-              className="w-full px-4 py-2 bg-slate-50 dark:bg-[#232733] border border-slate-200 dark:border-[#2D3342] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3B66D1] text-slate-800 dark:text-white appearance-none"
-            >
-              <option value="gear80">Gear Lv.80 (อุปกรณ์)</option>
-              <option value="gear90">Gear Lv.90 (อุปกรณ์)</option>
-              <option value="card">Card (การ์ด)</option>
-              <option value="relic">Relic (เรลิค)</option>
-            </select>
-          </div>
-
+            
           <div className="flex gap-3 mt-4">
             <button
               type="button"

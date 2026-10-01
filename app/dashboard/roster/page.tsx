@@ -42,6 +42,11 @@ export default function RosterPage() {
   const [addPower, setAddPower] = useState("");
   const [addGvgField, setAddGvgField] = useState("main");
 
+  // Excel Diff States
+  const [showExcelDiff, setShowExcelDiff] = useState(false);
+  const [excelDiffData, setExcelDiffData] = useState<{ inExcelNotInWeb: string[]; inWebNotInExcel: string[] } | null>(null);
+  const checkExcelInputRef = useRef<HTMLInputElement>(null);
+
   const { data: roster, isLoading } = useQuery({
     queryKey: ["roster"],
     queryFn: async () => (await axios.get("/api/roster")).data.data,
@@ -191,6 +196,64 @@ export default function RosterPage() {
     
     return result;
   }, [flatMembers, searchQuery, selectedJobs, showManualOnly]);
+
+  const handleCheckExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const arrayBuffer = evt.target?.result as ArrayBuffer;
+        const data = new Uint8Array(arrayBuffer);
+        const wb = XLSX.read(data, { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json<any>(ws);
+
+        const normalizeName = (name: string) => name.replace(/[^a-zA-Z0-9ก-๙]/g, "").toLowerCase();
+
+        const excelNames = new Set<string>();
+        const excelOriginalNames: string[] = [];
+
+        jsonData.forEach((row) => {
+          const playerName = row["ชื่อผู้เล่น"] || row["Name"] || Object.values(row)[1];
+          if (playerName) {
+            excelNames.add(normalizeName(playerName));
+            excelOriginalNames.push(playerName);
+          }
+        });
+
+        const webNames = new Set<string>();
+        
+        flatMembers.forEach(m => {
+          if (m.name) webNames.add(normalizeName(m.name));
+        });
+
+        const inExcelNotInWeb: string[] = [];
+        excelOriginalNames.forEach(name => {
+          if (!webNames.has(normalizeName(name))) {
+            inExcelNotInWeb.push(name);
+          }
+        });
+
+        const inWebNotInExcel: string[] = [];
+        flatMembers.forEach(m => {
+          if (m.name && !excelNames.has(normalizeName(m.name))) {
+            inWebNotInExcel.push(m.name);
+          }
+        });
+
+        setExcelDiffData({ inExcelNotInWeb, inWebNotInExcel });
+        setShowExcelDiff(true);
+
+      } catch (error) {
+        console.error(error);
+        useModalStore.getState().alert("เกิดข้อผิดพลาดในการอ่านไฟล์ Excel");
+      }
+      if (checkExcelInputRef.current) checkExcelInputRef.current.value = "";
+    };
+    reader.readAsArrayBuffer(file);
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -364,6 +427,22 @@ export default function RosterPage() {
               >
                 <UserPlus className="w-4 h-4" />
                 เพิ่ม (Manual)
+              </button>
+
+              <input 
+                type="file" 
+                accept=".xlsx, .xls" 
+                className="hidden" 
+                ref={checkExcelInputRef} 
+                onChange={handleCheckExcelUpload} 
+              />
+              <button 
+                onClick={() => checkExcelInputRef.current?.click()}
+                disabled={isSaving}
+                className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold transition-colors shadow-sm text-sm disabled:opacity-50"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                ตรวจสอบ Excel
               </button>
 
               <input 
@@ -828,6 +907,64 @@ export default function RosterPage() {
         </div>
       )}
       
+      {/* Excel Diff Modal */}
+      {showExcelDiff && excelDiffData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowExcelDiff(false)} />
+          <div className="bg-white dark:bg-[#232733] rounded-2xl w-full max-w-4xl relative shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 bg-slate-50 dark:bg-[#1C1F27] border-b border-slate-100 dark:border-[#2D3342] flex items-center justify-between">
+              <h2 className="text-lg xl:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <FileSpreadsheet className="w-5 h-5 text-orange-500" />
+                ผลการตรวจสอบ Excel
+              </h2>
+              <button onClick={() => setShowExcelDiff(false)} className="text-slate-400 hover:bg-slate-100 dark:hover:bg-[#272C38] rounded-full p-1.5 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 gap-6 grid grid-cols-1 md:grid-cols-2 max-h-[70vh] overflow-y-auto">
+              {/* In Excel but NOT in Web */}
+              <div className="border border-rose-100 dark:border-rose-900/30 bg-rose-50 dark:bg-rose-900/10 rounded-xl p-4">
+                <h3 className="font-bold text-rose-600 dark:text-rose-400 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                  มีใน Excel แต่ไม่มีในเว็บ ({excelDiffData.inExcelNotInWeb.length})
+                </h3>
+                <ul className="space-y-1.5 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                  {excelDiffData.inExcelNotInWeb.length === 0 ? (
+                    <li className="text-sm text-slate-500">- ไม่มีชื่อตกหล่น -</li>
+                  ) : excelDiffData.inExcelNotInWeb.map((name, i) => (
+                    <li key={i} className="text-sm font-medium text-rose-700 dark:text-rose-300 bg-white/50 dark:bg-black/20 px-3 py-1.5 rounded-lg border border-rose-100/50 dark:border-rose-800/30">
+                      {name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* In Web but NOT in Excel */}
+              <div className="border border-orange-100 dark:border-orange-900/30 bg-orange-50 dark:bg-orange-900/10 rounded-xl p-4">
+                <h3 className="font-bold text-orange-600 dark:text-orange-400 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                  มีในเว็บ แต่ไม่มีใน Excel ({excelDiffData.inWebNotInExcel.length})
+                </h3>
+                <ul className="space-y-1.5 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                  {excelDiffData.inWebNotInExcel.length === 0 ? (
+                    <li className="text-sm text-slate-500">- ข้อมูลตรงกันทั้งหมด -</li>
+                  ) : excelDiffData.inWebNotInExcel.map((name, i) => (
+                    <li key={i} className="text-sm font-medium text-orange-700 dark:text-orange-300 bg-white/50 dark:bg-black/20 px-3 py-1.5 rounded-lg border border-orange-100/50 dark:border-orange-800/30">
+                      {name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="bg-slate-50 dark:bg-[#1C1F27] px-6 py-4 border-t border-slate-100 dark:border-[#2D3342] flex justify-end">
+              <button onClick={() => setShowExcelDiff(false)} className="px-5 py-2 bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] text-slate-700 dark:text-white rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-[#2A2F3E] transition-all">
+                ปิดหน้าต่าง
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {viewingProfile && (
         <MemberProfileModal 
           member={viewingProfile} 

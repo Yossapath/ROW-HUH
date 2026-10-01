@@ -212,6 +212,17 @@ export function updateMemberNameInTeamsData(
     }
   }
 
+  let updatedMembers = tData.members;
+  if (tData.members && typeof tData.members === "object") {
+    if (tData.members[oldName]) {
+      updatedMembers = { ...tData.members };
+      const memberObj = { ...updatedMembers[oldName], id: newName, name: newName };
+      delete updatedMembers[oldName];
+      updatedMembers[newName] = memberObj;
+      changed = true;
+    }
+  }
+
   if (!changed) {
     return { changed: false, updatedData: tData };
   }
@@ -223,6 +234,7 @@ export function updateMemberNameInTeamsData(
       columns: updatedColumns,
       ...(Array.isArray(tData.data) ? { data: updatedLegacyData } : {}),
       ...(updatedOfflineIds ? { offlineIds: updatedOfflineIds } : {}),
+      ...(updatedMembers ? { members: updatedMembers } : {}),
     },
   };
 }

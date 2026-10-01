@@ -94,13 +94,16 @@ export async function PUT(req: Request) {
     const userDocRef = targetDiscordId ? db.collection(COLL_USER).doc(targetDiscordId) : null;
     const rRef = rosterRef();
     const tRef = teamsRef();
+    const cRef = db.collection("settings").doc("castleTeams");
+    let oldNameForLog = originalName;
 
     // Update user document and roster in a single atomic transaction
     await db.runTransaction(async (t) => {
-      const [userDoc, rDoc, tDoc] = await Promise.all([
+      const [userDoc, rDoc, tDoc, cDoc] = await Promise.all([
         userDocRef ? t.get(userDocRef) : Promise.resolve(null),
         t.get(rRef),
         t.get(tRef),
+        t.get(cRef),
       ]);
 
       let rosterData = rDoc.exists ? rDoc.data() as any : {};
@@ -123,6 +126,7 @@ export async function PUT(req: Request) {
             existingWarRole = rosterData[j][idx].role || existingWarRole;
             previousJob = j;
             actualOriginalName = rosterData[j][idx].name;
+            oldNameForLog = actualOriginalName || originalName;
             if (!memberObj.discordId) memberObj.discordId = rosterData[j][idx].discordId;
             rosterData[j].splice(idx, 1);
             break;
@@ -159,12 +163,22 @@ export async function PUT(req: Request) {
 
       // Cascade name change to teams if name changed
       const oldName = actualOriginalName || originalName;
-      if (oldName && oldName !== name && tDoc.exists) {
-        const tData = tDoc.data();
-        const { changed, updatedData } = updateMemberNameInTeamsData(tData, oldName, name);
-        if (changed) {
-          const nextVersion = typeof tData?.version === "number" ? tData.version + 1 : 1;
-          t.set(tRef, { ...updatedData, version: nextVersion, updatedAt: Date.now() }, { merge: true });
+      if (oldName && oldName !== name) {
+        if (tDoc.exists) {
+          const tData = tDoc.data();
+          const { changed, updatedData } = updateMemberNameInTeamsData(tData, oldName, name);
+          if (changed) {
+            const nextVersion = typeof tData?.version === "number" ? tData.version + 1 : 1;
+            t.set(tRef, { ...updatedData, version: nextVersion, updatedAt: Date.now() }, { merge: true });
+          }
+        }
+        if (cDoc && cDoc.exists) {
+          const cData = cDoc.data();
+          const { changed, updatedData } = updateMemberNameInTeamsData(cData, oldName, name);
+          if (changed) {
+            const nextVersion = typeof cData?.version === "number" ? cData.version + 1 : 1;
+            t.set(cRef, { ...updatedData, version: nextVersion, updatedAt: Date.now() }, { merge: true });
+          }
         }
       }
     });
@@ -174,7 +188,7 @@ export async function PUT(req: Request) {
       action: "UPDATE_MEMBER",
       actor: user.gameUsername || user.discordUsername || "Admin",
       target: name,
-      detail: `อัปเดตข้อมูลของ ${name} (เป้าหมาย: ${targetDiscordId || originalName || name})`,
+      detail: `อัปเดตข้อมูลของ ${name} (เป้าหมาย: ${targetDiscordId || originalName || name})${oldNameForLog && oldNameForLog !== name ? ` [เปลี่ยนชื่อจาก ${oldNameForLog}]` : ''}`,
     });
 
     

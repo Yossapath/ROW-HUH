@@ -34,8 +34,9 @@ export async function POST(
 
     const { characterName, job } = validation.data;
     const userId = auth.user.discordId;
+    const discordUsername = auth.user.discordUsername || characterName;
 
-    const result = await reserveAuction(params.id, userId, characterName, job);
+    const result = await reserveAuction(params.id, userId, characterName, job, discordUsername);
     if (!result.success) {
       return err(result.error || "Failed to reserve", 400);
     }

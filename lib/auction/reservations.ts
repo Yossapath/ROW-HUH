@@ -1,5 +1,4 @@
 import { getDb, auctionsRef, auctionReservationsRef } from "@/lib/firebase-admin";
-import * as admin from "firebase-admin";
 import { AuctionReservation, ReservationStatus } from "@/types";
 
 export async function getAuctionQueue(auctionId: string): Promise<AuctionReservation[]> {
@@ -19,24 +18,10 @@ export async function getAuctionQueue(auctionId: string): Promise<AuctionReserva
     .sort((a, b) => (a.queuedAt || 0) - (b.queuedAt || 0));
 
   // Dynamically assign 1-based queuePosition, peopleAhead, and update queueNumber based on server queuedAt ASC
-  // Fetch user docs to get discordUsername
-  const db = getDb();
-  
-  // Need to chunk userIds if length > 30 (Firestore IN limit)
-  const userMap = new Map();
-  const userIds = Array.from(new Set(docs.map(r => r.userId))).filter(Boolean);
-  
-  for (let i = 0; i < userIds.length; i += 30) {
-    const chunk = userIds.slice(i, i + 30);
-    if (chunk.length > 0) {
-      const usersSnap = await db.collection("topguild-user").where(admin.firestore.FieldPath.documentId(), "in", chunk).get();
-      usersSnap.forEach(doc => userMap.set(doc.id, doc.data().discordUsername));
-    }
-  }
-
+  // discordUsername is now stored on the reservation document itself — no extra user queries needed.
   return docs.map((r, index) => ({
     ...r,
-    discordUsername: userMap.get(r.userId) || r.characterName, // fallback to char name if not found
+    discordUsername: r.discordUsername || r.characterName, // fallback to char name if not found
     queuePosition: index + 1,
     peopleAhead: index,
     queueNumber: index + 1,
@@ -111,7 +96,8 @@ export async function reserveAuction(
   auctionId: string,
   userId: string,
   characterName: string,
-  job: string
+  job: string,
+  discordUsername?: string
 ): Promise<{ success: boolean; error?: string; reservation?: AuctionReservation; itemName?: string }> {
   const db = getDb();
   
@@ -147,6 +133,7 @@ export async function reserveAuction(
       auctionId,
       userId,
       characterName,
+      discordUsername: discordUsername || characterName,
       job,
       queueNumber,
       status: "waiting",
@@ -297,7 +284,8 @@ export async function addManualReservation(
   auctionId: string,
   userId: string,
   characterName: string,
-  job: string
+  job: string,
+  discordUsername?: string
 ): Promise<AuctionReservation & { itemName?: string }> {
   const db = getDb();
   return await db.runTransaction(async (t) => {
@@ -321,6 +309,7 @@ export async function addManualReservation(
       auctionId,
       userId,
       characterName,
+      discordUsername: discordUsername || characterName,
       job,
       queueNumber: queueCount + 1,
       status: "waiting",

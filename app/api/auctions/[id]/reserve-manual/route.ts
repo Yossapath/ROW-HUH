@@ -12,7 +12,7 @@ export async function POST(
     if (auth.errorResponse) return auth.errorResponse;
 
     const body = await request.json();
-    const { userId, characterName, job } = body;
+    const { userId, characterName, job, discordUsername } = body;
 
     if (!userId || !characterName) {
       return err("Missing userId or characterName", 400);
@@ -21,7 +21,7 @@ export async function POST(
     const auction = await getAuction(params.id);
     if (!auction) return err("Auction not found", 404);
 
-    const reservation = await addManualReservation(params.id, userId, characterName, job || "Novice");
+    const reservation = await addManualReservation(params.id, userId, characterName, job || "Novice", discordUsername || characterName);
 
     logAction({
       module: "SYSTEM",

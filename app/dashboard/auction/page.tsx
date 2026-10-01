@@ -59,7 +59,7 @@ export default function AuctionPage() {
   const { data: auctionsRes, isLoading: loadingAuctions, isError: auctionsError, refetch } = useQuery({
     queryKey: ["auctions"],
     queryFn: async () => {
-      const res = await fetch("/api/auctions?_=" + Date.now());
+      const res = await fetch("/api/auctions");
       if (!res.ok) {
         let errMsg = `HTTP ${res.status}`;
         try { const body = await res.json(); errMsg = body?.error || errMsg; } catch { /* ignore */ }
@@ -73,11 +73,12 @@ export default function AuctionPage() {
   const { data: myRes, isLoading: loadingMy } = useQuery({
     queryKey: ["my-reservations"],
     queryFn: async () => {
-      const res = await fetch("/api/auctions/my?_=" + Date.now());
+      const res = await fetch("/api/auctions/my");
       if (!res.ok) throw new Error("Failed to load my reservations");
       return res.json() as Promise<{ data: any[] }>;
     },
     enabled: !!user,
+    staleTime: 30_000,
   });
 
   const auctions = Array.isArray(auctionsRes?.data) ? auctionsRes.data : [];
@@ -233,8 +234,17 @@ export default function AuctionPage() {
         {/* List */}
         <div className="divide-y divide-slate-100 dark:divide-[#2D3342]">
           {isLoading ? (
-            <div className="p-8 flex justify-center text-slate-400">
-              <RefreshCw className="animate-spin" size={24} />
+            <div className="space-y-3 mt-4 p-4">
+              {[1,2,3,4,5].map(i => (
+                <div key={i} className="animate-pulse flex items-center gap-4 p-4 bg-white dark:bg-[#232733] rounded-xl border border-slate-100 dark:border-[#2D3342]">
+                  <div className="w-12 h-12 rounded-lg bg-slate-200 dark:bg-[#2D3342] shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-slate-200 dark:bg-[#2D3342] rounded w-1/3" />
+                    <div className="h-3 bg-slate-100 dark:bg-[#343A4A] rounded w-1/4" />
+                  </div>
+                  <div className="w-16 h-8 bg-slate-200 dark:bg-[#2D3342] rounded-lg" />
+                </div>
+              ))}
             </div>
           ) : auctionsError ? (
             <div className="p-12 text-center flex flex-col items-center justify-center text-red-500">

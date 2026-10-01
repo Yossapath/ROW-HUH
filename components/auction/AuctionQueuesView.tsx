@@ -282,7 +282,8 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
               className="px-3 py-2 border border-slate-200 dark:border-[#2D3342] rounded-xl text-sm bg-slate-50 dark:bg-[#232733] text-slate-800 dark:text-white focus:outline-none"
             >
               <option value="all">ทุกหมวด</option>
-              <option value="gear">Gear</option>
+              <option value="gear80">Gear Lv.80</option>
+                <option value="gear90">Gear Lv.90</option>
               <option value="card">Card</option>
               <option value="pet">Pet</option>
               <option value="relic">Relic</option>

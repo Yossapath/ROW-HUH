@@ -13,7 +13,8 @@ import { AuctionQueuesView } from "@/components/auction/AuctionQueuesView";
 const CATEGORIES: { id: AuctionCategory | "all" | "my" | "favorites"; label: string; icon: any }[] = [
   { id: "all", label: "ทั้งหมด", icon: LayoutGrid },
   { id: "favorites", label: "รายการโปรด", icon: Star },
-  { id: "gear", label: "Gear", icon: Sword },
+  { id: "gear80", label: "Gear Lv.80", icon: Sword },
+  { id: "gear90", label: "Gear Lv.90", icon: Sword },
   { id: "card", label: "Card", icon: Layers },
   { id: "pet", label: "Pet", icon: PackageOpen },
   { id: "relic", label: "Relic", icon: Gavel },

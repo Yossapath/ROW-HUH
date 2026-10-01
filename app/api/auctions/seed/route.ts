@@ -51,7 +51,7 @@ export async function GET() {
     for (const gear of GEARS) {
       batch.set(auctionsColl.doc(), {
         itemName: gear.replace(/_/g, " "),
-        category: "gear",
+        category: "gear80",
         imageUrl: `/images/auctions/${gear}.png`,
         status: "open",
         queueCount: 0,

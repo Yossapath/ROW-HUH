@@ -32,7 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     setMounted(true);
     if (!isAuthenticated) {
-      fetch("/api/auth/me")
+      fetch("/api/auth/me", { cache: "no-store" })
         .then(res => res.json())
         .then(data => {
           if (data.ok && data.data) {

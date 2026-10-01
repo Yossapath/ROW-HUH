@@ -15,7 +15,7 @@ export function AddAuctionModal({ onClose }: Props) {
   const queryClient = useQueryClient();
   const [itemName, setItemName] = useState("");
   const [price, setPrice] = useState("");
-  const [category, setCategory] = useState<AuctionCategory>("gear");
+  const [category, setCategory] = useState<AuctionCategory>("gear80");
   const [imageUrl, setImageUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -163,7 +163,8 @@ export function AddAuctionModal({ onClose }: Props) {
               onChange={(e) => setCategory(e.target.value as AuctionCategory)}
               className="w-full px-4 py-2 bg-slate-50 dark:bg-[#232733] border border-slate-200 dark:border-[#2D3342] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3B66D1] text-slate-800 dark:text-white appearance-none"
             >
-              <option value="gear">Gear (อุปกรณ์)</option>
+              <option value="gear80">Gear Lv.80 (อุปกรณ์)</option>
+              <option value="gear90">Gear Lv.90 (อุปกรณ์)</option>
               <option value="card">Card (การ์ด)</option>
               <option value="pet">Pet (สัตว์เลี้ยง)</option>
               <option value="relic">Relic (เรลิค)</option>

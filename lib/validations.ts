@@ -178,7 +178,7 @@ export function validateBody<T>(
 export const auctionItemCreateSchema = z.object({
   imageUrl: z.string().optional(),
   itemName: z.string().trim().min(1, "กรุณาระบุชื่อไอเทม").max(100),
-  category: z.enum(["gear", "card", "pet", "relic"]),
+  category: z.enum(["gear80", "gear90", "card", "pet", "relic"]),
   description: z.string().trim().max(500).optional(),
   price: z.number().int().min(0).optional(),
 });
@@ -186,7 +186,7 @@ export const auctionItemCreateSchema = z.object({
 export const auctionItemUpdateSchema = z.object({
   imageUrl: z.string().optional(),
   itemName: z.string().trim().min(1, "กรุณาระบุชื่อไอเทม").max(100).optional(),
-  category: z.enum(["gear", "card", "pet", "relic"]).optional(),
+  category: z.enum(["gear80", "gear90", "card", "pet", "relic"]).optional(),
   description: z.string().trim().max(500).optional(),
   status: z.enum(["open", "closed", "awarded"]).optional(),
   price: z.number().int().min(0).nullable().optional(),

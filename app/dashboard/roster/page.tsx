@@ -197,64 +197,6 @@ export default function RosterPage() {
     return result;
   }, [flatMembers, searchQuery, selectedJobs, showManualOnly]);
 
-  const handleCheckExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (evt) => {
-      try {
-        const arrayBuffer = evt.target?.result as ArrayBuffer;
-        const data = new Uint8Array(arrayBuffer);
-        const wb = XLSX.read(data, { type: "array" });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json<any>(ws);
-
-        const normalizeName = (name: string) => name.replace(/[^a-zA-Z0-9ก-๙]/g, "").toLowerCase();
-
-        const excelNames = new Set<string>();
-        const excelOriginalNames: string[] = [];
-
-        jsonData.forEach((row) => {
-          const playerName = row["ชื่อผู้เล่น"] || row["Name"] || Object.values(row)[1];
-          if (playerName) {
-            excelNames.add(normalizeName(playerName));
-            excelOriginalNames.push(playerName);
-          }
-        });
-
-        const webNames = new Set<string>();
-        
-        flatMembers.forEach(m => {
-          if (m.name) webNames.add(normalizeName(m.name));
-        });
-
-        const inExcelNotInWeb: string[] = [];
-        excelOriginalNames.forEach(name => {
-          if (!webNames.has(normalizeName(name))) {
-            inExcelNotInWeb.push(name);
-          }
-        });
-
-        const inWebNotInExcel: string[] = [];
-        flatMembers.forEach(m => {
-          if (m.name && !excelNames.has(normalizeName(m.name))) {
-            inWebNotInExcel.push(m.name);
-          }
-        });
-
-        setExcelDiffData({ inExcelNotInWeb, inWebNotInExcel });
-        setShowExcelDiff(true);
-
-      } catch (error) {
-        console.error(error);
-        useModalStore.getState().alert("เกิดข้อผิดพลาดในการอ่านไฟล์ Excel");
-      }
-      if (checkExcelInputRef.current) checkExcelInputRef.current.value = "";
-    };
-    reader.readAsArrayBuffer(file);
-  };
-
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -352,17 +294,31 @@ export default function RosterPage() {
                }
            });
 
+           const excelNames = new Set<string>();
+           jsonData.forEach((row: any) => {
+               const p = row["ชื่อผู้เล่น"] || row["Name"] || Object.values(row)[1];
+               if(p) excelNames.add(normalizeName(p));
+           });
+
+           const inWebNotInExcel: string[] = [];
+           currentMembersMap.forEach((m, key) => {
+               if (!excelNames.has(key)) {
+                   inWebNotInExcel.push(m.originalName || m.name);
+               }
+           });
+
+           updatedRoster.diffInfo = {
+               inExcelNotInWeb: missingNames,
+               inWebNotInExcel,
+               updatedAt: Date.now()
+           };
+
            setIsSaving(true);
            try {
                await axios.put("/api/roster", updatedRoster);
                queryClient.invalidateQueries({ queryKey: ["roster"] });
                
-               if (missingNames.length > 0) {
-                   setNotFoundNames(missingNames);
-                   setShowModal(true);
-               } else {
-                   useModalStore.getState().alert("อัปเดตข้อมูลสำเร็จ!");
-               }
+               useModalStore.getState().alert("อัปเดตข้อมูลสำเร็จ! สามารถดูรายละเอียดรายชื่อตกหล่นได้ที่ปุ่ม 'ตรวจสอบ Excel'");
            } catch (error: any) {
                useModalStore.getState().alert("เกิดข้อผิดพลาดในการอัปเดต: " + (error.message || ""));
            } finally {
@@ -429,15 +385,15 @@ export default function RosterPage() {
                 เพิ่ม (Manual)
               </button>
 
-              <input 
-                type="file" 
-                accept=".xlsx, .xls" 
-                className="hidden" 
-                ref={checkExcelInputRef} 
-                onChange={handleCheckExcelUpload} 
-              />
               <button 
-                onClick={() => checkExcelInputRef.current?.click()}
+                onClick={() => {
+                  if (roster?.diffInfo) {
+                    setExcelDiffData(roster.diffInfo);
+                    setShowExcelDiff(true);
+                  } else {
+                    useModalStore.getState().alert("ยังไม่มีข้อมูล รบกวนอัปเดต Excel ก่อนครับ");
+                  }
+                }}
                 disabled={isSaving}
                 className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold transition-colors shadow-sm text-sm disabled:opacity-50"
               >
@@ -926,7 +882,7 @@ export default function RosterPage() {
               <div className="border border-rose-100 dark:border-rose-900/30 bg-rose-50 dark:bg-rose-900/10 rounded-xl p-4">
                 <h3 className="font-bold text-rose-600 dark:text-rose-400 mb-3 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                  มีใน Excel แต่ไม่มีในเว็บ ({excelDiffData.inExcelNotInWeb.length})
+                  ยังไม่เข้าเว็ป ({excelDiffData.inExcelNotInWeb.length})
                 </h3>
                 <ul className="space-y-1.5 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                   {excelDiffData.inExcelNotInWeb.length === 0 ? (
@@ -943,7 +899,7 @@ export default function RosterPage() {
               <div className="border border-orange-100 dark:border-orange-900/30 bg-orange-50 dark:bg-orange-900/10 rounded-xl p-4">
                 <h3 className="font-bold text-orange-600 dark:text-orange-400 mb-3 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-                  มีในเว็บ แต่ไม่มีใน Excel ({excelDiffData.inWebNotInExcel.length})
+                  รายชื่อไม่ตรงกับเกม ({excelDiffData.inWebNotInExcel.length})
                 </h3>
                 <ul className="space-y-1.5 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                   {excelDiffData.inWebNotInExcel.length === 0 ? (

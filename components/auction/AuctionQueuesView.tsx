@@ -223,9 +223,19 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
     a.itemName.toLowerCase().includes(searchQuery.toLowerCase()) &&
     (filterCategory === "all" || a.category === filterCategory)
   ).sort((a, b) => {
+    // 1. Sort by favorites first
     const aFav = favorites.includes(a.id) ? 1 : 0;
     const bFav = favorites.includes(b.id) ? 1 : 0;
-    return bFav - aFav;
+    if (aFav !== bFav) return bFav - aFav;
+    
+    // 2. Sort by category order
+    const catOrder: Record<string, number> = { relic: 1, card: 2, gear80: 3, gear90: 4 };
+    const aOrder = catOrder[a.category] || 99;
+    const bOrder = catOrder[b.category] || 99;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    
+    // 3. Sort alphabetically
+    return (a.itemName || "").localeCompare(b.itemName || "");
   });
 
   const handleDragEnd = (result: DropResult) => {

@@ -197,10 +197,10 @@ export function EditAuctionModal({ auction, onClose }: Props) {
                 onChange={(e) => setCategory(e.target.value as AuctionCategory)}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#2D3342] bg-slate-50 dark:bg-[#232733] text-slate-800 dark:text-white text-sm focus:ring-2 focus:ring-[#4D73CD] focus:outline-none appearance-none"
               >
-                <option value="gear80">Gear Lv.80 (อุปกรณ์)</option>
-                <option value="gear90">Gear Lv.90 (อุปกรณ์)</option>
-                <option value="card">Card (การ์ด)</option>
                 <option value="relic">Relic (เรลิค)</option>
+              <option value="card">Card (การ์ด)</option>
+              <option value="gear80">Gear Lv.80 (อุปกรณ์)</option>
+              <option value="gear90">Gear Lv.90 (อุปกรณ์)</option>
               </select>
             </div>
 

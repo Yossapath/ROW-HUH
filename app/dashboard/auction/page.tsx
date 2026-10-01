@@ -94,7 +94,19 @@ export default function AuctionPage() {
     displayedAuctions = auctions.filter(a => a.category === activeTab && a.itemName.toLowerCase().includes(searchQuery.toLowerCase()));
   }
 
-  displayedAuctions.sort((a, b) => { const aFav = favorites.includes(a.id) ? 1 : 0; const bFav = favorites.includes(b.id) ? 1 : 0; if (aFav !== bFav) return bFav - aFav; return 0; });
+  
+  const categoryOrder: Record<string, number> = { 'relic': 1, 'card': 2, 'gear80': 3, 'gear90': 4 };
+  displayedAuctions.sort((a, b) => {
+    const aFav = favorites.includes(a.id) ? 1 : 0;
+    const bFav = favorites.includes(b.id) ? 1 : 0;
+    if (aFav !== bFav) return bFav - aFav;
+
+    const orderA = categoryOrder[a.category] || 99;
+    const orderB = categoryOrder[b.category] || 99;
+    if (orderA !== orderB) return orderA - orderB;
+
+    return a.itemName.localeCompare(b.itemName);
+  });
 
   const isLoading = loadingAuctions || (activeTab === "my" && loadingMy);
 

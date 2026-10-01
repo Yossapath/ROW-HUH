@@ -1,6 +1,6 @@
 "use client";
 import { useModalStore } from "@/stores/useModalStore";
-import { formatItemName, JOB_ICONS, JOB_COLORS } from "@/lib/utils";
+import { formatItemName, formatCategoryLabel, JOB_ICONS, JOB_COLORS } from "@/lib/utils";
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -398,8 +398,8 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
                   <div>
                     <h2 translate="no" className="notranslate text-xl font-bold text-slate-800 dark:text-white">{formatItemName(selectedAuction.itemName, selectedAuction.category)}</h2>
                     <div className="flex flex-wrap items-center gap-2 mt-1">
-                      <span className="text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#2D3342] text-slate-500">
-                        {selectedAuction.category}
+                      <span className="text-xs font-bold tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#2D3342] text-slate-500">
+                        {formatCategoryLabel(selectedAuction.category)}
                       </span>
                       {selectedAuction.price !== undefined && selectedAuction.price !== null && (
                         <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center gap-1">

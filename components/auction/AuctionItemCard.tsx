@@ -1,6 +1,6 @@
 "use client";
 import { useModalStore } from "@/stores/useModalStore";
-import { formatItemName } from "@/lib/utils";
+import { formatItemName, formatCategoryLabel } from "@/lib/utils";
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -111,8 +111,8 @@ export function AuctionItemCard({ auction, isAdmin, myReservations, isFavorite, 
                 <h3 className="notranslate font-bold text-slate-800 dark:text-white truncate" translate="no">{formatItemName(auction.itemName, auction.category)}</h3>
               </div>
             <div className="flex flex-wrap items-center gap-2 mt-1">
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#2D3342] text-slate-500 dark:text-[#8B93A7]">
-                {auction.category}
+              <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#2D3342] text-slate-500 dark:text-[#8B93A7]">
+                {formatCategoryLabel(auction.category)}
               </span>
               {auction.price !== undefined && auction.price !== null && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center gap-1">

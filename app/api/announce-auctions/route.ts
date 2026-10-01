@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/auth";
 import { err, ok, handleServerError, logAction } from "@/lib/server-utils";
 import { getAuctions } from "@/lib/auction/auctions";
 import { getAuctionQueue } from "@/lib/auction/reservations";
+import { formatCategoryLabel } from "@/lib/utils";
 
 export async function POST(request: Request) {
   try {
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
       if (waiting.length === 0) continue;
       hasAnyWaiting = true;
 
-      let itemText = `**${auction.itemName}** ${auction.category ? `(${auction.category.toUpperCase()})` : ''}\n`;
+      let itemText = `**${auction.itemName}** ${auction.category ? `(${formatCategoryLabel(auction.category)})` : ''}\n`;
       waiting.forEach((q, idx) => {
         itemText += `<@${q.userId}> | ${q.characterName} | Queue ${idx + 1}\n`;
       });

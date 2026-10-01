@@ -232,3 +232,13 @@ export function formatItemName(name: string, category?: string): string {
   }
   return name;
 }
+
+
+export function formatCategoryLabel(category: string): string {
+  if (category === 'gear80') return 'Gear Lv.80';
+  if (category === 'gear90') return 'Gear Lv.90';
+  if (category === 'card') return 'Card';
+  if (category === 'relic') return 'Relic';
+  if (category === 'pet') return 'Pet';
+  return category;
+}

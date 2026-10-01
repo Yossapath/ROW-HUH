@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { getCurrentUser, getLiveUserRole, signToken, authCookie, clearAuthCookie } from "@/lib/auth";
 import { ok, unauthorized, handleServerError } from "@/lib/server-utils";
+import { getDb, COLL_USER } from "@/lib/firebase-admin";
 
 export async function GET() {
   try {
@@ -17,17 +18,43 @@ export async function GET() {
       return res;
     }
 
-    // If role has changed (e.g. demoted from admin or promoted to owner), refresh token cookie
-    if (liveRole !== user.role) {
-      const updatedUser = { ...user, role: liveRole };
-      const newToken = await signToken(updatedUser);
-      const res = ok(updatedUser);
+    // Fetch live profile data from Firestore to catch admin-edited fields (power, class, gameUsername, gvgField)
+    let liveUser = { ...user, role: liveRole };
+    try {
+      const db = getDb();
+      const userDoc = await db.collection(COLL_USER).doc(user.discordId).get();
+      if (userDoc.exists) {
+        const data = userDoc.data() as any;
+        liveUser = {
+          ...liveUser,
+          gameUsername: data.gameUsername ?? liveUser.gameUsername,
+          class: data.class ?? liveUser.class,
+          power: data.power ?? liveUser.power,
+          gvgField: data.gvgField ?? liveUser.gvgField,
+        };
+      }
+    } catch {
+      // Graceful fallback — use token data if DB is unavailable
+    }
+
+    // Check if anything changed that needs a new token
+    const needsNewToken =
+      liveUser.role !== user.role ||
+      liveUser.gameUsername !== user.gameUsername ||
+      liveUser.class !== user.class ||
+      liveUser.power !== user.power ||
+      liveUser.gvgField !== user.gvgField;
+
+    if (needsNewToken) {
+      const newToken = await signToken(liveUser);
+      const res = ok(liveUser);
       res.cookies.set(authCookie(newToken));
       return res;
     }
 
-    return ok(user);
+    return ok(liveUser);
   } catch (err: unknown) {
     return handleServerError(err, "Failed to get current user");
   }
 }
+

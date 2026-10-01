@@ -67,14 +67,31 @@ export default function TopHeader({
     router.push("/login");
   };
 
-  const openSettings = () => {
+  const openSettings = async () => {
     setIsDropdownOpen(false);
-    setEditName(user?.gameUsername || "");
-    setEditJob(user?.class || JOB_LIST[0]);
-    setEditPower(user?.power?.toString() || "");
-    setEditGvgField(user?.gvgField || "main");
+    // Fetch the latest user data from server so admin-edited fields (power etc.) are current
+    try {
+      const res = await axios.get("/api/auth/me");
+      if (res.data && res.data.ok !== false) {
+        const freshUser = res.data.data ?? res.data;
+        setUser(freshUser);
+        setEditName(freshUser.gameUsername || "");
+        setEditJob(freshUser.class || JOB_LIST[0]);
+        setEditPower(freshUser.power?.toString() || "");
+        setEditGvgField(freshUser.gvgField || "main");
+      } else {
+        throw new Error("no data");
+      }
+    } catch {
+      // Fallback to current store values
+      setEditName(user?.gameUsername || "");
+      setEditJob(user?.class || JOB_LIST[0]);
+      setEditPower(user?.power?.toString() || "");
+      setEditGvgField(user?.gvgField || "main");
+    }
     setIsSettingsOpen(true);
   };
+
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();

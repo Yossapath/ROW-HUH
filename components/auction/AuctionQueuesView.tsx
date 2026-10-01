@@ -285,8 +285,7 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
               <option value="gear80">Gear Lv.80</option>
                 <option value="gear90">Gear Lv.90</option>
               <option value="card">Card</option>
-              <option value="pet">Pet</option>
-              <option value="relic">Relic</option>
+                            <option value="relic">Relic</option>
             </select>
           </div>
 

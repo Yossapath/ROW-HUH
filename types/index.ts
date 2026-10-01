@@ -199,7 +199,7 @@ export interface DungeonTeamResource {
 
 // ── Auction Queue ────────────────────────────────────────────
 
-export type AuctionCategory = "gear80" | "gear90" | "card" | "pet" | "relic";
+export type AuctionCategory = "gear80" | "gear90" | "card" | "relic";
 
 export type AuctionStatus = "open" | "closed" | "awarded";
 

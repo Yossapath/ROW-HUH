@@ -166,7 +166,6 @@ export function AddAuctionModal({ onClose }: Props) {
               <option value="gear80">Gear Lv.80 (อุปกรณ์)</option>
               <option value="gear90">Gear Lv.90 (อุปกรณ์)</option>
               <option value="card">Card (การ์ด)</option>
-              <option value="pet">Pet (สัตว์เลี้ยง)</option>
               <option value="relic">Relic (เรลิค)</option>
             </select>
           </div>

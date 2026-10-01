@@ -5,7 +5,7 @@ import { formatItemName } from "@/lib/utils";
 import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, RefreshCw, Upload, Image as ImageIcon, Save, Gem } from "lucide-react";
-import { AuctionItem } from "@/types";
+import { AuctionItem, AuctionCategory } from "@/types";
 
 interface Props {
   auction: AuctionItem;
@@ -20,6 +20,7 @@ export function EditAuctionModal({ auction, onClose }: Props) {
 
   // ── Name & Price state ──────────────────────────────────────
   const [itemName, setItemName] = useState(auction.itemName);
+  const [category, setCategory] = useState<AuctionCategory>(auction.category);
   const [price, setPrice] = useState<string>(
     auction.price !== undefined ? String(auction.price) : ""
   );
@@ -28,7 +29,7 @@ export function EditAuctionModal({ auction, onClose }: Props) {
   // Save name + price mutation
   const infoMutation = useMutation({
     mutationFn: async () => {
-      const body: Record<string, unknown> = { itemName: itemName.trim() };
+      const body: Record<string, unknown> = { itemName: itemName.trim(), category };
       if (price.trim() !== "") {
         const parsed = parseInt(price, 10);
         if (isNaN(parsed) || parsed < 0) throw new Error("ราคาต้องเป็นตัวเลขที่ไม่ติดลบ");
@@ -136,6 +137,7 @@ export function EditAuctionModal({ auction, onClose }: Props) {
 
   const isDirty =
     itemName.trim() !== auction.itemName ||
+    category !== auction.category ||
     price !== (auction.price !== undefined ? String(auction.price) : "");
 
   return (
@@ -184,6 +186,20 @@ export function EditAuctionModal({ auction, onClose }: Props) {
                 Starstone
               </span>
             </div>
+
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
+              ��Ǵ����
+            </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as AuctionCategory)}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#2D3342] bg-slate-50 dark:bg-[#232733] text-slate-800 dark:text-white text-sm focus:ring-2 focus:ring-[#4D73CD] focus:outline-none appearance-none"
+            >
+              <option value="gear80">Gear Lv.80 (�ػ�ó�)</option>
+              <option value="gear90">Gear Lv.90 (�ػ�ó�)</option>
+              <option value="card">Card (����)</option>
+              <option value="relic">Relic (���Ԥ)</option>
+            </select>
 
             <button
               onClick={() => infoMutation.mutate()}

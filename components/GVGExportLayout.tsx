@@ -124,7 +124,7 @@ const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
                               {m ? (
                                 <>
                                   {/* Job Icon */}
-                                  <div style={{ width: "28px", height: "28px", marginRight: "14px", flexShrink: 0, display: "flex", alignItems: "center" }}>
+                                  <div style={{ width: "28px", height: "28px", marginRight: "14px", marginTop: "4px", flexShrink: 0, display: "flex", alignItems: "center" }}>
                                     {JOB_ICONS[m.job]
                                       ? <img src={JOB_ICONS[m.job]} alt={m.job} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                                       : <div style={{ width: "100%", height: "100%", background: "#3f4147", borderRadius: "4px" }} />

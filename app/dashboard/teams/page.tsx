@@ -1441,10 +1441,10 @@ export default function TeamsPage() {
       <div
         style={{
           position: "fixed",
-          left: isExporting ? 0 : "-99999px",
-          top: isExporting ? 0 : "-99999px",
-          zIndex: isExporting ? 99998 : -9999,
-          opacity: isExporting ? 1 : 0,
+          left: "-99999px",
+          top: "-99999px",
+          zIndex: -9999,
+          opacity: 0,
           pointerEvents: "none",
           width: "2200px",
           overflow: "hidden",

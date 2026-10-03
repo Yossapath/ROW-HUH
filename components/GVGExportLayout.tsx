@@ -124,7 +124,7 @@ const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
                               {m ? (
                                 <>
                                   {/* Job Icon */}
-                                  <div style={{ width: "28px", height: "28px", marginRight: "14px", marginTop: "4px", flexShrink: 0, display: "flex", alignItems: "center" }}>
+                                  <div style={{ width: "28px", height: "28px", marginRight: "14px", transform: "translateY(3px)", flexShrink: 0, display: "flex", alignItems: "center" }}>
                                     {JOB_ICONS[m.job]
                                       ? <img src={JOB_ICONS[m.job]} alt={m.job} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                                       : <div style={{ width: "100%", height: "100%", background: "#3f4147", borderRadius: "4px" }} />
@@ -137,7 +137,7 @@ const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
                                     fontSize: "22px",
                                     fontWeight: "700",
                                     color: "#ffffff",
-                                    lineHeight: "1.7",
+                                    lineHeight: "1.3",
                                     marginRight: "16px",
                                     wordBreak: "break-word",
                                   }}>
@@ -145,7 +145,7 @@ const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
                                   </span>
 
                                   {/* Power */}
-                                  <span style={{ fontSize: "20px", fontWeight: "600", color: "#dbdee1", lineHeight: "1.7", flexShrink: 0 }}>
+                                  <span style={{ fontSize: "20px", fontWeight: "600", color: "#dbdee1", lineHeight: "1.3", flexShrink: 0 }}>
                                     {m.power.toLocaleString()}
                                   </span>
                                 </>

@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 import { err, ok, handleServerError, logAction } from "@/lib/server-utils";
 import { getAuctions } from "@/lib/auction/auctions";
 import { getAuctionQueue } from "@/lib/auction/reservations";
@@ -6,7 +6,7 @@ import { formatCategoryLabel } from "@/lib/utils";
 
 export async function POST(request: Request) {
   try {
-    const auth = await requireAdmin();
+    const auth = await requireAuth();
     if (auth.errorResponse) return auth.errorResponse;
 
     const webhookUrl = process.env.DISCORD_AUCTION_WEBHOOK_URL;

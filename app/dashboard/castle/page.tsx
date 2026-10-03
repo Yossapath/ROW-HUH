@@ -3,7 +3,7 @@ import { useModalStore } from "@/stores/useModalStore";
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { Shield, Users, Loader2, GripVertical, Lock, Unlock, X, ChevronLeft, ChevronRight, LayoutGrid, Wand2, ChevronDown, Plus, Trash2, Edit2, Check, CheckCircle2, Search, Download, AlertCircle, RefreshCw } from "lucide-react";
+import { Shield, Users, Loader2, GripVertical, Lock, Unlock, X, ChevronLeft, ChevronRight, LayoutGrid, Wand2, ChevronDown, Plus, Trash2, Edit2, Check, CheckCircle2, Search, Download, AlertCircle, RefreshCw, Send } from "lucide-react";
 import axios from "axios";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { JOB_COLORS, JOB_LIST, JOB_ICONS } from "@/lib/utils";
@@ -100,6 +100,44 @@ export default function TeamsPage() {
   const exportLayoutRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [activeTab, setActiveTab] = useState<"main" | "leave">("main");
+
+  const handleAnnounceDiscord = () => {
+    if (!data) return;
+    setIsExporting(true);
+    setTimeout(async () => {
+      if (!exportLayoutRef.current) {
+        setIsExporting(false);
+        return;
+      }
+      try {
+        const canvas = await html2canvas(exportLayoutRef.current, {
+          backgroundColor: "#161b22",
+          scale: 2,
+          useCORS: true,
+        });
+        canvas.toBlob(async (blob) => {
+          if (!blob) throw new Error("Failed to generate image");
+          const formData = new FormData();
+          formData.append("image", blob);
+          formData.append("type", "castle");
+
+          const res = await fetch("/api/announce-lineup", {
+            method: "POST",
+            body: formData,
+          });
+          if (!res.ok) {
+            const errData = await res.json().catch(()=>({}));
+            throw new Error(errData.error || "Failed to announce");
+          }
+          useModalStore.getState().alert("ส่ง Lineup ลง Discord สำเร็จ!");
+        }, "image/png");
+      } catch (err: any) {
+        useModalStore.getState().alert("เกิดข้อผิดพลาด: " + err.message);
+      } finally {
+        setIsExporting(false);
+      }
+    }, 500);
+  };
 
   const handleExportPDF = () => {
     if (!data) {
@@ -1131,6 +1169,10 @@ export default function TeamsPage() {
             <button onClick={handleExportPDF} disabled={isExporting} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-[#272C38] text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50 rounded-xl font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors text-xs sm:text-sm shadow-sm disabled:opacity-50">
               {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} 
               {isExporting ? "กำลังเตรียม PDF..." : "Export PDF"}
+            </button>
+            <button onClick={handleAnnounceDiscord} disabled={isExporting} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-[#5865F2] hover:bg-[#4752C4] text-white border border-[#4752C4] rounded-xl font-bold transition-colors text-xs sm:text-sm shadow-sm disabled:opacity-50">
+              {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} 
+              แจ้งลงดิสคอร์ด
             </button>
           </div>
         )}

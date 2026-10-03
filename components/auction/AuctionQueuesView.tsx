@@ -321,17 +321,19 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
                 className={`w-full text-left px-3 py-2.5 rounded-xl flex items-center justify-between transition-colors ${selectedAuctionId === auction.id ? "bg-[#3B66D1]/10 border border-[#3B66D1]/30" : "hover:bg-slate-50 dark:hover:bg-[#232733] border border-transparent"}`}
               >
                 <div className="flex items-start gap-3 min-w-0 pr-2">
-                  <div onClick={(e) => e.stopPropagation()} className="flex items-center justify-center shrink-0 mt-1.5">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedItems.includes(auction.id)} 
-                      onChange={(e) => {
-                        if (e.target.checked) setSelectedItems(prev => [...prev, auction.id]);
-                        else setSelectedItems(prev => prev.filter(id => id !== auction.id));
-                      }} 
-                      className="w-4 h-4 rounded border-slate-300 text-[#3B66D1] focus:ring-[#3B66D1] cursor-pointer" 
-                    />
-                  </div>
+                  {isAdmin && (
+                    <div onClick={(e) => e.stopPropagation()} className="flex items-center justify-center shrink-0 mt-1.5">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedItems.includes(auction.id)} 
+                        onChange={(e) => {
+                          if (e.target.checked) setSelectedItems(prev => [...prev, auction.id]);
+                          else setSelectedItems(prev => prev.filter(id => id !== auction.id));
+                        }} 
+                        className="w-4 h-4 rounded border-slate-300 text-[#3B66D1] focus:ring-[#3B66D1] cursor-pointer" 
+                      />
+                    </div>
+                  )}
                   <div className="w-8 h-8 rounded bg-slate-100 dark:bg-[#2D3342] flex items-center justify-center shrink-0 overflow-hidden mt-0.5">
                     {auction.imageUrl ? (
                       <img src={auction.imageUrl} alt={formatItemName(auction.itemName, auction.category)} className="w-full h-full object-cover" />
@@ -359,7 +361,7 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
             ))}
           </div>
           
-          {selectedItems.length > 0 && (
+          {isAdmin && selectedItems.length > 0 && (
             <div className="mt-2 p-3 bg-[#3B66D1]/10 border border-[#3B66D1]/30 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-bottom-2">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-[#3B66D1] dark:text-[#82A0F5]">{selectedItems.length} รายการ</span>

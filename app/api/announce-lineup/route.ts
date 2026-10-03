@@ -6,7 +6,7 @@ export async function POST(request: Request) {
     const auth = await requireAdmin();
     if (auth.errorResponse) return auth.errorResponse;
 
-    const webhookUrl = process.env.DISCORD_LINEUP_WEBHOOK_URL || process.env.DISCORD_AUCTION_WEBHOOK_URL || process.env.DISCORD_WEBHOOK_URL;
+    const webhookUrl = process.env.DISCORD_LINEUP_WEBHOOK_URL;
     if (!webhookUrl) {
       return err("ยังไม่ได้ตั้งค่า Webhook URL สำหรับ Lineup ในระบบ (DISCORD_LINEUP_WEBHOOK_URL)", 400);
     }

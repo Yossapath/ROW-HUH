@@ -342,7 +342,7 @@ export default function LeavePage() {
                           </div>
                           : <span className="text-slate-300 dark:text-slate-600">—</span>}
                       </td>
-                      <td className="px-5 py-3.5 text-slate-500 text-xs">{rec.name}</td>
+                        <td className="px-5 py-3.5 text-slate-500 text-xs">{rec.submittedBy || rec.name}</td>
                       <td className="px-5 py-3.5 text-slate-400 italic text-xs max-w-[180px] truncate">
                         {rec.reason || "—"}
                       </td>

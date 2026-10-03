@@ -630,7 +630,7 @@ export default function TeamsPage() {
     if (!data) return;
     const zone = data.zones.find(z => z.id === zoneId);
     if (!zone) return;
-    if (zone.type === "main" && !canAddMainTeam) { useModalStore.getState().alert("สนามหลักมีครบ 60 คน (12 ทีม) แล้ว"); return; }
+    if (zone.type === "main" && !canAddMainTeam) { useModalStore.getState().alert("สนามหลักมีครบ 150 คน (30 ทีม) แล้ว"); return; }
     const allTeamNums = Object.keys(data.columns)
       .filter(id => id.startsWith(zone.type === "main" ? "main-" : "sub-"))
       .map(id => parseInt(id.split("-")[1])).filter(n => !isNaN(n));

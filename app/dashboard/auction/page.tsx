@@ -22,7 +22,7 @@ const CATEGORIES: { id: AuctionCategory | "all" | "my" | "favorites"; label: str
 
 export default function AuctionPage() {
   const { user } = useAuthStore();
-  const isAdmin = user?.role === "admin" || user?.role === "owner";
+  const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.role === "dev";
   
   const [activeTab, setActiveTab] = useState<AuctionCategory | "all" | "my" | "favorites">("all");
   const [viewMode, setViewMode] = useState<"reserve" | "queues">("reserve");

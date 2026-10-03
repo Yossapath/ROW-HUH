@@ -13,6 +13,7 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const type = formData.get("type") as string; // gvg-main, gvg-sub, castle
+    const customTitle = formData.get("customTitle") as string | null;
 
     const images = formData.getAll("image") as Blob[];
     if (!images || images.length === 0) {
@@ -28,10 +29,14 @@ export async function POST(request: Request) {
     });
 
     let title = "";
-    if (type === "gvg-main") title = `Guild War Line Up - Main Lane - ${dateStr}`;
-    else if (type === "gvg-sub") title = `Guild War Line Up - Sub Lane - ${dateStr}`;
-    else if (type === "castle") title = `Siege War Line Up - ${dateStr}`;
-    else title = `Line Up - ${dateStr}`;
+    if (customTitle) {
+      title = customTitle;
+    } else {
+      if (type === "gvg-main") title = `Guild War Line Up - Main Lane - ${dateStr}`;
+      else if (type === "gvg-sub") title = `Guild War Line Up - Sub Lane - ${dateStr}`;
+      else if (type === "castle") title = `Siege War Line Up - ${dateStr}`;
+      else title = `Line Up - ${dateStr}`;
+    }
 
     const embeds = images.map((_, i) => {
       const embed: any = {

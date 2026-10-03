@@ -101,7 +101,10 @@ export default function TeamsPage() {
   const [isExporting, setIsExporting] = useState(false);
   const [activeTab, setActiveTab] = useState<"main" | "leave">("main");
 
-  const handleAnnounceDiscord = () => {
+  const [announcePromptOpen, setAnnouncePromptOpen] = useState(false);
+  const [announceCustomTitle, setAnnounceCustomTitle] = useState("");
+
+  const handleAnnounceDiscord = (customTitle?: string) => {
     if (!data) return;
     setIsExporting(true);
     setTimeout(async () => {
@@ -115,6 +118,9 @@ export default function TeamsPage() {
 
         const formData = new FormData();
         formData.append("type", "castle");
+        if (customTitle) {
+          formData.append("customTitle", customTitle);
+        }
 
         for (let i = 0; i < zoneElements.length; i++) {
           const el = zoneElements[i] as HTMLElement;
@@ -1191,7 +1197,16 @@ export default function TeamsPage() {
               {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />} 
               {isExporting ? "กำลังเตรียม PDF..." : "Export PDF"}
             </button>
-            <button onClick={handleAnnounceDiscord} disabled={isExporting} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-[#5865F2] hover:bg-[#4752C4] text-white border border-[#4752C4] rounded-xl font-bold transition-colors text-xs sm:text-sm shadow-sm disabled:opacity-50">
+            <button 
+              onClick={() => {
+                const now = new Date();
+                const dateStr = now.toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" });
+                setAnnounceCustomTitle(`Siege War Line Up - ${dateStr}`);
+                setAnnouncePromptOpen(true);
+              }}
+              disabled={isExporting} 
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-[#5865F2] hover:bg-[#4752C4] text-white border border-[#4752C4] rounded-xl font-bold transition-colors text-xs sm:text-sm shadow-sm disabled:opacity-50"
+            >
               {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} 
               แจ้งลงดิสคอร์ด
             </button>
@@ -1499,6 +1514,40 @@ export default function TeamsPage() {
           computedTitles={exportComputedTitles}
         />
       </div>
+
+      {/* Announce Discord Prompt Modal */}
+      {announcePromptOpen && (
+        <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-slate-200 dark:border-[#2D3342] animate-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">กำหนดข้อความประกาศ</h3>
+              <textarea
+                value={announceCustomTitle}
+                onChange={(e) => setAnnounceCustomTitle(e.target.value)}
+                rows={2}
+                className="w-full border border-slate-200 dark:border-[#2D3342] rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-white bg-slate-50 dark:bg-[#1C1F27] focus:outline-none focus:ring-2 focus:ring-[#3B66D1]"
+              />
+            </div>
+            <div className="flex bg-slate-50 dark:bg-[#272C38] border-t border-slate-100 dark:border-[#2D3342] p-4 gap-3 justify-end">
+              <button
+                onClick={() => setAnnouncePromptOpen(false)}
+                className="px-4 py-2 font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-[#343A4A] rounded-xl transition-colors text-sm"
+              >
+                ยกเลิก
+              </button>
+              <button
+                onClick={() => {
+                  setAnnouncePromptOpen(false);
+                  handleAnnounceDiscord(announceCustomTitle);
+                }}
+                className="px-4 py-2 font-bold text-white bg-[#5865F2] hover:bg-[#4752C4] rounded-xl transition-colors text-sm"
+              >
+                ส่งข้อความ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Fullscreen loading indicator during PNG generation */}
       {isExporting && (

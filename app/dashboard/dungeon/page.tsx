@@ -356,8 +356,6 @@ export default function DungeonPage() {
   const [formCollapsed, setFormCollapsed] = useState(false);
   const [schedCollapsed, setSchedCollapsed] = useState(false);
 
-  const IS_SYSTEM_OPEN = false;
-
   if (!IS_SYSTEM_OPEN) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">

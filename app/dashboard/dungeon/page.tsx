@@ -363,8 +363,7 @@ export default function DungeonPage() {
         </div>
         <h1 className="text-2xl font-bold text-slate-800 dark:text-white">ระบบจัดการคิวดันเจี้ยน</h1>
         <p className="text-slate-500 dark:text-[#8B93A7] text-center max-w-sm">
-          ขณะนี้ระบบปิดการใช้งานชั่วคราว<br/>
-          ไม่ว่าจะ Admin หรือ Member ก็ไม่สามารถเข้าถึงได้เพื่อประหยัดโควต้าเซิร์ฟเวอร์
+          ขณะนี้ระบบปิดการใช้งานชั่วคราว
         </p>
       </div>
     );

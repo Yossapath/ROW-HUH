@@ -9,11 +9,12 @@ interface GVGExportLayoutProps {
   zones: Zone[];
   columns: Record<string, Column>;
   members: Record<string, Member>;
-  title?: string; // We can ignore title if they just want the zone cards
+  title?: string;
+  computedTitles?: Record<string, string>; // Maps colId to its actual calculated title
 }
 
 const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
-  ({ zones, columns, members, title }, ref) => {
+  ({ zones, columns, members, title, computedTitles }, ref) => {
     // Filter out empty zones
     const activeZones = zones.filter(
       (z) => z.teamOrder.some((colId) => columns[colId])
@@ -26,12 +27,11 @@ const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
       <div
         ref={ref}
         style={{
-          // Transparent wrapper, the background is applied to each zone canvas
           background: "transparent",
           position: "relative",
           display: "flex",
           flexDirection: "column",
-          gap: "40px", // gap between separate images in the HTML (won't be in the final images)
+          gap: "40px",
         }}
       >
         {activeZones.map((zone) => {
@@ -74,11 +74,10 @@ const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
               {/* Zone Header */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderBottom: "1px solid #3f4147", paddingBottom: "16px" }}>
                 <div>
-                  <div style={{ color: "#b5bac1", fontSize: "18px", fontWeight: "600", marginBottom: "6px" }}>โซนย่อย - Polarity Zone</div>
-                  <div style={{ color: "#ffffff", fontSize: "36px", fontWeight: "bold" }}>{zone.name}</div>
+                  <div style={{ color: "#ffffff", fontSize: "36px", fontWeight: "bold", lineHeight: 1.2 }}>{zone.name}</div>
                 </div>
-                <div style={{ color: "#b5bac1", fontSize: "20px", fontWeight: "600" }}>
-                  {totalPlayers}/30 ที่นั่ง &middot; อุปกรณ์รวม {totalPower.toLocaleString()}
+                <div style={{ color: "#b5bac1", fontSize: "20px", fontWeight: "600", lineHeight: 1.2 }}>
+                  {totalPlayers}/{numTeams * 5} ที่นั่ง &middot; อุปกรณ์รวม {totalPower.toLocaleString()}
                 </div>
               </div>
 
@@ -97,6 +96,8 @@ const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
                     0
                   );
 
+                  const displayTitle = computedTitles && computedTitles[colId] ? computedTitles[colId] : col.title;
+
                   return (
                     <div key={colId} style={{
                       background: "#1e1f22", // Darker card background (Discord chat background)
@@ -107,8 +108,8 @@ const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
                     }}>
                       {/* Team Header */}
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "24px", alignItems: "center" }}>
-                        <span style={{ fontSize: "26px", fontWeight: "900", color: "#f2f3f5" }}>{col.title}</span>
-                        <span style={{ fontSize: "20px", color: "#b5bac1", fontWeight: "600" }}>{teamTotalPower.toLocaleString()}</span>
+                        <span style={{ fontSize: "26px", fontWeight: "900", color: "#f2f3f5", lineHeight: 1.2 }}>{displayTitle}</span>
+                        <span style={{ fontSize: "20px", color: "#b5bac1", fontWeight: "600", lineHeight: 1.2 }}>{teamTotalPower.toLocaleString()}</span>
                       </div>
 
                       {/* Team Members */}
@@ -116,7 +117,7 @@ const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
                         {col.memberIds.map((memberId, idx) => {
                           const m = memberId ? members[memberId] : null;
                           return (
-                            <div key={idx} style={{ display: "flex", alignItems: "center", height: "32px" }}>
+                            <div key={idx} style={{ display: "flex", alignItems: "center", minHeight: "36px" }}>
                               {m ? (
                                 <>
                                   {JOB_ICONS[m.job] ? (
@@ -134,18 +135,20 @@ const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
                                     whiteSpace: "nowrap", 
                                     overflow: "hidden", 
                                     textOverflow: "ellipsis",
-                                    marginRight: "16px"
+                                    marginRight: "16px",
+                                    lineHeight: 1.2,
+                                    paddingBottom: "2px"
                                   }}>
                                     {m.name}
                                   </span>
-                                  <span style={{ fontSize: "20px", fontWeight: "600", color: "#dbdee1" }}>
+                                  <span style={{ fontSize: "20px", fontWeight: "600", color: "#dbdee1", lineHeight: 1.2 }}>
                                     {m.power.toLocaleString()}
                                   </span>
                                 </>
                               ) : (
                                 <>
                                   <div style={{ width: "28px", height: "28px", marginRight: "16px" }}></div>
-                                  <span style={{ flex: 1, fontSize: "22px", fontWeight: "600", color: "#4e5058" }}>- ว่าง -</span>
+                                  <span style={{ flex: 1, fontSize: "22px", fontWeight: "600", color: "#4e5058", lineHeight: 1.2 }}>- ว่าง -</span>
                                 </>
                               )}
                             </div>

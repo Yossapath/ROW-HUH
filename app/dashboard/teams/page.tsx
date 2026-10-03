@@ -1009,14 +1009,25 @@ export default function TeamsPage() {
   };
 
   const globalTeamIndexMap: Record<string, number> = {};
+  const exportComputedTitles: Record<string, string> = {};
   if (data) {
     let mainCounter = 1;
     data.zones.filter(z => z.type === "main").forEach(z => {
-      z.teamOrder.forEach(id => { globalTeamIndexMap[id] = mainCounter++; });
+      z.teamOrder.forEach(id => { 
+        globalTeamIndexMap[id] = mainCounter++; 
+        if (/^ทีม \d+$/.test(data.columns[id]?.title || "")) {
+          exportComputedTitles[id] = `ทีม ${globalTeamIndexMap[id]}`;
+        }
+      });
     });
     let subCounter = 1;
     data.zones.filter(z => z.type === "sub").forEach(z => {
-      z.teamOrder.forEach(id => { globalTeamIndexMap[id] = subCounter++; });
+      z.teamOrder.forEach(id => { 
+        globalTeamIndexMap[id] = subCounter++; 
+        if (/^ทีมรอง \d+$/.test(data.columns[id]?.title || "")) {
+          exportComputedTitles[id] = `ทีมรอง ${globalTeamIndexMap[id]}`;
+        }
+      });
     });
   }
 
@@ -1445,6 +1456,7 @@ export default function TeamsPage() {
           columns={data.columns}
           members={data.members}
           title={activeTab === "sub" ? "Guild War Line Up - Sub Lane" : "Guild War Line Up - Main Lane"}
+          computedTitles={exportComputedTitles}
         />
       </div>
 

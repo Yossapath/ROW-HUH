@@ -137,8 +137,10 @@ export default function BookingPage() {
     reason?: string;
   } | null>(null);
 
+  const IS_SYSTEM_OPEN = false; // ปิดระบบจองคิวดันเจี้ยนชั่วคราว
+
   const fetchUserQuota = async (charName: string) => {
-    if (!charName) return;
+    if (!IS_SYSTEM_OPEN || !charName) return;
     try {
       const res = await fetch(`/api/dungeon/quota?name=${encodeURIComponent(charName)}`);
       const json = await res.json();
@@ -192,6 +194,7 @@ export default function BookingPage() {
 
   // ── Fetch schedule ───────────────────────────────────────────
   useEffect(() => {
+    if (!IS_SYSTEM_OPEN) return;
     fetch("/api/dungeon/schedule")
       .then((r) => r.json())
       .then((d) => {
@@ -227,6 +230,7 @@ export default function BookingPage() {
   const lastFetchTimeRef = useRef<number>(0);
 
   const fetchQueues = useCallback(async (forceRefresh = false) => {
+    if (!IS_SYSTEM_OPEN) return;
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
     setQueuesLoading(true);
@@ -326,6 +330,28 @@ export default function BookingPage() {
     } catch {
       setCopied(false);
     }
+  }
+
+  if (!IS_SYSTEM_OPEN) {
+    return (
+      <div className="min-h-screen bg-slate-100 dark:bg-[#1C1F27] flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-[#232733] max-w-md w-full rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] p-8 text-center space-y-4">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-950/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle size={32} />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">ระบบจองคิวดันเจี้ยน</h1>
+          <p className="text-slate-500 dark:text-[#8B93A7]">
+            ขณะนี้ระบบปิดการใช้งานชั่วคราว<br />
+            (กำลังปรับปรุง หรือเพื่อประหยัดโควต้า)
+          </p>
+          <div className="pt-6">
+            <Link href="/" className="inline-block bg-[#0b3d63] dark:bg-[#3B66D1] text-white font-bold px-6 py-2.5 rounded-xl hover:bg-[#093250] dark:hover:bg-[#4D73CD] transition-colors shadow-sm">
+              กลับหน้าหลัก
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

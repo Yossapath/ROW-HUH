@@ -1474,7 +1474,7 @@ export default function TeamsPage() {
           zones={data.zones}
           columns={data.columns}
           members={data.members}
-          title="CASTLE SIEGE SETUP"
+          title="Siege War Line Up"
         />
       </div>
 

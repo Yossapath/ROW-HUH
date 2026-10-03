@@ -40,7 +40,6 @@ const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
           {/* Zone Header */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderBottom: "1px solid #2d3342", paddingBottom: "12px" }}>
             <div>
-              <div style={{ color: "#94a3b8", fontSize: "14px", fontWeight: "600", marginBottom: "4px" }}>โซนย่อย - Polarity Zone</div>
               <div style={{ color: "#ffffff", fontSize: "28px", fontWeight: "bold" }}>{zone.name}</div>
             </div>
             <div style={{ color: "#94a3b8", fontSize: "16px", fontWeight: "600" }}>

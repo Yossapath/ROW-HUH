@@ -1186,10 +1186,6 @@ export default function TeamsPage() {
               {saveStatus === 'error' && <span className="text-red-500 flex items-center gap-1 font-bold cursor-pointer"><X className="w-4 h-4"/> บันทึกไม่สำเร็จ</span>}
               {saveStatus === 'error' && saveErrorMsg && <span className="text-xs text-red-400 truncate max-w-[150px]">({saveErrorMsg})</span>}
             </div>
-            {/* UX 1: Auto-match button restored */}
-            <button onClick={() => setIsAutoModalOpen(true)} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-[#272C38] text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-900/50 rounded-xl font-bold hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-colors text-xs sm:text-sm shadow-sm">
-              <Wand2 size={16} /> จัดทีมอัตโนมัติ
-            </button>
             <button onClick={() => setIsClearConfirmOpen(true)} className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-[#272C38] text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-xl font-bold hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-xs sm:text-sm shadow-sm">
               <Trash2 size={16} /> ล้างทีม
             </button>

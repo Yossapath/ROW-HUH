@@ -14,6 +14,8 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const type = formData.get("type") as string; // gvg-main, gvg-sub, castle
     const customTitle = formData.get("customTitle") as string | null;
+    const ping = formData.get("ping") as string | null;
+    const description = formData.get("description") as string | null;
 
     const images = formData.getAll("image") as Blob[];
     if (!images || images.length === 0) {
@@ -38,6 +40,10 @@ export async function POST(request: Request) {
       else title = `Line Up - ${dateStr}`;
     }
 
+    let content = "";
+    if (ping) content += `${ping}\n\n`;
+    if (description) content += `${description}`;
+
     const embeds = images.map((_, i) => {
       const embed: any = {
         color: 0x2b2d31, // Discord dark embed background color
@@ -48,7 +54,11 @@ export async function POST(request: Request) {
     });
 
     const discordFormData = new FormData();
-    discordFormData.append("payload_json", JSON.stringify({ embeds }));
+    const payloadJson: any = { embeds };
+    if (content.trim()) {
+      payloadJson.content = content.trim();
+    }
+    discordFormData.append("payload_json", JSON.stringify(payloadJson));
 
     images.forEach((blob, i) => {
       discordFormData.append(`files[${i}]`, blob, `lineup-${i}.png`);

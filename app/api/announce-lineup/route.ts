@@ -21,10 +21,10 @@ export async function POST(request: Request) {
 
     // Build the payload for Discord
     let content = "";
-    if (type === "gvg-main") content = "⚔️ **Lineup: Guild War (สนามหลัก)**";
-    else if (type === "gvg-sub") content = "⚔️ **Lineup: Guild War (สนามรอง)**";
-    else if (type === "castle") content = "🏰 **Lineup: Siege War (ทีมชิงปราสาท)**";
-    else content = "⚔️ **Lineup**";
+    if (type === "gvg-main") content = "⚔️ **Guild War Line Up - Main Lane**";
+    else if (type === "gvg-sub") content = "⚔️ **Guild War Line Up - Sub Lane**";
+    else if (type === "castle") content = "🏰 **Siege War Line Up**";
+    else content = "⚔️ **Line Up**";
 
     const discordFormData = new FormData();
     discordFormData.append("content", content);

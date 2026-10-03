@@ -1433,7 +1433,7 @@ export default function TeamsPage() {
           zones={data.zones.filter((z) => z.type === (activeTab === "sub" ? "sub" : "main"))}
           columns={data.columns}
           members={data.members}
-          title={activeTab === "sub" ? "Guild War Line Up (สนามรอง)" : "Guild War Line Up (สนามหลัก)"}
+          title={activeTab === "sub" ? "Guild War Line Up - Sub Lane" : "Guild War Line Up - Main Lane"}
         />
       </div>
 

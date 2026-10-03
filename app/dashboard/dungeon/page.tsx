@@ -64,8 +64,11 @@ export default function DungeonPage() {
   };
 
   // ── Unified React Query for all dungeon data ──────────────
+  const IS_SYSTEM_OPEN = false; // ปิดระบบ
+
   const { data: dungeonData, isLoading: loading } = useQuery({
     queryKey: ["dungeon_data"],
+    enabled: IS_SYSTEM_OPEN,
     queryFn: async () => {
       // Only fetch data used by the dashboard. The legacy /queues endpoint
       // is no longer needed here because active queue state is represented by
@@ -176,6 +179,7 @@ export default function DungeonPage() {
   const targetQuotaName = debouncedFormName || (user?.gameUsername ?? "");
   const { data: quotaData, isFetching: isQuotaLoading } = useQuery({
     queryKey: ["dungeon_quota", targetQuotaName],
+    enabled: IS_SYSTEM_OPEN && !!targetQuotaName,
     queryFn: async () => {
       if (!targetQuotaName) return null;
       const res = await fetch(`/api/dungeon/quota?name=${encodeURIComponent(targetQuotaName)}`);
@@ -351,6 +355,23 @@ export default function DungeonPage() {
   // Collapsible panels
   const [formCollapsed, setFormCollapsed] = useState(false);
   const [schedCollapsed, setSchedCollapsed] = useState(false);
+
+  const IS_SYSTEM_OPEN = false;
+
+  if (!IS_SYSTEM_OPEN) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <div className="bg-red-100 dark:bg-red-900/30 text-red-500 p-4 rounded-full">
+          <Clock className="w-12 h-12" />
+        </div>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">ระบบจัดการคิวดันเจี้ยน</h1>
+        <p className="text-slate-500 dark:text-[#8B93A7] text-center max-w-sm">
+          ขณะนี้ระบบปิดการใช้งานชั่วคราว<br/>
+          ไม่ว่าจะ Admin หรือ Member ก็ไม่สามารถเข้าถึงได้เพื่อประหยัดโควต้าเซิร์ฟเวอร์
+        </p>
+      </div>
+    );
+  }
 
   // ────────────────────────────────────────────────────────────
   return (

@@ -1115,7 +1115,7 @@ export default function TeamsPage() {
                 const now = new Date();
                 const dateStr = now.toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" });
                 setAnnounceCustomTitle(activeTab === "sub" ? `Guild War Line Up - Sub Lane - ${dateStr}` : `Guild War Line Up - Main Lane - ${dateStr}`);
-                setAnnouncePing("");
+                setAnnouncePing("<@&1513113479739867236>");
                 setAnnounceDesc("");
                 setAnnouncePromptOpen(true);
               }} 
@@ -1489,7 +1489,7 @@ export default function TeamsPage() {
               <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">กำหนดข้อความประกาศ</h3>
               
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">1. หัวข้อประกาศ (แสดงในรูป)</label>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">1. หัวข้อประกาศ</label>
                 <input
                   type="text"
                   value={announceCustomTitle}
@@ -1499,14 +1499,15 @@ export default function TeamsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">2. แท็กยศ (เช่น @everyone หรือ &lt;@&amp;รหัสยศ&gt;)</label>
-                <input
-                  type="text"
-                  placeholder="@everyone"
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">2. แท็กยศ</label>
+                <select
                   value={announcePing}
                   onChange={(e) => setAnnouncePing(e.target.value)}
                   className="w-full border border-slate-200 dark:border-[#2D3342] rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-white bg-slate-50 dark:bg-[#1C1F27] focus:outline-none focus:ring-2 focus:ring-[#3B66D1]"
-                />
+                >
+                  <option value="<@&1513113479739867236>">@HUH?</option>
+                  <option value="">-- ไม่แท็ก --</option>
+                </select>
               </div>
 
               <div>

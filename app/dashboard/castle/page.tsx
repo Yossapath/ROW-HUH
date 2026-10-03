@@ -124,7 +124,7 @@ export default function TeamsPage() {
             useCORS: true,
           });
           
-          const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, "image/png"));
+          const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, "image/jpeg", 0.85));
           if (blob) {
             formData.append("image", blob);
           }

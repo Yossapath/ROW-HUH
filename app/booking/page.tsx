@@ -263,7 +263,14 @@ export default function BookingPage() {
 
   useEffect(() => {
     fetchQueues();
+    
+    // Auto-refresh every 15 seconds as promised in the UI
+    const intervalId = setInterval(() => {
+      fetchQueues(true);
+    }, 15000);
+
     return () => {
+      clearInterval(intervalId);
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }

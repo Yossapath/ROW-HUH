@@ -123,7 +123,11 @@ export default function LeavePage() {
         body: JSON.stringify({ id }),
       });
       queryClient.invalidateQueries({ queryKey: ["leaves"] });
-    } catch { /* silent */ } finally { setDeletingId(null); }
+      } catch (err: any) {
+        useModalStore.getState().alert("ลบข้อมูลลางานไม่สำเร็จ: " + (err.response?.data?.error || err.message));
+      } finally {
+        setDeletingId(null);
+      }
   };
 
   const inputCls = "w-full border border-slate-200 dark:border-[#2D3342] rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-white bg-white dark:bg-[#272C38] focus:outline-none focus:ring-2 focus:ring-[#4D73CD] placeholder:text-slate-400 dark:placeholder:text-[#6B7280]";

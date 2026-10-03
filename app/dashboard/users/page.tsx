@@ -115,8 +115,21 @@ export default function UsersPage() {
 
   const sortedUsers = [...filteredUsers].sort((a, b) => {
     if (!a || !b) return 0;
-    if ((a.role === "admin" || a.role === "dev") && (b.role !== "admin" && b.role !== "dev")) return -1;
-      if ((a.role !== "admin" && a.role !== "dev") && (b.role === "admin" || b.role === "dev")) return 1;
+    
+    const getRoleWeight = (role: string) => {
+      if (role === "owner") return 3;
+      if (role === "dev") return 2;
+      if (role === "admin") return 1;
+      return 0;
+    };
+
+    const weightA = getRoleWeight(a.role);
+    const weightB = getRoleWeight(b.role);
+
+    if (weightA !== weightB) {
+      return weightB - weightA;
+    }
+    
     const nameA = a.gameUsername || a.discordUsername || "";
     const nameB = b.gameUsername || b.discordUsername || "";
     return nameA.localeCompare(nameB);

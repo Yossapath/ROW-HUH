@@ -26,21 +26,30 @@ export async function POST(request: Request) {
     else if (type === "castle") content = "🏰 **Siege War Line Up**";
     else content = "⚔️ **Line Up**";
 
-    const discordFormData = new FormData();
-    discordFormData.append("content", content);
-    
-    images.forEach((blob, idx) => {
-      discordFormData.append(`file${idx}`, blob, `lineup-${idx}.png`);
-    });
+    for (let i = 0; i < images.length; i++) {
+      const discordFormData = new FormData();
+      
+      // ใส่ข้อความ Title เฉพาะรูปแรก เพื่อให้เนียนตาเวลาเรียงต่อกัน
+      if (i === 0) {
+        discordFormData.append("content", content);
+      }
+      
+      discordFormData.append("file", images[i], `lineup-${i}.png`);
 
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      body: discordFormData,
-    });
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        body: discordFormData,
+      });
 
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Discord API error: ${response.status} - ${text}`);
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Discord API error: ${response.status} - ${text}`);
+      }
+
+      // หน่วงเวลาเล็กน้อยกัน Discord Rate Limit
+      if (i < images.length - 1) {
+        await new Promise(r => setTimeout(r, 800));
+      }
     }
 
     logAction({

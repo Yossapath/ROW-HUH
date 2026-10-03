@@ -20,11 +20,18 @@ export async function POST(request: Request) {
     }
 
     // Build the payload for Discord
+    const now = new Date();
+    const dateStr = now.toLocaleDateString("th-TH", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
     let title = "";
-    if (type === "gvg-main") title = "⚔️ Guild War Line Up - Main Lane";
-    else if (type === "gvg-sub") title = "⚔️ Guild War Line Up - Sub Lane";
-    else if (type === "castle") title = "🏰 Siege War Line Up";
-    else title = "⚔️ Line Up";
+    if (type === "gvg-main") title = `Guild War Line Up - Main Lane - ${dateStr}`;
+    else if (type === "gvg-sub") title = `Guild War Line Up - Sub Lane - ${dateStr}`;
+    else if (type === "castle") title = `Siege War Line Up - ${dateStr}`;
+    else title = `Line Up - ${dateStr}`;
 
     const embeds = images.map((_, i) => {
       const embed: any = {

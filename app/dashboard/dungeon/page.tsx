@@ -186,7 +186,6 @@ export default function DungeonPage() {
       const json = await res.json();
       return json.ok ? json.data : null;
     },
-    enabled: !!targetQuotaName,
     staleTime: 10_000,
   });
 

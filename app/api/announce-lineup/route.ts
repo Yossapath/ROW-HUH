@@ -20,36 +20,36 @@ export async function POST(request: Request) {
     }
 
     // Build the payload for Discord
-    let content = "";
-    if (type === "gvg-main") content = "⚔️ **Guild War Line Up - Main Lane**";
-    else if (type === "gvg-sub") content = "⚔️ **Guild War Line Up - Sub Lane**";
-    else if (type === "castle") content = "🏰 **Siege War Line Up**";
-    else content = "⚔️ **Line Up**";
+    let title = "";
+    if (type === "gvg-main") title = "⚔️ Guild War Line Up - Main Lane";
+    else if (type === "gvg-sub") title = "⚔️ Guild War Line Up - Sub Lane";
+    else if (type === "castle") title = "🏰 Siege War Line Up";
+    else title = "⚔️ Line Up";
 
-    for (let i = 0; i < images.length; i++) {
-      const discordFormData = new FormData();
-      
-      // ใส่ข้อความ Title เฉพาะรูปแรก เพื่อให้เนียนตาเวลาเรียงต่อกัน
-      if (i === 0) {
-        discordFormData.append("content", content);
-      }
-      
-      discordFormData.append("file", images[i], `lineup-${i}.png`);
+    const embeds = images.map((_, i) => {
+      const embed: any = {
+        color: 0x2b2d31, // Discord dark embed background color
+        image: { url: `attachment://lineup-${i}.png` }
+      };
+      if (i === 0) embed.title = title;
+      return embed;
+    });
 
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        body: discordFormData,
-      });
+    const discordFormData = new FormData();
+    discordFormData.append("payload_json", JSON.stringify({ embeds }));
 
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Discord API error: ${response.status} - ${text}`);
-      }
+    images.forEach((blob, i) => {
+      discordFormData.append(`files[${i}]`, blob, `lineup-${i}.png`);
+    });
 
-      // หน่วงเวลาเล็กน้อยกัน Discord Rate Limit
-      if (i < images.length - 1) {
-        await new Promise(r => setTimeout(r, 800));
-      }
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      body: discordFormData,
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Discord API error: ${response.status} - ${text}`);
     }
 
     logAction({

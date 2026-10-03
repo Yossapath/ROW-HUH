@@ -12,10 +12,10 @@ export async function POST(request: Request) {
     }
 
     const formData = await request.formData();
-    const file = formData.get("image") as Blob;
     const type = formData.get("type") as string; // gvg-main, gvg-sub, castle
 
-    if (!file) {
+    const images = formData.getAll("image") as Blob[];
+    if (!images || images.length === 0) {
       return err("ไม่พบรูปภาพที่ต้องการส่ง", 400);
     }
 
@@ -28,7 +28,10 @@ export async function POST(request: Request) {
 
     const discordFormData = new FormData();
     discordFormData.append("content", content);
-    discordFormData.append("file", file, "lineup.png");
+    
+    images.forEach((blob, idx) => {
+      discordFormData.append(`file${idx}`, blob, `lineup-${idx}.png`);
+    });
 
     const response = await fetch(webhookUrl, {
       method: "POST",

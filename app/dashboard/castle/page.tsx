@@ -110,27 +110,37 @@ export default function TeamsPage() {
         return;
       }
       try {
-        const canvas = await html2canvas(exportLayoutRef.current, {
-          backgroundColor: "#161b22",
-          scale: 2,
-          useCORS: true,
-        });
-        canvas.toBlob(async (blob) => {
-          if (!blob) throw new Error("Failed to generate image");
-          const formData = new FormData();
-          formData.append("image", blob);
-          formData.append("type", "castle");
+        const zoneElements = exportLayoutRef.current.querySelectorAll('.export-zone-canvas');
+        if (zoneElements.length === 0) throw new Error("ไม่พบโซนที่ต้อง Export");
 
-          const res = await fetch("/api/announce-lineup", {
-            method: "POST",
-            body: formData,
+        const formData = new FormData();
+        formData.append("type", "castle");
+
+        for (let i = 0; i < zoneElements.length; i++) {
+          const el = zoneElements[i] as HTMLElement;
+          const canvas = await html2canvas(el, {
+            backgroundColor: "#2b2d31",
+            scale: 2,
+            useCORS: true,
           });
-          if (!res.ok) {
-            const errData = await res.json().catch(()=>({}));
-            throw new Error(errData.error || "Failed to announce");
+          
+          const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, "image/png"));
+          if (blob) {
+            formData.append("image", blob);
           }
-          useModalStore.getState().alert("ส่ง Lineup ลง Discord สำเร็จ!");
-        }, "image/png");
+        }
+
+        if (!formData.has("image")) throw new Error("Failed to generate any images");
+
+        const res = await fetch("/api/announce-lineup", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(()=>({}));
+          throw new Error(errData.error || "Failed to announce");
+        }
+        useModalStore.getState().alert("ส่ง Lineup ลง Discord สำเร็จ!");
       } catch (err: any) {
         useModalStore.getState().alert("เกิดข้อผิดพลาด: " + err.message);
       } finally {

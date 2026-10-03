@@ -163,7 +163,7 @@ export default function RosterPage() {
       }
     });
 
-    const targetUser = user?.gameUsername || user?.discordUsername || "TELLツ";
+    const targetUser = user?.gameUsername || user?.discordUsername || "";
     const userIndex = all.findIndex((m) => 
       m.name === targetUser || 
       (user?.gameUsername && m.name === user.gameUsername) || 
@@ -510,7 +510,7 @@ export default function RosterPage() {
         <div className="sm:hidden flex flex-col p-3 gap-2.5">
           {filteredMembers.length > 0 ? (
             filteredMembers.map((member, index) => {
-              const targetUser = user?.gameUsername || user?.discordUsername || "TELLツ";
+              const targetUser = user?.gameUsername || user?.discordUsername || "";
               const isCurrentUser = member.name === targetUser || 
                                     (user?.gameUsername && member.name === user.gameUsername) || 
                                     member.discordId === user?.discordId;
@@ -568,7 +568,7 @@ export default function RosterPage() {
           <tbody className="divide-y divide-slate-100 dark:divide-[#2D3342]">
             {filteredMembers.length > 0 ? (
               filteredMembers.map((member, index) => {
-                const targetUser = user?.gameUsername || user?.discordUsername || "TELLツ";
+                const targetUser = user?.gameUsername || user?.discordUsername || "";
                 const isCurrentUser = member.name === targetUser || 
                                       (user?.gameUsername && member.name === user.gameUsername) || 
                                       member.discordId === user?.discordId;

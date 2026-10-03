@@ -1,5 +1,5 @@
-﻿import React, { forwardRef } from "react";
-import { JOB_COLORS, JOB_ICONS } from "@/lib/utils";
+import React, { forwardRef } from "react";
+import { JOB_ICONS } from "@/lib/utils";
 
 type Member = { id: string; name: string; job: string; power: number };
 type Column = { id: string; title: string; memberIds: (string | null)[]; type: "main" | "sub" | "unassigned"; locked: boolean };
@@ -12,209 +12,108 @@ interface GVGExportLayoutProps {
   title?: string;
 }
 
-function getTeamLeader(col: Column | undefined, members: Record<string, Member>): string {
-  if (!col) return "-";
-  const assigned = col.memberIds
-    .map((id) => (id ? members[id] : null))
-    .filter((m): m is Member => m != null && Boolean(m.name));
+const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
+  ({ zones, columns, members, title }, ref) => {
+    // Filter out empty zones
+    const activeZones = zones.filter(
+      (z) => z.teamOrder.some((colId) => columns[colId])
+    );
 
-  if (assigned.length === 0) return "-";
-  const leader = assigned.reduce((top, m) => ((m.power ?? 0) > (top.power ?? 0) ? m : top), assigned[0]);
-  return leader.name;
-}
-
-const ZONE_PALETTES = [
-  { bg: "#1e3a8a", border: "#2563eb", teamBg: "#eff6ff", teamBorder: "#bfdbfe", teamText: "#1e3a8a" }, // Blue
-  { bg: "#064e3b", border: "#059669", teamBg: "#ecfdf5", teamBorder: "#a7f3d0", teamText: "#064e3b" }, // Green
-  { bg: "#4c1d95", border: "#7c3aed", teamBg: "#f5f3ff", teamBorder: "#ddd6fe", teamText: "#4c1d95" }, // Purple
-  { bg: "#78350f", border: "#d97706", teamBg: "#fffbeb", teamBorder: "#fde68a", teamText: "#78350f" }, // Amber
-];
-
-const txt = (size: number, weight: number | string, color: string, align: "left" | "center" | "right" = "left", extra?: React.CSSProperties): React.CSSProperties => ({
-  fontSize: size + "px",
-  fontWeight: weight,
-  color,
-  textAlign: align,
-  fontFamily: "'Segoe UI', 'Noto Sans Thai', sans-serif",
-  ...extra,
-});
-
-const pill = (bg: string, color: string, border?: string): React.CSSProperties => ({
-  display: "inline-block",
-  padding: "8px 16px 10px 16px",
-  backgroundColor: bg,
-  color,
-  border: border ? "2px solid " + border : "none",
-  borderRadius: "10px",
-  fontWeight: 900,
-  fontSize: "16px",
-  lineHeight: 1,
-  textAlign: "center",
-  whiteSpace: "nowrap",
-});
-
-export const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
-  ({ zones, columns, members, title = "GVG TEAM SETUP" }, ref) => {
-    
-    const activeZones = zones
-      .map((zone) => ({
-        ...zone,
-        teamOrder: zone.teamOrder.filter((colId) => {
-          const col = columns[colId];
-          return col && col.memberIds.some((id) => id && members[id]);
-        }),
-      }))
-      .filter((zone) => zone.teamOrder.length > 0);
-
-    const renderZone = (zone: Zone, zIdx: number) => {
-      const pal = ZONE_PALETTES[zIdx % ZONE_PALETTES.length];
-      const teams = zone.teamOrder;
-      const teamCount = teams.length;
-      
-      let zoneMembers = 0;
-      teams.forEach(colId => {
+    const renderZone = (zone: Zone) => {
+      // Find total players in this zone
+      let totalPlayers = 0;
+      let totalPower = 0;
+      zone.teamOrder.forEach(colId => {
         const col = columns[colId];
-        if (!col) return;
-        col.memberIds.forEach(id => {
-          if (id && members[id]) zoneMembers++;
-        });
+        if (col) {
+          col.memberIds.forEach(id => {
+            if (id && members[id]) {
+              totalPlayers++;
+              totalPower += members[id].power || 0;
+            }
+          });
+        }
       });
-      const leader = teams.length > 0 ? getTeamLeader(columns[teams[0]], members) : "-";
 
       return (
-        <div key={zone.id} style={{
-          background: "#f8fafc",
-          borderRadius: "24px",
-          border: "4px solid " + pal.border,
-          boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
-          display: "flex",
-          flexDirection: "column",
-        }}>
-          {/* ZONE HEADER */}
-          <div style={{
-            background: pal.bg,
-            padding: "24px 32px 30px 32px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderRadius: "18px 18px 0 0",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-              <span style={txt(32, 900, "#fff")}>{zone.name}</span>
-              <span style={txt(20, 600, "rgba(255,255,255,0.9)")}>👑 หัวตี้: <strong>{leader}</strong></span>
+        <div key={zone.id} style={{ display: "flex", flexDirection: "column", gap: "20px", marginBottom: "40px" }}>
+          {/* Zone Header */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderBottom: "1px solid #2d3342", paddingBottom: "12px" }}>
+            <div>
+              <div style={{ color: "#94a3b8", fontSize: "14px", fontWeight: "600", marginBottom: "4px" }}>โซนย่อย - Polarity Zone</div>
+              <div style={{ color: "#ffffff", fontSize: "28px", fontWeight: "bold" }}>{zone.name}</div>
             </div>
-            <span style={pill("rgba(255,255,255,0.15)", "#fff", "rgba(255,255,255,0.3)")}>
-              {zoneMembers} คน • {teamCount} ทีม
-            </span>
+            <div style={{ color: "#94a3b8", fontSize: "16px", fontWeight: "600" }}>
+              {totalPlayers}/30 ที่นั่ง &middot; อุปกรณ์รวม {totalPower.toLocaleString()}
+            </div>
           </div>
 
-          {/* ZONE TEAMS LIST (VERTICAL STACK) */}
-          <div style={{
-            padding: "28px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "28px",
+          {/* Teams Grid - 3 columns */}
+          <div style={{ 
+            display: "grid", 
+            gridTemplateColumns: "repeat(3, 1fr)", 
+            gap: "24px" 
           }}>
-            {teams.map((colId) => {
+            {zone.teamOrder.map((colId) => {
               const col = columns[colId];
               if (!col) return null;
 
-              const assigned = col.memberIds.filter(id => id && members[id]);
-              const count = assigned.length;
-              const tLeader = getTeamLeader(col, members);
+              const teamTotalPower = col.memberIds.reduce(
+                (sum, id) => sum + (id && members[id] ? members[id].power || 0 : 0),
+                0
+              );
 
               return (
                 <div key={colId} style={{
-                  background: "#fff",
-                  border: "2px solid " + pal.teamBorder,
+                  background: "#1e2124", // Very dark discord-like color
                   borderRadius: "16px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
+                  padding: "20px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                  border: "1px solid #282b30",
                 }}>
-                  {/* TEAM HEADER */}
-                  <div style={{
-                    background: pal.teamBg,
-                    borderBottom: "2px solid " + pal.teamBorder,
-                    padding: "16px 24px 20px 24px",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    borderRadius: "14px 14px 0 0",
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                      <span style={txt(24, 900, pal.teamText)}>{col.title}</span>
-                      <span style={txt(16, 600, pal.teamText, "left", { opacity: 0.8 })}>👑 {tLeader}</span>
-                    </div>
-                    <div style={pill(pal.bg, "#fff")}>{count}/5</div>
+                  {/* Team Header */}
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", alignItems: "center" }}>
+                    <span style={{ fontSize: "22px", fontWeight: "900", color: "#ffffff" }}>{col.title}</span>
+                    <span style={{ fontSize: "16px", color: "#94a3b8", fontWeight: "600" }}>{teamTotalPower.toLocaleString()}</span>
                   </div>
 
-                  {/* MEMBERS TABLE */}
-                  <div style={{ padding: "12px 16px" }}>
-                    {/* Header Row */}
-                    <div style={{
-                      display: "flex",
-                      padding: "0 12px 12px 12px",
-                      borderBottom: "2px solid #e2e8f0",
-                      marginBottom: "8px",
-                    }}>
-                      <div style={{ width: "60px", ...txt(16, 800, "#64748b", "center") }}>ลำดับ</div>
-                      <div style={{ flex: 1, padding: "0 20px", ...txt(16, 800, "#64748b", "left") }}>ชื่อตัวละคร</div>
-                      <div style={{ width: "200px", ...txt(16, 800, "#64748b", "center") }}>อาชีพ</div>
-                    </div>
-
-                    {/* Member Rows */}
-                    {Array.from({ length: 5 }).map((_, slotIdx) => {
-                      const memberId = col.memberIds[slotIdx];
+                  {/* Team Members */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                    {col.memberIds.map((memberId, idx) => {
                       const m = memberId ? members[memberId] : null;
-                      const isOdd = slotIdx % 2 === 1;
-                      const jobColor = m?.job && JOB_COLORS[m.job] ? JOB_COLORS[m.job] : "#94a3b8";
-
                       return (
-                        <div key={slotIdx} style={{
-                          display: "flex",
-                          alignItems: "center",
-                          background: isOdd ? "#f8fafc" : "#fff",
-                          borderRadius: "12px",
-                          padding: "16px 12px",
-                        }}>
-                          {/* # */}
-                          <div style={{ width: "60px", flexShrink: 0, ...txt(20, 900, m ? pal.border : "#cbd5e1", "center", { lineHeight: "normal" }) }}>
-                            {slotIdx + 1}
-                          </div>
-                          
-                          {/* NAME */}
-                          <div style={{ flex: 1, padding: "0 20px" }}>
-                            <div style={txt(26, m ? 800 : 400, m ? "#0f172a" : "#cbd5e1", "left", { lineHeight: "normal", wordBreak: "break-word" })}>
-                              {m ? m.name : "- ว่าง -"}
-                            </div>
-                          </div>
-                          
-                          {/* JOB */}
-                          <div style={{ width: "200px", flexShrink: 0, display: "flex", justifyContent: "center" }}>
-                            {m ? (
-                              <div style={{
-                                display: "inline-block",
-                                background: jobColor,
-                                color: "#fff",
-                                fontSize: "16px",
-                                fontWeight: "bold",
-                                padding: "8px 16px 10px 16px",
-                                borderRadius: "8px",
-                                width: "90%",
-                                textAlign: "center",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                lineHeight: 1.1,
-                              }}>
-                                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
-                                  {JOB_ICONS[m.job] && <img src={JOB_ICONS[m.job]} alt={m.job} style={{ width: "20px", height: "20px", objectFit: "contain" }} />}
-                                  <span>{m.job}</span>
+                        <div key={idx} style={{ display: "flex", alignItems: "center", height: "28px" }}>
+                          {m ? (
+                            <>
+                              {JOB_ICONS[m.job] ? (
+                                <div style={{ width: "24px", height: "24px", marginRight: "12px", display: "flex", alignItems: "center", justifyItems: "center" }}>
+                                  <img src={JOB_ICONS[m.job]} alt={m.job} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                                 </div>
-                              </div>
-                            ) : (
-                              <div style={txt(18, 400, "#cbd5e1", "center")}>-</div>
-                            )}
-                          </div>
+                              ) : (
+                                <div style={{ width: "24px", height: "24px", marginRight: "12px", background: "#2d3342", borderRadius: "4px" }}></div>
+                              )}
+                              <span style={{ 
+                                flex: 1, 
+                                fontSize: "18px", 
+                                fontWeight: "700", 
+                                color: "#ffffff", 
+                                whiteSpace: "nowrap", 
+                                overflow: "hidden", 
+                                textOverflow: "ellipsis",
+                                marginRight: "12px"
+                              }}>
+                                {m.name}
+                              </span>
+                              <span style={{ fontSize: "16px", fontWeight: "600", color: "#e2e8f0" }}>
+                                {m.power.toLocaleString()}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <div style={{ width: "24px", height: "24px", marginRight: "12px" }}></div>
+                              <span style={{ flex: 1, fontSize: "18px", fontWeight: "600", color: "#3f444c" }}>- ว่าง -</span>
+                            </>
+                          )}
                         </div>
                       );
                     })}
@@ -227,8 +126,8 @@ export const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
       );
     };
 
-    const CANVAS_W = 2800; // Wide enough for 3 columns side-by-side
-    const PAD = 60;
+    const CANVAS_W = 1400; // Optimal width for 3 columns + padding
+    const PAD = 48;
 
     return (
       <div
@@ -236,61 +135,39 @@ export const GVGExportLayout = forwardRef<HTMLDivElement, GVGExportLayoutProps>(
         id="gvg-export-canvas"
         style={{
           width: CANVAS_W + "px",
-          background: "#e2e8f0",
+          background: "#161b22", // Discord-like background
           padding: PAD + "px",
           boxSizing: "border-box",
           fontFamily: "'Segoe UI', 'Noto Sans Thai', sans-serif",
           position: "relative",
           display: "flex",
           flexDirection: "column",
-          gap: "40px",
+          gap: "20px",
         }}
       >
         {/* HEADER */}
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          background: "linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%)",
-          borderRadius: "24px",
-          padding: "36px 48px",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
-            <div style={{
-              width: "88px", height: "88px",
-              background: "rgba(255,255,255,0.1)",
-              borderRadius: "20px",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "44px", border: "2px solid rgba(255,255,255,0.2)"
-            }}>🛡️</div>
-            <div>
-              <div style={txt(40, 900, "#fff", "left", { letterSpacing: "1px" })}>
-                {title}
-              </div>
-              <div style={txt(20, 600, "rgba(255,255,255,0.7)", "left", { marginTop: "12px", letterSpacing: "2px" })}>
-                GUILD VS GUILD BATTLE SQUAD ROSTER • {activeZones.length} ZONES
-              </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <div style={{ fontSize: "36px", fontWeight: "900", color: "#ffffff", letterSpacing: "1px" }}>
+              {title || "LINEUP SETUP"}
+            </div>
+            <div style={{ padding: "6px 12px", background: "#5865F2", borderRadius: "8px", color: "#ffffff", fontSize: "16px", fontWeight: "bold" }}>
+              {activeZones.length} ZONES
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={txt(16, 700, "rgba(255,255,255,0.5)", "right", { letterSpacing: "2px", marginBottom: "10px" })}>
+            <div style={{ fontSize: "14px", fontWeight: "700", color: "#94a3b8", letterSpacing: "2px", marginBottom: "4px" }}>
               EXPORTED DATE
             </div>
-            <div style={txt(28, 800, "#fff", "right", { fontFamily: "monospace" })}>
+            <div style={{ fontSize: "20px", fontWeight: "800", color: "#ffffff", fontFamily: "monospace" }}>
               {new Date().toLocaleDateString("th-TH", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
             </div>
           </div>
         </div>
 
-        {/* 3-COLUMN ZONES LAYOUT (Side-by-side) */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(" + activeZones.length + ", 1fr)",
-          gap: "40px",
-          alignItems: "start",
-        }}>
-          {activeZones.map((zone, idx) => renderZone(zone, idx))}
+        {/* ZONES LIST */}
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {activeZones.map((zone) => renderZone(zone))}
         </div>
       </div>
     );

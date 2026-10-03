@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CalendarOff, Trash2, Calendar } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useModalStore } from "@/stores/useModalStore";
 import type { LeaveRecord } from "@/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { JOB_COLORS, JOB_LIST, JOB_ICONS } from "@/lib/utils";

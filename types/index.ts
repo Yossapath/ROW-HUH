@@ -135,6 +135,7 @@ export interface LeaveRecord {
   date?: string;
   day?: string;
   reason?: string;
+  submittedBy?: string;
   timestamp: number;
 }
 

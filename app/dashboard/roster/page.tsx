@@ -257,11 +257,23 @@ export default function RosterPage() {
           const newTitle = row["Title"] || row["title"];
           const newPower = row["คะแนน Gear"] || row["Gear"] || row["คะแนน gear"] || 0;
           const newActivity = row["กิจกรรมสัปดาห์นี้"] || row["กิจกรรมสัปดาห์"] || row["กิจกรรม"] || 0;
+          const newWeekly = row["แต้มสนับสนุน"] || row["สนับสนุนสัปดาห์"] || row["Weekly"] || row["weekly"] || 0;
+          const newHistory = row["แต้มสะสมทั้งหมด"] || row["แต้มสะสม"] || row["History"] || row["history"];
 
           if (existingMember) {
-             existingMember.power = Number(newPower);
+             const parsedNewPower = Number(newPower);
+             if (!isNaN(parsedNewPower) && parsedNewPower > 0) {
+                 // สำรองค่า CP เดิมไว้เป็น previousCp ก่อนอัปเดต (เก็บเฉพาะตอนที่ค่าเปลี่ยนเพื่อป้องกันการอัปโหลดไฟล์ซ้ำ)
+                 if (existingMember.power && existingMember.power > 0 && existingMember.power !== parsedNewPower) {
+                     existingMember.previousCp = existingMember.power;
+                 }
+                 existingMember.power = parsedNewPower;
+             }
+
              if (newTitle !== undefined) existingMember.title = newTitle; 
              if (newActivity !== undefined) existingMember.activity = Number(newActivity);
+             if (newWeekly !== undefined) existingMember.weekly = Number(newWeekly);
+             if (newHistory !== undefined) existingMember.history = Number(newHistory);
              
              if (normalizedClass && normalizedClass !== existingMember.job) {
                  existingMember.newJob = normalizedClass;

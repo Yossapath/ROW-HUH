@@ -5,17 +5,17 @@ import { computeAccess, evaluateMember, inactiveMessage } from "../lib/access";
 const ROLE = "role-huh";
 
 test("evaluateMember - not in the Discord server", () => {
-  assert.deepEqual(evaluateMember(null, ROLE), { discordOk: false, discordReason: "not_in_guild" });
+  assert.deepEqual(evaluateMember(null, [ROLE]), { discordOk: false, discordReason: "not_in_guild" });
 });
 
 test("evaluateMember - in server but without HUH? role", () => {
-  assert.deepEqual(evaluateMember({ roles: ["other"] }, ROLE), { discordOk: false, discordReason: "missing_role" });
-  assert.deepEqual(evaluateMember({ roles: [] }, ROLE), { discordOk: false, discordReason: "missing_role" });
-  assert.deepEqual(evaluateMember({}, ROLE), { discordOk: false, discordReason: "missing_role" });
+  assert.deepEqual(evaluateMember({ roles: ["other"] }, [ROLE]), { discordOk: false, discordReason: "missing_role" });
+  assert.deepEqual(evaluateMember({ roles: [] }, [ROLE]), { discordOk: false, discordReason: "missing_role" });
+  assert.deepEqual(evaluateMember({}, [ROLE]), { discordOk: false, discordReason: "missing_role" });
 });
 
 test("evaluateMember - in server AND has HUH? role", () => {
-  assert.deepEqual(evaluateMember({ roles: ["x", ROLE] }, ROLE), { discordOk: true, discordReason: null });
+  assert.deepEqual(evaluateMember({ roles: ["x", ROLE] }, [ROLE]), { discordOk: true, discordReason: null });
 });
 
 test("computeAccess - needs BOTH conditions", () => {

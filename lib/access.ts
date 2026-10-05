@@ -53,10 +53,10 @@ export function computeAccess(f: AccessFields): AccessResult {
 /** `member` is the Discord guild-member object, or null when 404 (not in server). */
 export function evaluateMember(
   member: { roles?: string[] } | null,
-  roleId: string
+  roleIds: string[]
 ): { discordOk: boolean; discordReason: DiscordReason | null } {
   if (!member) return { discordOk: false, discordReason: "not_in_guild" };
-  if (!Array.isArray(member.roles) || !member.roles.includes(roleId)) {
+  if (!Array.isArray(member.roles) || !roleIds.some(id => member.roles!.includes(id))) {
     return { discordOk: false, discordReason: "missing_role" };
   }
   return { discordOk: true, discordReason: null };

@@ -43,11 +43,11 @@ async function discordFetch(path: string): Promise<Response> {
 // ── Role id (by id, or look up by name once and cache) ──────────
 let roleCache: { id: string; at: number } | null = null;
 
-export async function resolveRoleId(): Promise<string> {
+export async function resolveRoleIds(): Promise<string[]> {
   const fromEnv = process.env.DISCORD_HUH_ROLE_ID?.trim();
-  if (fromEnv) return fromEnv;
+  if (fromEnv) return fromEnv.split(",").map(r => r.trim()).filter(Boolean);
 
-  if (roleCache && Date.now() - roleCache.at < 10 * 60 * 1000) return roleCache.id;
+  if (roleCache && Date.now() - roleCache.at < 10 * 60 * 1000) return [roleCache.id];
 
   const wanted = (process.env.DISCORD_HUH_ROLE_NAME || "HUH?").trim().toLowerCase();
   const res = await discordFetch(`/guilds/${process.env.DISCORD_GUILD_ID}/roles`);
@@ -56,7 +56,7 @@ export async function resolveRoleId(): Promise<string> {
   const found = roles.find((r) => r.name.trim().toLowerCase() === wanted);
   if (!found) throw new Error(`Discord role "${wanted}" not found in guild`);
   roleCache = { id: found.id, at: Date.now() };
-  return found.id;
+  return [found.id];
 }
 
 // ── Single user ─────────────────────────────────────────────────
@@ -70,9 +70,9 @@ async function fetchMember(discordId: string): Promise<{ roles?: string[] } | nu
 }
 
 export async function checkDiscordAccess(discordId: string) {
-  const roleId = await resolveRoleId();
+  const roleIds = await resolveRoleIds();
   const member = await fetchMember(discordId);
-  return evaluateMember(member, roleId);
+  return evaluateMember(member, roleIds);
 }
 
 // ── Persist ─────────────────────────────────────────────────────
@@ -163,14 +163,14 @@ export async function syncUsersBulk(
   if (!isDiscordCheckEnabled() || users.length === 0) return out;
 
   try {
-    const roleId = await resolveRoleId();
+    const roleIds = await resolveRoleIds();
     const members = await fetchAllMembers(!!opts.force);
     const now = Date.now();
 
     const writes: Array<{ id: string; fields: DiscordFields }> = [];
     for (const u of users) {
       const roles = members.get(u.discordId);
-      const res = evaluateMember(roles ? { roles } : null, roleId);
+      const res = evaluateMember(roles ? { roles } : null, roleIds);
       const next: DiscordFields = { ...res, discordCheckedAt: now };
       lastCheck.set(u.discordId, now);
       if (shouldWrite(u, next, now)) {

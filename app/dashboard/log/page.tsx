@@ -64,6 +64,13 @@ function EmptyState({ message }: { message: string }) {
 
 const ROWS_PER_PAGE = 50;
 
+const ADMIN_ACTIONS = new Set([
+  "CREATE_AUCTION", "UPDATE_AUCTION", "DELETE_AUCTION", "ANNOUNCE_DISCORD", "ANNOUNCE_LINEUP", 
+  "MANUAL_RESERVE", "SKIP_QUEUE", "AWARD_AUCTION", "SAVE_TEAMS", "ADD_MEMBER", "DELETE_MEMBER", 
+  "DELETE_LEAVE", "UPDATE_ROLE", "SET_ACTIVE", "SET_INACTIVE", "DELETE_USER", "DELETE_QUEUE", 
+  "ASSIGN_TEAM", "MANUAL_ASSIGN", "EJECT_PLAYER", "TEAM_COMPLETE"
+]);
+
 export default function LogPage() {
   const user = useAuthStore((s) => s.user);
   const isAdmin = user?.role === "admin" || user?.role === "owner" || user?.role === "dev";
@@ -77,6 +84,7 @@ export default function LogPage() {
   const [logsFetched, setLogsFetched] = useState(false);
   const [logPage, setLogPage] = useState(1);
   const [moduleFilter, setModuleFilter] = useState("all");
+  const [actorFilter, setActorFilter] = useState("all");
 
   // Tab 1 — Leave
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
@@ -167,7 +175,15 @@ export default function LogPage() {
   const filteredLogs = useMemo(() => {
     let list = logs;
     if (moduleFilter !== "all") {
-      list = list.filter((l) => l.module.toLowerCase().includes(moduleFilter));
+      list = list.filter((l) => l.module.toLowerCase() === moduleFilter);
+    }
+    if (actorFilter !== "all") {
+      list = list.filter((l) => {
+        const isAdminAction = ADMIN_ACTIONS.has(l.action);
+        if (actorFilter === "admin") return isAdminAction;
+        if (actorFilter === "user") return !isAdminAction;
+        return true;
+      });
     }
     if (q) {
       list = list.filter(
@@ -180,7 +196,7 @@ export default function LogPage() {
       );
     }
     return [...list].sort((a, b) => b.timestamp - a.timestamp);
-  }, [logs, q, moduleFilter]);
+  }, [logs, q, moduleFilter, actorFilter]);
 
   const leaveLogs = useMemo(() => {
     return logs.filter(l => l.module.toLowerCase() === "leave").sort((a, b) => b.timestamp - a.timestamp);
@@ -300,12 +316,29 @@ export default function LogPage() {
             <LoadingSkeleton />
           ) : (
             <>
-              <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 dark:border-[#2D3342]">
-                <span className="font-bold text-slate-700 dark:text-white">รายการทั้งหมด</span>
-                <span className="text-sm text-slate-400 ml-auto">
-                  {filteredLogs.length} รายการ
-                </span>
-              </div>
+              <div className="flex flex-col md:flex-row md:items-center gap-3 px-6 py-4 border-b border-slate-100 dark:border-[#2D3342]">
+                  <span className="font-bold text-slate-700 dark:text-white shrink-0">รายการทั้งหมด</span>
+                  <div className="flex flex-wrap items-center gap-2 overflow-x-auto w-full md:w-auto">
+                    <select value={moduleFilter} onChange={(e) => { setModuleFilter(e.target.value); setLogPage(1); }} className="text-sm bg-slate-50 dark:bg-[#1C1F27] border border-slate-200 dark:border-[#2D3342] text-slate-700 dark:text-slate-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4D73CD]">
+                      <option value="all">ทุกโมดูล (All)</option>
+                      <option value="system">ประมูล/ประกาศ (System)</option>
+                      <option value="teams">จัดทีม (Teams)</option>
+                      <option value="dungeon">คิวดันเจี้ยน (Dungeon)</option>
+                      <option value="dungeon_team">ปาร์ตี้ดันเจี้ยน (Dungeon_Team)</option>
+                      <option value="leave">ใบลา (Leave)</option>
+                      <option value="roster">สมาชิก (Roster)</option>
+                      <option value="auth">จัดการสิทธิ์ (Auth)</option>
+                    </select>
+                    <select value={actorFilter} onChange={(e) => { setActorFilter(e.target.value); setLogPage(1); }} className="text-sm bg-slate-50 dark:bg-[#1C1F27] border border-slate-200 dark:border-[#2D3342] text-slate-700 dark:text-slate-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#4D73CD]">
+                      <option value="all">ทุกบทบาท</option>
+                      <option value="admin">เฉพาะ Admin (จัดการระบบ)</option>
+                      <option value="user">เฉพาะ User (ผู้เล่นทำรายการ)</option>
+                    </select>
+                  </div>
+                  <span className="text-sm text-slate-400 md:ml-auto shrink-0">
+                    {filteredLogs.length} รายการ
+                  </span>
+                </div>
 
               {filteredLogs.length === 0 ? (
                 <EmptyState message="ไม่มีประวัติที่ค้นหา" />

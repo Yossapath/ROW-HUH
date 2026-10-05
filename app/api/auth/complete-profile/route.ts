@@ -23,6 +23,7 @@ export async function POST(req: Request) {
     const rosterDocRef = rosterRef();
     const tRef = teamsRef();
 
+    let actualOldName: string | null = null;
     await db.runTransaction(async (t) => {
       const [userDoc, rosterDoc, tDoc] = await Promise.all([
         t.get(userRef),
@@ -36,27 +37,39 @@ export async function POST(req: Request) {
       let oldName: string | null = null;
       if (userDoc.exists) {
         oldName = userDoc.data()?.gameUsername;
+        actualOldName = oldName;
       }
 
-      // Remove this member from every job bucket first (they may be changing
-      // class or name), so switching jobs can't leave a stale duplicate entry behind
-      // in their old class array.
+      let existingMemberData: any = {};
+      let existingWarRole = "อิสระ (ให้ระบบจัดให้)";
+
+      // Remove this member from every job bucket first, but extract their existing data
+      // so we can preserve stats like weekly, history, previousCp, etc.
       for (const jobKey of Object.keys(rosterData)) {
         if (!Array.isArray(rosterData[jobKey])) continue;
-        rosterData[jobKey] = rosterData[jobKey].filter(
-          (m: any) => m.discordId !== user.discordId && m.name !== gameUsername
+        
+        const idx = rosterData[jobKey].findIndex(
+          (m: any) => m.discordId === user.discordId || (m.name && m.name.toLowerCase() === gameUsername.toLowerCase())
         );
+        
+        if (idx !== -1) {
+          existingMemberData = { ...rosterData[jobKey][idx] };
+          existingWarRole = existingMemberData.role || existingWarRole;
+          rosterData[jobKey].splice(idx, 1); // Remove from old job bucket
+        }
       }
 
       if (!rosterData[userClass]) {
         rosterData[userClass] = [];
       }
 
-      const memberObj = { 
+      const memberObj = {
+        ...existingMemberData,
         discordId: user.discordId, 
         discordUsername: user.discordUsername,
         name: gameUsername, 
         power: Number(power),
+        role: existingWarRole,
         gvgField
       };
 
@@ -83,15 +96,50 @@ export async function POST(req: Request) {
 
       t.set(rosterDocRef, rosterData);
       
-      if (oldName && oldName !== gameUsername && tDoc.exists) {
-        const tData = tDoc.data();
-        const { changed, updatedData } = updateMemberNameInTeamsData(tData, oldName, gameUsername);
-        if (changed) {
-          const nextVersion = typeof tData?.version === "number" ? tData.version + 1 : 1;
-          t.set(tRef, { ...updatedData, version: nextVersion, updatedAt: Date.now() }, { merge: true });
+      if (oldName && oldName !== gameUsername) {
+        if (tDoc.exists) {
+          const tData = tDoc.data();
+          const { changed, updatedData } = updateMemberNameInTeamsData(tData, oldName, gameUsername);
+          if (changed) {
+            const nextVersion = typeof tData?.version === "number" ? tData.version + 1 : 1;
+            t.set(tRef, { ...updatedData, version: nextVersion, updatedAt: Date.now() }, { merge: true });
+          }
+        }
+        
+        const cRef = db.collection("settings").doc("castleTeams");
+        const cDoc = await t.get(cRef);
+        if (cDoc.exists) {
+          const cData = cDoc.data();
+          const { changed, updatedData } = updateMemberNameInTeamsData(cData, oldName, gameUsername);
+          if (changed) {
+            const nextVersion = typeof cData?.version === "number" ? cData.version + 1 : 1;
+            t.set(cRef, { ...updatedData, version: nextVersion, updatedAt: Date.now() }, { merge: true });
+          }
         }
       }
     });
+
+    if (actualOldName && actualOldName !== gameUsername) {
+      await (async () => {
+        try {
+          const b = db.batch();
+          let count = 0;
+          
+          const auctionSnaps = await db.collection("auctionReservations").where("characterName", "==", actualOldName).get();
+          auctionSnaps.docs.forEach(doc => { b.update(doc.ref, { characterName: gameUsername }); count++; });
+          
+          const dungeonSnaps = await db.collection("topguild-dun").doc("dungeons").collection("queues").where("name", "==", actualOldName).get();
+          dungeonSnaps.docs.forEach(doc => { b.update(doc.ref, { name: gameUsername }); count++; });
+          
+          const attendanceSnaps = await db.collection("topguild-system").doc("attendance").collection("records").where("name", "==", actualOldName).get();
+          attendanceSnaps.docs.forEach(doc => { b.update(doc.ref, { name: gameUsername }); count++; });
+          
+          if (count > 0) await b.commit();
+        } catch (err) {
+          console.error("Failed to cascade in complete-profile:", err);
+        }
+      })();
+    }
 
     const payload = {
       ...user,

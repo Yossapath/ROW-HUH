@@ -191,8 +191,8 @@ export async function PUT(req: Request) {
 
     const finalOldName = oldNameForLog || originalName;
     if (finalOldName && finalOldName !== name) {
-      // Background cascades for Auxiliary Data (Auction, Dungeon, Attendance)
-      (async () => {
+      // Await cascades for Auxiliary Data (Auction, Dungeon, Attendance) so Serverless doesn't kill it early
+      await (async () => {
         try {
           const b = db.batch();
           let count = 0;
@@ -224,7 +224,7 @@ export async function PUT(req: Request) {
       action: "UPDATE_MEMBER",
       actor: user.gameUsername || user.discordUsername || "Admin",
       target: name,
-      detail: `อัปเดตข้อมูลของ ${name} (เป้าหมาย: ${targetDiscordId || originalName || name})${oldNameForLog && oldNameForLog !== name ? ` [เปลี่ยนชื่อจาก ${oldNameForLog}]` : ''}`,
+      detail: `อัปเดตข้อมูลของ ${name}${oldNameForLog && oldNameForLog !== name ? ` (เปลี่ยนชื่อจาก ${oldNameForLog})` : ''}`,
     });
 
     

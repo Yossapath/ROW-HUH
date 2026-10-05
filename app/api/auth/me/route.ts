@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
-import { getCurrentUser, getLiveUserRole, signToken, authCookie, clearAuthCookie } from "@/lib/auth";
-import { ok, unauthorized, handleServerError } from "@/lib/server-utils";
+import { getCurrentUser, getLiveAccess, signToken, authCookie, clearAuthCookie } from "@/lib/auth";
+import { ok, unauthorized, inactive, handleServerError } from "@/lib/server-utils";
 import { getDb, COLL_USER } from "@/lib/firebase-admin";
 
 export async function GET() {
@@ -10,12 +10,19 @@ export async function GET() {
       return unauthorized();
     }
 
-    const liveRole = await getLiveUserRole(user.discordId, user.role);
-    if (!liveRole) {
+    const access = await getLiveAccess(user.discordId, user.role);
+    const liveRole = access?.role;
+    if (!access || !liveRole) {
       // User has been deleted from system -> invalidate session cookie
       const res = unauthorized();
       res.cookies.set(clearAuthCookie());
       return res;
+    }
+
+    // Inactive → 403 { code: "INACTIVE" }. The cookie is kept so the UI can show the
+    // notice and the user is let back in automatically once they become Active again.
+    if (!access.active) {
+      return inactive(access.reason);
     }
 
     // Fetch live profile data from Firestore to catch admin-edited fields (power, class, gameUsername, gvgField)

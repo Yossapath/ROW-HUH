@@ -2,7 +2,9 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { AuthPayload, UserRole } from "@/types";
-import { unauthorized, forbidden } from "@/lib/server-utils";
+import { unauthorized, forbidden, inactive } from "@/lib/server-utils";
+import { computeAccess, type InactiveReason } from "@/lib/access";
+import { isDiscordCheckEnabled, syncUserDiscord } from "@/lib/discord-guild";
 
 export function getJwtSecret(): Uint8Array {
   const secret = process.env.JWT_SECRET;
@@ -63,16 +65,31 @@ export async function requireAuth(): Promise<
   if (!user) {
     return { user: null, errorResponse: unauthorized() };
   }
+  // Inactive (switched off by admin, or not in Discord server / missing HUH? role)
+  // → blocked on every API that uses requireAuth.
+  const access = await getLiveAccess(user.discordId, user.role);
+  if (access && !access.active) {
+    return { user: null, errorResponse: inactive(access.reason) };
+  }
   return { user, errorResponse: null };
 }
 
-// ── User Role Cache & Revocation Guard ─────────────────────────
-interface CachedUserRole {
+// ── Live access (role + Active/Inactive) with short cache ──────
+export interface LiveAccess {
   role: UserRole;
+  active: boolean;
+  reason: InactiveReason | null;
+}
+
+interface CachedAccess extends LiveAccess {
   expiresAt: number;
 }
 
-const userRoleCache = new Map<string, CachedUserRole>();
+const ACCESS_CACHE_MS = 30_000;
+// How often a user's Discord server/role status is re-checked while they use the site.
+const DISCORD_RECHECK_MS = 60_000;
+
+const userRoleCache = new Map<string, CachedAccess>();
 
 export function invalidateUserRoleCache(discordId?: string) {
   if (discordId) {
@@ -86,15 +103,15 @@ export function setUserRoleForTesting(discordId: string, role: UserRole | null) 
   if (role === null) {
     userRoleCache.delete(discordId);
   } else {
-    userRoleCache.set(discordId, { role, expiresAt: Date.now() + 60000 });
+    userRoleCache.set(discordId, { role, active: true, reason: null, expiresAt: Date.now() + 60000 });
   }
 }
 
-export async function getLiveUserRole(discordId: string, fallbackRole: UserRole): Promise<UserRole | null> {
+export async function getLiveAccess(discordId: string, fallbackRole: UserRole): Promise<LiveAccess | null> {
   const now = Date.now();
   const cached = userRoleCache.get(discordId);
   if (cached && cached.expiresAt > now) {
-    return cached.role;
+    return { role: cached.role, active: cached.active, reason: cached.reason };
   }
 
   try {
@@ -103,13 +120,38 @@ export async function getLiveUserRole(discordId: string, fallbackRole: UserRole)
     if (!userDoc.exists) {
       return null;
     }
-    const liveRole = (userDoc.data()?.role as UserRole) || "member";
-    userRoleCache.set(discordId, { role: liveRole, expiresAt: now + 30000 }); // Cache for 30s
-    return liveRole;
+    const data = userDoc.data() || {};
+    const role = (data.role as UserRole) || "member";
+
+    let fields = {
+      manualActive: data.manualActive as boolean | undefined,
+      discordOk: data.discordOk as boolean | undefined,
+      discordReason: (data.discordReason ?? null) as "not_in_guild" | "missing_role" | null,
+    };
+
+    // Re-check Discord (in server + has HUH? role). Never throws; on Discord errors
+    // the previously stored result is kept.
+    if (isDiscordCheckEnabled()) {
+      const synced = await syncUserDiscord(
+        discordId,
+        { ...fields, discordCheckedAt: data.discordCheckedAt as number | undefined },
+        DISCORD_RECHECK_MS
+      );
+      fields = { ...fields, discordOk: synced.discordOk, discordReason: synced.discordReason ?? null };
+    }
+
+    const { active, reason } = computeAccess(fields);
+    userRoleCache.set(discordId, { role, active, reason, expiresAt: now + ACCESS_CACHE_MS });
+    return { role, active, reason };
   } catch {
     // Graceful fallback to avoid dropping valid sessions on transient DB errors
-    return fallbackRole;
+    return { role: fallbackRole, active: true, reason: null };
   }
+}
+
+export async function getLiveUserRole(discordId: string, fallbackRole: UserRole): Promise<UserRole | null> {
+  const access = await getLiveAccess(discordId, fallbackRole);
+  return access ? access.role : null;
 }
 
 export async function requireAdmin(): Promise<
@@ -121,10 +163,14 @@ export async function requireAdmin(): Promise<
   }
 
   // Verify live role against database/cache to immediately revoke demoted/deleted admin sessions
-  const liveRole = await getLiveUserRole(user.discordId, user.role);
-  if (!liveRole) {
+  const access = await getLiveAccess(user.discordId, user.role);
+  if (!access) {
     return { user: null, errorResponse: unauthorized() };
   }
+  if (!access.active) {
+    return { user: null, errorResponse: inactive(access.reason) };
+  }
+  const liveRole = access.role;
   if (liveRole !== "admin" && liveRole !== "owner" && liveRole !== "dev") {
     return { user: null, errorResponse: forbidden() };
   }
@@ -140,15 +186,18 @@ export async function requireOwner(): Promise<
     return { user: null, errorResponse: unauthorized() };
   }
 
-  const liveRole = await getLiveUserRole(user.discordId, user.role);
-  if (!liveRole) {
+  const access = await getLiveAccess(user.discordId, user.role);
+  if (!access) {
     return { user: null, errorResponse: unauthorized() };
   }
-  if (liveRole !== "owner") {
+  if (!access.active) {
+    return { user: null, errorResponse: inactive(access.reason) };
+  }
+  if (access.role !== "owner") {
     return { user: null, errorResponse: forbidden() };
   }
 
-  return { user: { ...user, role: liveRole }, errorResponse: null };
+  return { user: { ...user, role: access.role }, errorResponse: null };
 }
 
 // ── Set auth cookie ──────────────────────────────────────────

@@ -2,7 +2,8 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getDb, COLL_USER } from "@/lib/firebase-admin";
-import { signToken, authCookie } from "@/lib/auth";
+import { signToken, authCookie, invalidateUserRoleCache } from "@/lib/auth";
+import { isDiscordCheckEnabled, syncUserDiscord } from "@/lib/discord-guild";
 import type { GuildUser, AuthPayload } from "@/types";
 
 export async function GET(req: Request) {
@@ -130,8 +131,25 @@ export async function GET(req: Request) {
           discordUsername,
           role: defaultRole,
           createdAt: Date.now(),
+          manualActive: true,
         };
         await userRef.set(newUser).catch(() => {});
+      }
+
+      // Check Discord right at login (in server + has HUH? role). Inactive users still
+      // get a session so the dashboard can show them the Inactive notice.
+      if (isDiscordCheckEnabled()) {
+        const stored = doc.exists ? (doc.data() as GuildUser) : ({} as Partial<GuildUser>);
+        await syncUserDiscord(
+          discordId,
+          {
+            discordOk: stored.discordOk,
+            discordReason: stored.discordReason,
+            discordCheckedAt: stored.discordCheckedAt,
+          },
+          0 // 0 = always check now
+        );
+        invalidateUserRoleCache(discordId);
       }
     } catch (dbErr: any) {
       console.warn("Firestore lookup failed during login (fallback used):", dbErr);

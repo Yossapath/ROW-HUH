@@ -15,6 +15,12 @@ export interface GuildUser {
   power?: number;
   createdAt?: number;
   gvgField?: "main" | "sub";
+  /** Admin switch. false = Inactive. undefined = treated as active. */
+  manualActive?: boolean;
+  /** Result of the Discord check (in server AND has HUH? role). */
+  discordOk?: boolean;
+  discordReason?: "not_in_guild" | "missing_role" | null;
+  discordCheckedAt?: number;
 }
 
 export interface AuthPayload {
@@ -156,6 +162,9 @@ export interface ApiResponse<T = unknown> {
   ok: boolean;
   data?: T;
   error?: string;
+  /** "INACTIVE" when the account is switched off / fails the Discord check. */
+  code?: string;
+  reason?: string | null;
 }
 
 // ── Automated Dungeon Queue Engine ───────────────────────────

@@ -2,7 +2,7 @@
 import { useModalStore } from "@/stores/useModalStore";
 
 import { useAuthStore } from "@/stores/useAuthStore";
-import { UserCog, Shield, User, Loader2, Trash2, AlertTriangle, X } from "lucide-react";
+import { UserCog, Shield, User, Loader2, Trash2, AlertTriangle, X, RefreshCw } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useState } from "react";
@@ -16,7 +16,36 @@ type UserData = {
   power?: number;
   role: string;
   createdAt: number;
+  manualActive?: boolean;
+  isActive?: boolean;
+  inactiveReason?: "manual" | "not_in_guild" | "missing_role" | null;
 };
+
+const REASON_LABEL: Record<string, string> = {
+  manual: "ถูกปิดโดยแอดมิน",
+  not_in_guild: "ไม่ได้อยู่ในเซิร์ฟเวอร์ Discord",
+  missing_role: "ไม่มียศ HUH? ใน Discord",
+};
+
+function StatusBadge({ u }: { u: UserData }) {
+  const active = u.isActive !== false;
+  return (
+    <div className="flex flex-col items-center gap-0.5">
+      <span
+        className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+          active
+            ? "bg-green-100 text-green-700 border-green-300 dark:bg-green-950/40 dark:text-green-400 dark:border-green-800"
+            : "bg-red-100 text-red-700 border-red-300 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800"
+        }`}
+      >
+        {active ? "Active" : "Inactive"}
+      </span>
+      {!active && u.inactiveReason && (
+        <span className="text-[10px] text-red-500 dark:text-red-400">{REASON_LABEL[u.inactiveReason]}</span>
+      )}
+    </div>
+  );
+}
 
 export default function UsersPage() {
   const { user } = useAuthStore();
@@ -40,8 +69,65 @@ export default function UsersPage() {
     },
     enabled: isAdmin,
     staleTime: 60 * 1000,
+    refetchInterval: 60 * 1000, // status follows Discord automatically
     refetchOnWindowFocus: false,
   });
+
+  const toggleStatusMutation = useMutation({
+    mutationFn: async ({ discordId, active }: { discordId: string; active: boolean }) => {
+      await axios.patch("/api/users", { discordId, active });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (err: any) => {
+      useModalStore.getState().alert(err?.response?.data?.error || "เกิดข้อผิดพลาดในการเปลี่ยนสถานะ");
+    },
+  });
+
+  const syncDiscordMutation = useMutation({
+    mutationFn: async () => {
+      const res = await axios.post("/api/users/sync-discord");
+      return res.data?.data;
+    },
+    onSuccess: (d: any) => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      useModalStore.getState().alert(`ซิงค์ Discord แล้ว ${d?.checked ?? 0} คน • Inactive ${d?.inactive ?? 0} คน`);
+    },
+    onError: (err: any) => {
+      useModalStore.getState().alert(err?.response?.data?.error || "ซิงค์ Discord ไม่สำเร็จ");
+    },
+  });
+
+  const confirmToggle = async (u: UserData) => {
+    const turnOn = u.manualActive === false;
+    const name = u.gameUsername || u.discordUsername || "ผู้ใช้";
+    const msg = turnOn
+      ? `เปิดใช้งาน (Active) ให้ ${name} ใช่หรือไม่?`
+      : `ปิดใช้งาน (Inactive) ${name} ใช่หรือไม่? ผู้ใช้จะเข้าใช้งานเว็บไม่ได้`;
+    if (await useModalStore.getState().confirm(msg)) {
+      toggleStatusMutation.mutate({ discordId: u.discordId, active: turnOn });
+    }
+  };
+
+  const ToggleButton = ({ u }: { u: UserData }) => {
+    const off = u.manualActive === false;
+    return (
+      <button
+        type="button"
+        onClick={() => confirmToggle(u)}
+        disabled={toggleStatusMutation.isPending}
+        title={off ? "เปิดใช้งาน" : "ปิดใช้งาน"}
+        className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer disabled:opacity-50 ${
+          off
+            ? "text-green-700 bg-green-50 hover:bg-green-100 border-green-200 dark:text-green-400 dark:bg-green-950/40 dark:border-green-900/50"
+            : "text-red-600 bg-red-50 hover:bg-red-100 border-red-200 dark:text-red-400 dark:bg-red-950/40 dark:border-red-900/50"
+        }`}
+      >
+        {off ? "ตั้งเป็น Active" : "ตั้งเป็น Inactive"}
+      </button>
+    );
+  };
 
   const updateRoleMutation = useMutation({
     mutationFn: async ({ discordId, role }: { discordId: string; role: string }) => {
@@ -154,6 +240,11 @@ export default function UsersPage() {
                   ⚠ {users.filter(u => !u.gameUsername || !u.class).length} คนยังไม่กรอกข้อมูล
                 </span>
               )}
+              {users.filter(u => u.isActive === false).length > 0 && (
+                <span className="ml-2 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded">
+                  Inactive {users.filter(u => u.isActive === false).length} คน
+                </span>
+              )}
               {searchQuery && ` (ค้นพบ ${filteredUsers.length} คน)`}
             </p>
           </div>
@@ -179,6 +270,14 @@ export default function UsersPage() {
           >
             <AlertTriangle className="w-4 h-4" />
             ตรวจสอบรายชื่อตกหล่น
+          </button>
+          <button
+            onClick={() => syncDiscordMutation.mutate()}
+            disabled={syncDiscordMutation.isPending}
+            className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-500/20 dark:hover:bg-indigo-500/30 dark:text-indigo-300 transition-colors border border-indigo-200 dark:border-indigo-500/30 disabled:opacity-60"
+          >
+            <RefreshCw className={`w-4 h-4 ${syncDiscordMutation.isPending ? "animate-spin" : ""}`} />
+            ซิงค์ Discord
           </button>
         </div>
       </div>
@@ -219,6 +318,10 @@ export default function UsersPage() {
                         <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-[#2D3342] text-slate-600 dark:text-slate-300">MEMBER</span>
                       )}
                     </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">สถานะ</span>
+                      <StatusBadge u={u} />
+                    </div>
                     <div className="flex items-center justify-between mt-1 text-sm bg-slate-50 dark:bg-[#1C1F27] p-2 rounded-lg">
                       <div className="flex items-center gap-2">
                         {u.class && JOB_ICONS[u.class] ? <img src={JOB_ICONS[u.class]} className="w-5 h-5 object-contain" alt="class" /> : null}
@@ -245,6 +348,9 @@ export default function UsersPage() {
                           <option value="member">Member</option>
                         </select>
                         {u.discordId !== user?.discordId && canManageRole(u.role || 'member') && (
+                          <ToggleButton u={u} />
+                        )}
+                        {u.discordId !== user?.discordId && canManageRole(u.role || 'member') && (
                           <button onClick={() => { setUserToDelete(u); setConfirmInput(""); }} className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors">
                             <Trash2 size={14} /> ลบ
                           </button>
@@ -263,13 +369,14 @@ export default function UsersPage() {
                   <th className="py-3 px-4 font-bold text-slate-400 dark:text-[#8B93A7] uppercase tracking-wider text-xs">Game Name</th>
                   <th className="py-3 px-4 font-bold text-slate-400 dark:text-[#8B93A7] uppercase tracking-wider text-xs">Class / Power</th>
                   <th className="py-3 px-4 font-bold text-slate-400 dark:text-[#8B93A7] uppercase tracking-wider text-xs text-center">Role</th>
+                  <th className="py-3 px-4 font-bold text-slate-400 dark:text-[#8B93A7] uppercase tracking-wider text-xs text-center">สถานะ</th>
                   <th className="py-3 px-4 font-bold text-slate-400 dark:text-[#8B93A7] uppercase tracking-wider text-xs text-center">จัดการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-[#333333]">
                 {sortedUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-slate-400 dark:text-[#6B7280] font-medium">
+                    <td colSpan={6} className="py-12 text-center text-slate-400 dark:text-[#6B7280] font-medium">
                       {searchQuery ? "ไม่พบผู้ใช้ที่ตรงกับคำค้นหา" : "ไม่มีข้อมูลผู้ใช้ในระบบ"}
                     </td>
                   </tr>
@@ -348,6 +455,14 @@ export default function UsersPage() {
                               <option value="admin">Admin</option>
                               <option value="member">Member</option>
                             </select>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <div className="flex flex-col items-center gap-1.5">
+                          <StatusBadge u={u} />
+                          {isAdmin && u.discordId !== user?.discordId && canManageRole(u.role || 'member') && (
+                            <ToggleButton u={u} />
                           )}
                         </div>
                       </td>

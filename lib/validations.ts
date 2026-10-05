@@ -64,7 +64,7 @@ export const rosterMemberAddSchema = z.object({
 });
 
 export const rosterMemberUpdateSchema = z.object({
-  targetDiscordId: z.string().trim().max(50).optional().nullable(),
+  targetDiscordId: z.string().trim().min(1).max(50).optional().nullable(),
   originalName: z.string().trim().max(100).optional(),
   originalJob: z.string().trim().max(50).optional(),
   name: z.string().trim().min(1, "กรุณาระบุชื่อ").max(100),
@@ -135,6 +135,11 @@ export const attendancePostSchema = z.object({
 export const userRoleUpdateSchema = z.object({
   discordId: z.string().trim().min(1, "ID ไม่ถูกต้อง").max(50),
   role: z.enum(["admin", "member", "owner", "dev"]),
+});
+
+export const userStatusUpdateSchema = z.object({
+  discordId: z.string().trim().min(1, "ID ไม่ถูกต้อง").max(50),
+  active: z.boolean(),
 });
 
 export const userDeleteSchema = z.object({

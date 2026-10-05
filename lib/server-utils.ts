@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { ApiResponse } from "@/types";
+import { inactiveMessage, type InactiveReason } from "@/lib/access";
 
 export function ok<T>(data: T, status = 200) {
   return NextResponse.json<ApiResponse<T>>({ ok: true, data }, { status });
@@ -9,6 +10,12 @@ export function err(message: string, status = 400) {
 }
 export function unauthorized(message = "Unauthorized") { return err(message, 401); }
 export function forbidden(message = "Forbidden — Admin only") { return err(message, 403); }
+export function inactive(reason: InactiveReason | null = "manual") {
+  return NextResponse.json<ApiResponse>(
+    { ok: false, error: inactiveMessage(reason), code: "INACTIVE", reason },
+    { status: 403 }
+  );
+}
 export function notFound(message = "Not found") { return err(message, 404); }
 export function conflict(message = "Conflict") { return err(message, 409); }
 export function tooManyRequests(message = "Too Many Requests") { return err(message, 429); }

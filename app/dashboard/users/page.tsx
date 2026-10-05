@@ -131,10 +131,10 @@ export default function UsersPage() {
           }
         }}
         disabled={toggleStatusMutation.isPending}
-        className={`bg-slate-50 dark:bg-[#2A2F3E] border rounded-lg px-2 py-1 text-xs font-bold outline-none cursor-pointer transition-colors ${
+        className={`px-3 py-1.5 rounded-lg font-bold text-sm border-2 outline-none cursor-pointer transition-colors w-[110px] text-center ${
           off 
-            ? "text-red-600 border-red-200 dark:text-red-400 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/40" 
-            : "text-green-700 border-green-200 dark:text-green-400 dark:border-green-900/50 hover:bg-green-50 dark:hover:bg-green-950/40"
+            ? "bg-red-50 text-red-600 border-red-200 hover:border-red-300 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/50 dark:hover:border-red-700" 
+            : "bg-green-50 text-green-700 border-green-200 hover:border-green-300 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/50 dark:hover:border-green-700"
         }`}
       >
         <option value="active" className="text-green-700 dark:text-green-400 font-bold">Active</option>

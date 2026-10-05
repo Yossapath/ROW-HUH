@@ -124,12 +124,25 @@ export async function POST(req: Request) {
         try {
           const b = db.batch();
           let count = 0;
+          const did = user.discordId;
           
-          const auctionSnaps = await db.collection("auctionReservations").where("characterName", "==", actualOldName).get();
-          auctionSnaps.docs.forEach(doc => { b.update(doc.ref, { characterName: gameUsername }); count++; });
+          const auctionDocs = new Map();
+          if (did) {
+            const byId = await db.collection("auctionReservations").where("userId", "==", did).get();
+            byId.docs.forEach(d => auctionDocs.set(d.id, d));
+          }
+          const byName = await db.collection("auctionReservations").where("characterName", "==", actualOldName).get();
+          byName.docs.forEach(d => auctionDocs.set(d.id, d));
+          auctionDocs.forEach(doc => { b.update(doc.ref, { characterName: gameUsername }); count++; });
           
-          const dungeonSnaps = await db.collection("topguild-dun").doc("dungeons").collection("queues").where("name", "==", actualOldName).get();
-          dungeonSnaps.docs.forEach(doc => { b.update(doc.ref, { name: gameUsername }); count++; });
+          const dungeonDocs = new Map();
+          if (did) {
+            const dById = await db.collection("topguild-dun").doc("dungeons").collection("queues").where("userId", "==", did).get();
+            dById.docs.forEach(d => dungeonDocs.set(d.id, d));
+          }
+          const dByName = await db.collection("topguild-dun").doc("dungeons").collection("queues").where("name", "==", actualOldName).get();
+          dByName.docs.forEach(d => dungeonDocs.set(d.id, d));
+          dungeonDocs.forEach(doc => { b.update(doc.ref, { name: gameUsername }); count++; });
           
           const attendanceSnaps = await db.collection("topguild-system").doc("attendance").collection("records").where("name", "==", actualOldName).get();
           attendanceSnaps.docs.forEach(doc => { b.update(doc.ref, { name: gameUsername }); count++; });

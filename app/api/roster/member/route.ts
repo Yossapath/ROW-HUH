@@ -196,22 +196,35 @@ export async function PUT(req: Request) {
         try {
           const b = db.batch();
           let count = 0;
+          const did = memberObj.discordId;
           
-          // 1. Auction Reservations
-          const auctionSnaps = await db.collection("auctionReservations").where("characterName", "==", finalOldName).get();
-          auctionSnaps.docs.forEach(doc => { b.update(doc.ref, { characterName: name }); count++; });
+          // 1. Auction Reservations (By Discord ID + Old Name)
+          const auctionDocs = new Map();
+          if (did) {
+            const byId = await db.collection("auctionReservations").where("userId", "==", did).get();
+            byId.docs.forEach(d => auctionDocs.set(d.id, d));
+          }
+          const byName = await db.collection("auctionReservations").where("characterName", "==", finalOldName).get();
+          byName.docs.forEach(d => auctionDocs.set(d.id, d));
+          auctionDocs.forEach(doc => { b.update(doc.ref, { characterName: name }); count++; });
           
-          // 2. Dungeon Queues
-          const dungeonSnaps = await db.collection("topguild-dun").doc("dungeons").collection("queues").where("name", "==", finalOldName).get();
-          dungeonSnaps.docs.forEach(doc => { b.update(doc.ref, { name: name }); count++; });
+          // 2. Dungeon Queues (By Discord ID + Old Name)
+          const dungeonDocs = new Map();
+          if (did) {
+            const dById = await db.collection("topguild-dun").doc("dungeons").collection("queues").where("userId", "==", did).get();
+            dById.docs.forEach(d => dungeonDocs.set(d.id, d));
+          }
+          const dByName = await db.collection("topguild-dun").doc("dungeons").collection("queues").where("name", "==", finalOldName).get();
+          dByName.docs.forEach(d => dungeonDocs.set(d.id, d));
+          dungeonDocs.forEach(doc => { b.update(doc.ref, { name: name }); count++; });
           
-          // 3. Attendance Records
+          // 3. Attendance Records (Only uses name)
           const attendanceSnaps = await db.collection("topguild-system").doc("attendance").collection("records").where("name", "==", finalOldName).get();
           attendanceSnaps.docs.forEach(doc => { b.update(doc.ref, { name: name }); count++; });
           
           if (count > 0) {
             await b.commit();
-            console.log(`Cascaded name change from ${finalOldName} to ${name} across ${count} auxiliary docs.`);
+            console.log(`Cascaded name change from ${finalOldName} to ${name} across ${count} auxiliary docs using Discord ID ${did}`);
           }
         } catch (err) {
           console.error("Failed to cascade name change to auxiliary docs:", err);

@@ -142,14 +142,10 @@ export default function UsersPage() {
             }
           }}
           disabled={toggleStatusMutation.isPending}
-          className={`px-3 py-1.5 rounded-lg font-bold text-sm border-2 outline-none cursor-pointer transition-colors w-[110px] text-center ${
-            !finalActive 
-              ? "bg-red-50 text-red-600 border-red-200 hover:border-red-300 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/50 dark:hover:border-red-700" 
-              : "bg-green-50 text-green-700 border-green-200 hover:border-green-300 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/50 dark:hover:border-green-700"
-          }`}
+          className="bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] text-slate-700 dark:text-white px-3 py-1.5 rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#4D73CD] transition-colors cursor-pointer w-[110px] text-center"
         >
-          <option value="active" className="text-green-700 dark:text-green-400 font-bold">Active</option>
-          <option value="inactive" className="text-red-600 dark:text-red-400 font-bold">Inactive</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
         </select>
         {!finalActive && u.inactiveReason && (
           <span className="text-[10px] text-red-500 dark:text-red-400 max-w-[110px] text-center leading-tight mt-1">
@@ -350,7 +346,7 @@ export default function UsersPage() {
                       )}
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">สถานะ</span>
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Status</span>
                       {isAdmin && u.discordId !== user?.discordId && canManageRole(u.role || 'member') ? (
                         <ToggleButton u={u} />
                       ) : (
@@ -375,7 +371,7 @@ export default function UsersPage() {
                             }
                           }}
                           disabled={updateRoleMutation.isPending || (u.discordId === user?.discordId) || !canManageRole(u.role || 'member')}
-                          className="bg-slate-50 dark:bg-[#2A2F3E] border border-slate-200 dark:border-[#333333] rounded-lg px-2 py-1 text-xs font-bold"
+                          className="bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] text-slate-700 dark:text-white px-2 py-1 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#4D73CD] transition-colors cursor-pointer"
                         >
                           {isOwner && <option value="owner">Owner</option>}
                           {isOwner && <option value="dev">Dev</option>}
@@ -401,8 +397,8 @@ export default function UsersPage() {
                   <th className="py-3 px-4 font-bold text-slate-400 dark:text-[#8B93A7] uppercase tracking-wider text-xs">Game Name</th>
                   <th className="py-3 px-4 font-bold text-slate-400 dark:text-[#8B93A7] uppercase tracking-wider text-xs">Class / Power</th>
                   <th className="py-3 px-4 font-bold text-slate-400 dark:text-[#8B93A7] uppercase tracking-wider text-xs text-center">Role</th>
-                  <th className="py-3 px-4 font-bold text-slate-400 dark:text-[#8B93A7] uppercase tracking-wider text-xs text-center">สถานะ</th>
-                  <th className="py-3 px-4 font-bold text-slate-400 dark:text-[#8B93A7] uppercase tracking-wider text-xs text-center">จัดการ</th>
+                  <th className="py-3 px-4 font-bold text-slate-400 dark:text-[#8B93A7] uppercase tracking-wider text-xs text-center">Status</th>
+                  <th className="py-3 px-4 font-bold text-slate-400 dark:text-[#8B93A7] uppercase tracking-wider text-xs text-center">Edit</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-[#333333]">
@@ -474,13 +470,7 @@ export default function UsersPage() {
                                 }
                               }}
                               disabled={updateRoleMutation.isPending}
-                              className={`px-3 py-1.5 rounded-lg font-bold text-sm border-2 outline-none cursor-pointer transition-colors ${
-                                u.role === 'owner'
-                                  ? 'bg-purple-100 text-purple-700 border-purple-300 hover:border-purple-500 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
-                                  : (u.role === 'admin' || u.role === 'dev') 
-                                    ? 'bg-theme-warning/10 text-theme-warning border-theme-warning/30 hover:border-theme-warning' 
-                                  : 'bg-slate-100 text-slate-600 border-slate-200 hover:border-slate-300 dark:bg-[#272C38] dark:text-white dark:border-[#2D3342]'
-                              }`}
+                              className="bg-white dark:bg-[#272C38] border border-slate-200 dark:border-[#2D3342] text-slate-700 dark:text-white px-3 py-1.5 rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#4D73CD] transition-colors cursor-pointer"
                             >
                               {isOwner && <option value="owner">Owner</option>}
                               {isOwner && <option value="dev">Dev</option>}

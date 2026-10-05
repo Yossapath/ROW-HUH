@@ -112,34 +112,51 @@ export default function UsersPage() {
 
   const ToggleButton = ({ u }: { u: UserData }) => {
     const off = u.manualActive === false;
+    const finalActive = u.isActive !== false;
     
     return (
-      <select
-        value={off ? "inactive" : "active"}
-        onChange={async (e) => {
-          const wantActive = e.target.value === "active";
-          // If the status is not changing, do nothing
-          if (wantActive === !off) return;
-          
-          const name = u.gameUsername || u.discordUsername || "ผู้ใช้";
-          const msg = wantActive
-            ? `เปิดใช้งาน (Active) ให้ ${name} ใช่หรือไม่?`
-            : `ปิดใช้งาน (Inactive) ${name} ใช่หรือไม่? ผู้ใช้จะเข้าใช้งานเว็บไม่ได้`;
+      <div className="flex flex-col items-center gap-0.5">
+        <select
+          value={finalActive ? "active" : "inactive"}
+          onChange={async (e) => {
+            const wantActive = e.target.value === "active";
             
-          if (await useModalStore.getState().confirm(msg)) {
-            toggleStatusMutation.mutate({ discordId: u.discordId, active: wantActive });
-          }
-        }}
-        disabled={toggleStatusMutation.isPending}
-        className={`px-3 py-1.5 rounded-lg font-bold text-sm border-2 outline-none cursor-pointer transition-colors w-[110px] text-center ${
-          off 
-            ? "bg-red-50 text-red-600 border-red-200 hover:border-red-300 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/50 dark:hover:border-red-700" 
-            : "bg-green-50 text-green-700 border-green-200 hover:border-green-300 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/50 dark:hover:border-green-700"
-        }`}
-      >
-        <option value="active" className="text-green-700 dark:text-green-400 font-bold">Active</option>
-        <option value="inactive" className="text-red-600 dark:text-red-400 font-bold">Inactive</option>
-      </select>
+            // If they are trying to activate someone who is blocked by Discord
+            if (wantActive && !finalActive && u.inactiveReason !== "manual") {
+              useModalStore.getState().alert(`ไม่สามารถเปิดใช้งานได้ เนื่องจาก:\n${REASON_LABEL[u.inactiveReason || "not_in_guild"]}`);
+              e.target.value = "inactive"; // reset select UI
+              return;
+            }
+
+            if (wantActive === !off) return;
+            
+            const name = u.gameUsername || u.discordUsername || "ผู้ใช้";
+            const msg = wantActive
+              ? `เปิดใช้งาน (Active) ให้ ${name} ใช่หรือไม่?`
+              : `ปิดใช้งาน (Inactive) ${name} ใช่หรือไม่? ผู้ใช้จะเข้าใช้งานเว็บไม่ได้`;
+              
+            if (await useModalStore.getState().confirm(msg)) {
+              toggleStatusMutation.mutate({ discordId: u.discordId, active: wantActive });
+            } else {
+              e.target.value = finalActive ? "active" : "inactive"; // reset if cancelled
+            }
+          }}
+          disabled={toggleStatusMutation.isPending}
+          className={`px-3 py-1.5 rounded-lg font-bold text-sm border-2 outline-none cursor-pointer transition-colors w-[110px] text-center ${
+            !finalActive 
+              ? "bg-red-50 text-red-600 border-red-200 hover:border-red-300 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/50 dark:hover:border-red-700" 
+              : "bg-green-50 text-green-700 border-green-200 hover:border-green-300 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/50 dark:hover:border-green-700"
+          }`}
+        >
+          <option value="active" className="text-green-700 dark:text-green-400 font-bold">Active</option>
+          <option value="inactive" className="text-red-600 dark:text-red-400 font-bold">Inactive</option>
+        </select>
+        {!finalActive && u.inactiveReason && (
+          <span className="text-[10px] text-red-500 dark:text-red-400 max-w-[110px] text-center leading-tight mt-1">
+            {REASON_LABEL[u.inactiveReason]}
+          </span>
+        )}
+      </div>
     );
   };
 
@@ -334,7 +351,11 @@ export default function UsersPage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">สถานะ</span>
-                      <StatusBadge u={u} />
+                      {isAdmin && u.discordId !== user?.discordId && canManageRole(u.role || 'member') ? (
+                        <ToggleButton u={u} />
+                      ) : (
+                        <StatusBadge u={u} />
+                      )}
                     </div>
                     <div className="flex items-center justify-between mt-1 text-sm bg-slate-50 dark:bg-[#1C1F27] p-2 rounded-lg">
                       <div className="flex items-center gap-2">
@@ -361,9 +382,6 @@ export default function UsersPage() {
                           <option value="admin">Admin</option>
                           <option value="member">Member</option>
                         </select>
-                        {u.discordId !== user?.discordId && canManageRole(u.role || 'member') && (
-                          <ToggleButton u={u} />
-                        )}
                         {u.discordId !== user?.discordId && canManageRole(u.role || 'member') && (
                           <button onClick={() => { setUserToDelete(u); setConfirmInput(""); }} className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors">
                             <Trash2 size={14} /> ลบ
@@ -474,9 +492,10 @@ export default function UsersPage() {
                       </td>
                       <td className="py-3 px-4 text-center">
                         <div className="flex flex-col items-center gap-1.5">
-                          <StatusBadge u={u} />
-                          {isAdmin && u.discordId !== user?.discordId && canManageRole(u.role || 'member') && (
+                          {isAdmin && u.discordId !== user?.discordId && canManageRole(u.role || 'member') ? (
                             <ToggleButton u={u} />
+                          ) : (
+                            <StatusBadge u={u} />
                           )}
                         </div>
                       </td>

@@ -112,20 +112,34 @@ export default function UsersPage() {
 
   const ToggleButton = ({ u }: { u: UserData }) => {
     const off = u.manualActive === false;
+    
     return (
-      <button
-        type="button"
-        onClick={() => confirmToggle(u)}
+      <select
+        value={off ? "inactive" : "active"}
+        onChange={async (e) => {
+          const wantActive = e.target.value === "active";
+          // If the status is not changing, do nothing
+          if (wantActive === !off) return;
+          
+          const name = u.gameUsername || u.discordUsername || "ผู้ใช้";
+          const msg = wantActive
+            ? `เปิดใช้งาน (Active) ให้ ${name} ใช่หรือไม่?`
+            : `ปิดใช้งาน (Inactive) ${name} ใช่หรือไม่? ผู้ใช้จะเข้าใช้งานเว็บไม่ได้`;
+            
+          if (await useModalStore.getState().confirm(msg)) {
+            toggleStatusMutation.mutate({ discordId: u.discordId, active: wantActive });
+          }
+        }}
         disabled={toggleStatusMutation.isPending}
-        title={off ? "เปิดใช้งาน" : "ปิดใช้งาน"}
-        className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer disabled:opacity-50 ${
-          off
-            ? "text-green-700 bg-green-50 hover:bg-green-100 border-green-200 dark:text-green-400 dark:bg-green-950/40 dark:border-green-900/50"
-            : "text-red-600 bg-red-50 hover:bg-red-100 border-red-200 dark:text-red-400 dark:bg-red-950/40 dark:border-red-900/50"
+        className={`bg-slate-50 dark:bg-[#2A2F3E] border rounded-lg px-2 py-1 text-xs font-bold outline-none cursor-pointer transition-colors ${
+          off 
+            ? "text-red-600 border-red-200 dark:text-red-400 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/40" 
+            : "text-green-700 border-green-200 dark:text-green-400 dark:border-green-900/50 hover:bg-green-50 dark:hover:bg-green-950/40"
         }`}
       >
-        {off ? "ตั้งเป็น Active" : "ตั้งเป็น Inactive"}
-      </button>
+        <option value="active" className="text-green-700 dark:text-green-400 font-bold">Active</option>
+        <option value="inactive" className="text-red-600 dark:text-red-400 font-bold">Inactive</option>
+      </select>
     );
   };
 

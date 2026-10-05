@@ -317,14 +317,18 @@ export function MemberProfileModal({ member, onClose }: MemberProfileModalProps)
               </span>
             </div>
 
-            {/* Dungeon runs */}
-            <div className="bg-[#0b3d63]/5 dark:bg-[#3B66D1]/10 border border-[#0b3d63]/10 dark:border-[#3B66D1]/20 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-1">
-              <div className="w-8 h-8 rounded-full bg-[#0b3d63]/10 dark:bg-[#3B66D1]/20 flex items-center justify-center mb-1">
-                <Shield size={15} className="text-[#0b3d63] dark:text-[#82A0F5]" />
+            {/* War Participation */}
+            <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-1">
+              <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center mb-1">
+                <Swords size={15} className="text-emerald-600 dark:text-emerald-400" />
               </div>
-              <span className="text-[11px] font-bold text-[#0b3d63]/70 dark:text-[#82A0F5]/70 leading-tight">รอบดันเจี้ยนสะสม</span>
-              <span className="text-xl font-black text-[#0b3d63] dark:text-white tabular-nums">
-                {isLoading ? "..." : (data?.dungeon?.totalRuns ?? "0")}
+              <span className="text-[11px] font-bold text-emerald-600/70 dark:text-emerald-400/70 leading-tight">เข้าร่วมวอร์</span>
+              <span className="text-lg font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
+                {isLoading
+                  ? "..."
+                  : data?.attendance
+                  ? `${data.attendance.present} / ${data.attendance.total} (${data.attendance.presentPercent}%)`
+                  : "-"}
               </span>
             </div>
           </div>
@@ -351,14 +355,6 @@ export function MemberProfileModal({ member, onClose }: MemberProfileModalProps)
                 { label: "แต้มสะสมทั้งหมด",  value: isLoading ? "..." : nf(data?.historyPts) },
                 { label: "แต้มกิจกรรมสัปดาห์", value: isLoading ? "..." : nf(data?.activity ?? member.activity) },
                 { label: "CP ก่อนหน้า",       value: isLoading ? "..." : nf(data?.previousCp) },
-                {
-                  label: "เข้าร่วมวอร์",
-                  value: isLoading
-                    ? "..."
-                    : data?.attendance
-                    ? `${data.attendance.present} / ${data.attendance.total} (${data.attendance.presentPercent}%)`
-                    : "-",
-                },
               ].map(({ label, value }) => (
                 <div
                   key={label}

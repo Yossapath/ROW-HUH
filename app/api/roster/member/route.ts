@@ -96,6 +96,7 @@ export async function PUT(req: Request) {
     const tRef = teamsRef();
     const cRef = db.collection("settings").doc("castleTeams");
     let oldNameForLog = originalName;
+    let finalDiscordId = targetDiscordId || null;
 
     // Update user document and roster in a single atomic transaction
     await db.runTransaction(async (t) => {
@@ -196,7 +197,7 @@ export async function PUT(req: Request) {
         try {
           const b = db.batch();
           let count = 0;
-          const did = memberObj.discordId;
+          const did = finalDiscordId;
           
           // 1. Auction Reservations (By Discord ID + Old Name)
           const auctionDocs = new Map();

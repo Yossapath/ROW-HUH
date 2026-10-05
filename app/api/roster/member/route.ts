@@ -109,12 +109,7 @@ export async function PUT(req: Request) {
       let rosterData = rDoc.exists ? rDoc.data() as any : {};
       if (rosterData.data) rosterData = rosterData.data; // Handle legacy wrapper
 
-      // Find existing member by targetDiscordId or originalName/originalJob
-      let memberObj: any = { discordId: targetDiscordId || null, name, power: Number(power), gvgField };
-      if (title !== undefined) memberObj.title = title;
-      if (activity !== undefined) memberObj.activity = activity;
-      
-      // Retain existing role if not admin
+      let existingMemberData: any = {};
       let existingWarRole = "อิสระ (ให้ระบบจัดให้)";
       let previousJob: string | null = null;
       let actualOriginalName: string | null = null;
@@ -123,16 +118,27 @@ export async function PUT(req: Request) {
         if (Array.isArray(rosterData[j])) {
           const idx = rosterData[j].findIndex((m: any) => (targetDiscordId && m.discordId === targetDiscordId) || (originalName && m.name === originalName));
           if (idx !== -1) {
-            existingWarRole = rosterData[j][idx].role || existingWarRole;
+            existingMemberData = { ...rosterData[j][idx] }; // Preserve existing stats (weekly, history, previousCp, etc)
+            existingWarRole = existingMemberData.role || existingWarRole;
             previousJob = j;
-            actualOriginalName = rosterData[j][idx].name;
+            actualOriginalName = existingMemberData.name;
             oldNameForLog = actualOriginalName || originalName;
-            if (!memberObj.discordId) memberObj.discordId = rosterData[j][idx].discordId;
             rosterData[j].splice(idx, 1);
             break;
           }
         }
       }
+
+      let memberObj: any = { 
+        ...existingMemberData,
+        discordId: targetDiscordId || existingMemberData.discordId || null, 
+        name, 
+        power: Number(power), 
+        gvgField 
+      };
+      
+      if (title !== undefined) memberObj.title = title;
+      if (activity !== undefined) memberObj.activity = activity;
 
       memberObj.role = (user.role === "admin" || user.role === "owner" || user.role === "dev") && warRole ? warRole : existingWarRole;
 
@@ -182,6 +188,36 @@ export async function PUT(req: Request) {
         }
       }
     });
+
+    const finalOldName = oldNameForLog || originalName;
+    if (finalOldName && finalOldName !== name) {
+      // Background cascades for Auxiliary Data (Auction, Dungeon, Attendance)
+      (async () => {
+        try {
+          const b = db.batch();
+          let count = 0;
+          
+          // 1. Auction Reservations
+          const auctionSnaps = await db.collection("auctionReservations").where("characterName", "==", finalOldName).get();
+          auctionSnaps.docs.forEach(doc => { b.update(doc.ref, { characterName: name }); count++; });
+          
+          // 2. Dungeon Queues
+          const dungeonSnaps = await db.collection("topguild-dun").doc("dungeons").collection("queues").where("name", "==", finalOldName).get();
+          dungeonSnaps.docs.forEach(doc => { b.update(doc.ref, { name: name }); count++; });
+          
+          // 3. Attendance Records
+          const attendanceSnaps = await db.collection("topguild-system").doc("attendance").collection("records").where("name", "==", finalOldName).get();
+          attendanceSnaps.docs.forEach(doc => { b.update(doc.ref, { name: name }); count++; });
+          
+          if (count > 0) {
+            await b.commit();
+            console.log(`Cascaded name change from ${finalOldName} to ${name} across ${count} auxiliary docs.`);
+          }
+        } catch (err) {
+          console.error("Failed to cascade name change to auxiliary docs:", err);
+        }
+      })();
+    }
 
     logAction({
       module: "ROSTER",

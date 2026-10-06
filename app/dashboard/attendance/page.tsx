@@ -4,7 +4,7 @@ import { JOB_COLORS, JOB_ICONS } from "@/lib/utils";
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
-  CheckSquare,
+  CheckSquare, FileText,
   CheckCircle2,
   XCircle,
   AlertCircle,

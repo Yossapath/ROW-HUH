@@ -193,7 +193,7 @@ export default function UsersPage() {
   });
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterNoDiscord, setFilterNoDiscord] = useState(false);
+  const [filterType, setFilterType] = useState("all");
   const [showSyncModal, setShowSyncModal] = useState(false);
 
     const handleCopyNames = () => {
@@ -237,7 +237,8 @@ export default function UsersPage() {
   // Sort and filter users: admins first, then by gameUsername
   const filteredUsers = userList.filter((u) => {
     if (!u) return false;
-    if (filterNoDiscord && (u.inactiveReason !== "not_in_guild" && u.inactiveReason !== "missing_role")) return false;
+    if (filterType === "no_discord" && u.inactiveReason !== "not_in_guild") return false;
+    if (filterType === "no_role" && u.inactiveReason !== "missing_role") return false;
     const search = searchQuery.toLowerCase();
     const discordName = (u.discordUsername || "").toLowerCase();
     const gameName = (u.gameUsername || "").toLowerCase();
@@ -327,21 +328,21 @@ export default function UsersPage() {
         </div>
         
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full mt-3">
-          <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
-            <input 
-              type="checkbox" 
-              checked={filterNoDiscord} 
-              onChange={(e) => setFilterNoDiscord(e.target.checked)}
-              className="w-4 h-4 rounded border-slate-300 text-[#0b3d63] focus:ring-[#0b3d63]"
-            />
-            คนที่ไม่มีดิส / ไม่มียศ HUH?
-          </label>
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38] text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#4D73CD]"
+          >
+            <option value="all">แสดงทั้งหมด</option>
+            <option value="no_discord">คนที่ไม่มีดิส</option>
+            <option value="no_role">คนที่ไม่มียศ HUH?</option>
+          </select>
           <button
             onClick={handleCopyNames}
-            className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-[#2D3342] dark:hover:bg-[#383F52] dark:text-slate-300 transition-colors border border-slate-200 dark:border-[#383F52] ml-auto"
+            className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-[#2D3342] dark:hover:bg-[#383F52] dark:text-slate-300 transition-colors border border-slate-200 dark:border-[#383F52] ml-auto"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-            คัดลอกรายชื่อที่แสดงอยู่
+            คัดลอกรายชื่อ
           </button>
         </div>
       </div>

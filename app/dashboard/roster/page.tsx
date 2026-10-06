@@ -892,10 +892,19 @@ export default function RosterPage() {
             <div className="p-6 gap-6 grid grid-cols-1 md:grid-cols-2 max-h-[70vh] overflow-y-auto">
               {/* In Excel but NOT in Web */}
               <div className="border border-rose-100 dark:border-rose-900/30 bg-rose-50 dark:bg-rose-900/10 rounded-xl p-4">
-                <h3 className="font-bold text-rose-600 dark:text-rose-400 mb-3 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                  ยังไม่เข้าเว็ป ({excelDiffData.inExcelNotInWeb.length})
-                </h3>
+                <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                      ยังไม่เข้าเว็ป ({excelDiffData.inExcelNotInWeb.length})
+                    </h3>
+                    <button onClick={() => {
+                      const text = excelDiffData.inExcelNotInWeb.join("\n");
+                      navigator.clipboard.writeText(text);
+                      useModalStore.getState().alert("คัดลอกรายชื่อสำเร็จ");
+                    }} className="text-xs font-bold text-rose-700 dark:text-rose-400 hover:underline px-2 py-1 bg-rose-100 dark:bg-rose-900/40 rounded">
+                      คัดลอก
+                    </button>
+                  </div>
                 <ul className="space-y-1.5 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                   {excelDiffData.inExcelNotInWeb.length === 0 ? (
                     <li className="text-sm text-slate-500">- ไม่มีชื่อตกหล่น -</li>
@@ -909,19 +918,54 @@ export default function RosterPage() {
 
               {/* In Web but NOT in Excel */}
               <div className="border border-orange-100 dark:border-orange-900/30 bg-orange-50 dark:bg-orange-900/10 rounded-xl p-4">
-                <h3 className="font-bold text-orange-600 dark:text-orange-400 mb-3 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-                  รายชื่อไม่ตรงกับเกม ({excelDiffData.inWebNotInExcel.length})
-                </h3>
+                <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-bold text-orange-600 dark:text-orange-400 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                      รายชื่อไม่ตรงกับเกม ({excelDiffData.inWebNotInExcel.length})
+                    </h3>
+                    <button onClick={() => {
+                      let nameToDiscordId = new Map();
+                      if (roster) {
+                        Object.values(roster).forEach((members: any) => {
+                          if (Array.isArray(members)) {
+                            members.forEach((m: any) => {
+                              if (m.name && m.discordId) {
+                                nameToDiscordId.set(m.name.toLowerCase().trim(), m.discordId);
+                              }
+                            });
+                          }
+                        });
+                      }
+                      const text = excelDiffData.inWebNotInExcel.map(name => {
+                        const dId = nameToDiscordId.get(name.toLowerCase().trim());
+                        return dId ? `${name} <@${dId}>` : name;
+                      }).join("\n");
+                      navigator.clipboard.writeText(text);
+                      useModalStore.getState().alert("คัดลอกรายชื่อสำเร็จ");
+                    }} className="text-xs font-bold text-orange-700 dark:text-orange-400 hover:underline px-2 py-1 bg-orange-100 dark:bg-orange-900/40 rounded">
+                      คัดลอก
+                    </button>
+                  </div>
                 <ul className="space-y-1.5 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                   {excelDiffData.inWebNotInExcel.length === 0 ? (
-                    <li className="text-sm text-slate-500">- ข้อมูลตรงกันทั้งหมด -</li>
-                  ) : excelDiffData.inWebNotInExcel.map((name, i) => (
-                    <li key={i} className="text-sm font-medium text-orange-700 dark:text-orange-300 bg-white/50 dark:bg-black/20 px-3 py-1.5 rounded-lg border border-orange-100/50 dark:border-orange-800/30">
-                      {name}
-                    </li>
-                  ))}
-                </ul>
+                      <li className="text-sm text-slate-500">- ข้อมูลตรงกันทั้งหมด -</li>
+                    ) : excelDiffData.inWebNotInExcel.map((name, i) => {
+                      let dId = null;
+                      if (roster) {
+                        Object.values(roster).forEach((members: any) => {
+                          if (Array.isArray(members)) {
+                            const found = members.find((m: any) => m.name?.toLowerCase().trim() === name.toLowerCase().trim());
+                            if (found && found.discordId) dId = found.discordId;
+                          }
+                        });
+                      }
+                      return (
+                      <li key={i} className="text-sm font-medium text-orange-700 dark:text-orange-300 bg-white/50 dark:bg-black/20 px-3 py-1.5 rounded-lg border border-orange-100/50 dark:border-orange-800/30 flex justify-between items-center">
+                        <span>{name}</span>
+                        {dId && <span className="text-xs text-orange-500 opacity-70 cursor-help" title={`<@${dId}>`}>มี Discord</span>}
+                      </li>
+                    )})}
+                  </ul>
               </div>
             </div>
             <div className="bg-slate-50 dark:bg-[#1C1F27] px-6 py-4 border-t border-slate-100 dark:border-[#2D3342] flex justify-end">

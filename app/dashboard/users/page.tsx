@@ -193,7 +193,20 @@ export default function UsersPage() {
   });
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterNoDiscord, setFilterNoDiscord] = useState(false);
   const [showSyncModal, setShowSyncModal] = useState(false);
+
+    const handleCopyNames = () => {
+    const text = sortedUsers.map(u => {
+      let line = u.gameUsername || u.discordUsername || "Unknown";
+      if (u.discordId) {
+        line += ` <@${u.discordId}>`;
+      }
+      return line;
+    }).join("\n");
+    navigator.clipboard.writeText(text);
+    useModalStore.getState().alert("คัดลอกรายชื่อสำเร็จ");
+  };
 
   const { data: rosterData } = useQuery({
     queryKey: ["roster"],
@@ -224,6 +237,7 @@ export default function UsersPage() {
   // Sort and filter users: admins first, then by gameUsername
   const filteredUsers = userList.filter((u) => {
     if (!u) return false;
+    if (filterNoDiscord && (u.inactiveReason !== "not_in_guild" && u.inactiveReason !== "missing_role")) return false;
     const search = searchQuery.toLowerCase();
     const discordName = (u.discordUsername || "").toLowerCase();
     const gameName = (u.gameUsername || "").toLowerCase();
@@ -309,6 +323,25 @@ export default function UsersPage() {
           >
             <RefreshCw className={`w-4 h-4 ${syncDiscordMutation.isPending ? "animate-spin" : ""}`} />
             ซิงค์ Discord
+          </button>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full mt-3">
+          <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
+            <input 
+              type="checkbox" 
+              checked={filterNoDiscord} 
+              onChange={(e) => setFilterNoDiscord(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-300 text-[#0b3d63] focus:ring-[#0b3d63]"
+            />
+            คนที่ไม่มีดิส / ไม่มียศ HUH?
+          </label>
+          <button
+            onClick={handleCopyNames}
+            className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-[#2D3342] dark:hover:bg-[#383F52] dark:text-slate-300 transition-colors border border-slate-200 dark:border-[#383F52] ml-auto"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+            คัดลอกรายชื่อที่แสดงอยู่
           </button>
         </div>
       </div>
@@ -735,11 +768,18 @@ export default function UsersPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Left: In Roster but Not In Users */}
                       <div className="bg-white dark:bg-[#232733] rounded-xl border border-red-200 dark:border-red-900/50 overflow-hidden flex flex-col">
-                        <div className="bg-red-50 dark:bg-red-900/20 px-4 py-3 border-b border-red-100 dark:border-red-900/30">
+                        <div className="bg-red-50 dark:bg-red-900/20 px-4 py-3 border-b border-red-100 dark:border-red-900/30 flex justify-between items-center">
                           <h4 className="font-bold text-red-700 dark:text-red-400 flex items-center gap-2">
                             <span>มีใน Roster แต่ไม่พบในระบบผู้ใช้</span>
                             <span className="bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 text-xs px-2 py-0.5 rounded-full">{rosterNotInUsers.length}</span>
                           </h4>
+                          <button onClick={() => {
+                            const text = rosterNotInUsers.map(r => r.name).join("\n");
+                            navigator.clipboard.writeText(text);
+                            useModalStore.getState().alert("คัดลอกรายชื่อสำเร็จ");
+                          }} className="text-xs font-bold text-red-700 dark:text-red-400 hover:underline px-2 py-1 bg-red-100 dark:bg-red-900/40 rounded">
+                            คัดลอก
+                          </button>
                         </div>
                         <div className="p-4 flex-1 overflow-y-auto max-h-[50vh]">
                           {rosterNotInUsers.length === 0 ? (
@@ -759,11 +799,22 @@ export default function UsersPage() {
 
                       {/* Right: In Users but Not In Roster */}
                       <div className="bg-white dark:bg-[#232733] rounded-xl border border-amber-200 dark:border-amber-900/50 overflow-hidden flex flex-col">
-                        <div className="bg-amber-50 dark:bg-amber-900/20 px-4 py-3 border-b border-amber-100 dark:border-amber-900/30">
+                        <div className="bg-amber-50 dark:bg-amber-900/20 px-4 py-3 border-b border-amber-100 dark:border-amber-900/30 flex justify-between items-center">
                           <h4 className="font-bold text-amber-700 dark:text-amber-400 flex items-center gap-2">
                             <span>มีในระบบผู้ใช้ แต่ไม่พบใน Roster</span>
                             <span className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 text-xs px-2 py-0.5 rounded-full">{usersNotInRoster.length}</span>
                           </h4>
+                          <button onClick={() => {
+                            const text = usersNotInRoster.map(u => {
+                              let line = u.gameUsername || u.discordUsername;
+                              if (u.discordId) line += ` <@${u.discordId}>`;
+                              return line;
+                            }).join("\n");
+                            navigator.clipboard.writeText(text);
+                            useModalStore.getState().alert("คัดลอกรายชื่อสำเร็จ");
+                          }} className="text-xs font-bold text-amber-700 dark:text-amber-400 hover:underline px-2 py-1 bg-amber-100 dark:bg-amber-900/40 rounded">
+                            คัดลอก
+                          </button>
                         </div>
                         <div className="p-4 flex-1 overflow-y-auto max-h-[50vh]">
                           {usersNotInRoster.length === 0 ? (

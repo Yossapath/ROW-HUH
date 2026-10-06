@@ -269,36 +269,37 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6 bg-[#f0f6fc] dark:bg-[#1C1F27] min-h-screen p-4 lg:p-6 relative">
-      {/* Header Card */}
-      <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] p-5 mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#0b3d63] dark:bg-[#3B66D1] shadow-sm"
-          >
-            <UserCog className="w-6 h-6 text-white" />
+      {/* Header Container */}
+      <div className="flex flex-col gap-4 mb-5">
+        {/* Header Card */}
+        <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2D3342] p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#0b3d63] dark:bg-[#3B66D1] shadow-sm"
+            >
+              <UserCog className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-slate-800 dark:text-white">จัดการผู้ใช้ (User Management)</h1>
+              <p className="text-sm text-slate-500 dark:text-[#8B93A7]">
+                สมาชิกล็อกอินทั้งหมด <span className="font-bold text-[#0b3d63] dark:text-[#82A0F5]">{userList.length}</span> คน
+                {users.filter(u => !u.gameUsername || !u.class).length > 0 && (
+                  <span className="ml-2 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded">
+                    ⚠ {users.filter(u => !u.gameUsername || !u.class).length} คนยังไม่กรอกข้อมูล
+                  </span>
+                )}
+                {users.filter(u => u.isActive === false).length > 0 && (
+                  <span className="ml-2 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded">
+                    Inactive {users.filter(u => u.isActive === false).length} คน
+                  </span>
+                )}
+                {searchQuery && ` (ค้นพบ ${filteredUsers.length} คน)`}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-slate-800 dark:text-white">จัดการผู้ใช้ (User Management)</h1>
-            <p className="text-sm text-slate-500 dark:text-[#8B93A7]">
-              สมาชิกล็อกอินทั้งหมด <span className="font-bold text-[#0b3d63] dark:text-[#82A0F5]">{userList.length}</span> คน
-              {users.filter(u => !u.gameUsername || !u.class).length > 0 && (
-                <span className="ml-2 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded">
-                  ⚠ {users.filter(u => !u.gameUsername || !u.class).length} คนยังไม่กรอกข้อมูล
-                </span>
-              )}
-              {users.filter(u => u.isActive === false).length > 0 && (
-                <span className="ml-2 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded">
-                  Inactive {users.filter(u => u.isActive === false).length} คน
-                </span>
-              )}
-              {searchQuery && ` (ค้นพบ ${filteredUsers.length} คน)`}
-            </p>
-          </div>
-        </div>
-        
-        {/* Search & Actions */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-lg">
-          <div className="relative w-full">
+          
+          {/* Search */}
+          <div className="relative w-full md:max-w-xs">
             <input
               type="text"
               placeholder="ค้นหาชื่อในเกม หรือ Discord..."
@@ -310,36 +311,40 @@ export default function UsersPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
           </div>
+        </div>
+
+        {/* Action Bar */}
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setShowSyncModal(true)}
-            className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-amber-100 hover:bg-amber-200 text-amber-700 dark:bg-amber-500/20 dark:hover:bg-amber-500/30 dark:text-amber-400 transition-colors border border-amber-200 dark:border-amber-500/30"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-amber-100 hover:bg-amber-200 text-amber-700 dark:bg-amber-500/20 dark:hover:bg-amber-500/30 dark:text-amber-400 transition-colors border border-amber-200 dark:border-amber-500/30"
           >
             <AlertTriangle className="w-4 h-4" />
             ตรวจสอบรายชื่อตกหล่น
           </button>
+
           <button
             onClick={() => syncDiscordMutation.mutate()}
             disabled={syncDiscordMutation.isPending}
-            className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-500/20 dark:hover:bg-indigo-500/30 dark:text-indigo-300 transition-colors border border-indigo-200 dark:border-indigo-500/30 disabled:opacity-60"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-500/20 dark:hover:bg-indigo-500/30 dark:text-indigo-300 transition-colors border border-indigo-200 dark:border-indigo-500/30 disabled:opacity-60"
           >
             <RefreshCw className={`w-4 h-4 ${syncDiscordMutation.isPending ? "animate-spin" : ""}`} />
             ซิงค์ Discord
           </button>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full mt-3">
+
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38] text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#4D73CD]"
+            className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-[#2D3342] bg-white dark:bg-[#272C38] text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#4D73CD]"
           >
             <option value="all">แสดงทั้งหมด</option>
             <option value="no_discord">คนที่ไม่มีดิส</option>
             <option value="no_role">คนที่ไม่มียศ HUH?</option>
           </select>
+          
           <button
             onClick={handleCopyNames}
-            className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-[#2D3342] dark:hover:bg-[#383F52] dark:text-slate-300 transition-colors border border-slate-200 dark:border-[#383F52] ml-auto"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-[#2D3342] dark:hover:bg-[#383F52] dark:text-slate-300 transition-colors border border-slate-200 dark:border-[#383F52] ml-auto"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
             คัดลอกรายชื่อ

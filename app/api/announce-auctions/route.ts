@@ -42,7 +42,7 @@ export async function POST(request: Request) {
 
       let itemText = `**${auction.itemName}** ${auction.category ? `(${formatCategoryLabel(auction.category)})` : ''}\n`;
       waiting.forEach((q, idx) => {
-        itemText += `<@${q.userId}> | ${q.characterName} | Queue ${idx + 1}\n`;
+        itemText += `<@${q.userId}> | ${q.characterName} | คิวที่ ${idx + 1}\n`;
       });
       itemText += "\n";
 

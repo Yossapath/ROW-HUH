@@ -64,9 +64,9 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
         const waiting = queueData.filter((q: any) => q.status === "waiting");
         
         if (waiting.length > 0) {
-          copyText += `📦 ${formatItemName(auction.itemName, auction.category)}\n`;
+          copyText += `${formatItemName(auction.itemName, auction.category)}\n`;
           waiting.forEach((q: any, qIdx: number) => {
-            copyText += `<@${q.userId}> [${q.characterName}] [Queue ${qIdx + 1}]\n`;
+            copyText += `<@${q.userId}> [${q.characterName}] [คิวที่ ${qIdx + 1}]\n`;
           });
           copyText += `\n`;
         }
@@ -439,8 +439,19 @@ export function AuctionQueuesView({ auctions, favorites = [], onToggleFavorite }
                         </span>
                       )}
                       <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400">
-                        คิวรอ: {selectedAuction.queueCount}
+                        คิวทั้งหมด: {selectedAuction.queueCount}
                       </span>
+                      {(() => {
+                        const myIdx = (queue || []).findIndex(q => q.userId === user?.discordId || q.characterName === user?.gameUsername);
+                        if (myIdx >= 0) {
+                          return (
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400">
+                              ลำดับคิวของคุณ: {myIdx + 1}
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   </div>
                 </div>

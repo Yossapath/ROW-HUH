@@ -327,6 +327,11 @@ export default function AttendancePage() {
     );
   }, [isAdmin]);
 
+  const handleCheckAll = useCallback(() => {
+    if (!isAdmin) return;
+    setRows((prev) => prev.map((r) => r.status === "รอเช็ค" ? { ...r, status: "มา" } : r));
+  }, [isAdmin]);
+
   const handleImport = () => {
     if (!importText.trim()) return;
     const lines = importText.split("\n").map(l => l.trim().toLowerCase()).filter(Boolean);
@@ -618,12 +623,22 @@ export default function AttendancePage() {
               )}
             </div>
             {isAdmin && rows.length > 0 && (
-              <button
-                onClick={() => setShowImport(true)}
-                className="text-xs font-bold bg-blue-50 dark:bg-[#3B66D1]/25 text-blue-600 dark:text-white border border-blue-200 dark:border-[#4D73CD]/40 px-3 py-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-sky-900/40 transition-colors"
-              >
-                นำเข้ารายชื่อ (Import)
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={handleCheckAll}
+                  className="text-xs font-bold bg-green-50 dark:bg-green-500/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-500/30 px-3 py-1.5 rounded-lg hover:bg-green-100 dark:hover:bg-green-500/30 transition-colors flex items-center gap-1.5"
+                >
+                  <CheckSquare className="w-3.5 h-3.5" />
+                  เช็คชื่อทุกคน
+                </button>
+                <button
+                  onClick={() => setShowImport(true)}
+                  className="text-xs font-bold bg-blue-50 dark:bg-[#3B66D1]/25 text-blue-600 dark:text-white border border-blue-200 dark:border-[#4D73CD]/40 px-3 py-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-sky-900/40 transition-colors flex items-center gap-1.5"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  นำเข้ารายชื่อ (Import)
+                </button>
+              </div>
             )}
             <div className="w-full sm:w-auto mt-2 sm:mt-0 flex-1 sm:max-w-xs">
               <input 

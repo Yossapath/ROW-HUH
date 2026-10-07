@@ -628,7 +628,6 @@ export default function AttendancePage() {
                   onClick={handleCheckAll}
                   className="text-xs font-bold bg-green-50 dark:bg-green-500/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-500/30 px-3 py-1.5 rounded-lg hover:bg-green-100 dark:hover:bg-green-500/30 transition-colors flex items-center gap-1.5"
                 >
-                  <CheckSquare className="w-3.5 h-3.5" />
                   เช็คชื่อทุกคน
                 </button>
                 <button
@@ -669,7 +668,8 @@ export default function AttendancePage() {
           ) : (
             <>
               <div className="lg:hidden flex flex-col gap-2 p-3 pb-6">
-                {rows.filter(r => !search || r.name.toLowerCase().includes(search.toLowerCase())).map((r, i) => {
+                {rows.map((r, i) => {
+                  if (search && !r.name.toLowerCase().includes(search.toLowerCase())) return null;
                   const jobColor = JOB_COLORS[r.job] ?? "#64748b";
                   const sc = r.status ? STATUS_CONFIG[r.status] : null;
                   const iconSrc = JOB_ICONS[r.job];

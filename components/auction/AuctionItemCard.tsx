@@ -23,8 +23,9 @@ export function AuctionItemCard({ auction, isAdmin, myReservations, isFavorite, 
   const queryClient = useQueryClient();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
-  const myReservation = myReservations.find(r => r.auctionId === auction.id && r.status === "waiting");
+  const myReservation = myReservations.find(r => r.auctionId === auction.id && r.status === "waiting") || myReservations.find(r => r.auctionId === auction.id && r.status === "won");
   const isMyReservation = !!myReservation;
+  const isWon = myReservation?.status === "won";
   const joinMutation = useMutation({
     mutationFn: async () => {
       if (!user?.gameUsername || !user?.class) throw new Error("Please complete your profile first");
@@ -119,7 +120,7 @@ export function AuctionItemCard({ auction, isAdmin, myReservations, isFavorite, 
                   💎 {auction.price.toLocaleString()} Starstone
                 </span>
               )}
-              {isMyReservation && (
+              {isMyReservation && !isWon && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center gap-1">
                   <span>คุณอยู่ในคิวที่ {myReservation.queuePosition ?? myReservation.queueNumber}</span>
                   {typeof myReservation.peopleAhead === "number" && (
@@ -169,7 +170,7 @@ export function AuctionItemCard({ auction, isAdmin, myReservations, isFavorite, 
             </button>
           )}
 
-          {isMyReservation && (
+          {isMyReservation && !isWon && (
             <button
               onClick={() => cancelMutation.mutate(myReservation.id)}
               disabled={cancelMutation.isPending}
@@ -177,6 +178,25 @@ export function AuctionItemCard({ auction, isAdmin, myReservations, isFavorite, 
             >
               {cancelMutation.isPending ? "..." : "ยกเลิกคิว"}
             </button>
+          )}
+
+          {isMyReservation && isWon && (
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-lg border border-emerald-200 dark:border-emerald-500/30">
+                ได้รับของแล้ว
+              </span>
+              <button
+                onClick={() => {
+                  if (confirm("หากสละสิทธิ์ สถานะได้รับของแล้วจะหายไป และคุณสามารถกดจองรอบใหม่ได้ ยืนยันหรือไม่?")) {
+                    cancelMutation.mutate(myReservation.id);
+                  }
+                }}
+                disabled={cancelMutation.isPending}
+                className="px-4 py-1.5 bg-slate-100 dark:bg-[#2D3342] text-slate-600 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-600 disabled:opacity-50"
+              >
+                {cancelMutation.isPending ? "..." : "สละสิทธิ"}
+              </button>
+            </div>
           )}
           
           {isAdmin && (

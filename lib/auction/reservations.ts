@@ -169,8 +169,8 @@ export async function cancelReservation(
     if (reservation.userId !== userId && !isAdmin) {
       return { success: false, error: "Permission denied" };
     }
-    if (reservation.status !== "waiting") {
-      return { success: false, error: "Only waiting reservations can be cancelled" };
+    if (reservation.status !== "waiting" && reservation.status !== "won") {
+      return { success: false, error: "Only waiting or won reservations can be cancelled" };
     }
 
     const auctionId = reservation.auctionId;

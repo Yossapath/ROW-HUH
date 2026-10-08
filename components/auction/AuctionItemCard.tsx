@@ -181,22 +181,9 @@ export function AuctionItemCard({ auction, isAdmin, myReservations, isFavorite, 
           )}
 
           {isMyReservation && isWon && (
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-lg border border-emerald-200 dark:border-emerald-500/30">
-                ได้รับของแล้ว
-              </span>
-              <button
-                onClick={() => {
-                  if (confirm("หากสละสิทธิ์ สถานะได้รับของแล้วจะหายไป และคุณสามารถกดจองรอบใหม่ได้ ยืนยันหรือไม่?")) {
-                    cancelMutation.mutate(myReservation.id);
-                  }
-                }}
-                disabled={cancelMutation.isPending}
-                className="px-4 py-1.5 bg-slate-100 dark:bg-[#2D3342] text-slate-600 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-600 disabled:opacity-50"
-              >
-                {cancelMutation.isPending ? "..." : "สละสิทธิ"}
-              </button>
-            </div>
+            <span className="px-4 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-lg border border-emerald-200 dark:border-emerald-500/30 whitespace-nowrap">
+              ได้ของแล้ว
+            </span>
           )}
           
           {isAdmin && (

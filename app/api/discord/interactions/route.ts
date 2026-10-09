@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       return new Response("Missing signature or public key", { status: 401 });
     }
 
-    const isValidRequest = verifyKey(
+    const isValidRequest = await verifyKey(
       rawBody,
       signature,
       timestamp,

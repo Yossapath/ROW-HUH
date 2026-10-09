@@ -1,38 +1,40 @@
 ﻿const commands = [
+  // --- THAI COMMANDS ---
   {
     name: "ลา",
-    description: "บันทึกการลากิลวอร์ของสมาชิก (ใช้งานโดยแอดมินหรือตัวผู้เล่นเอง)",
+    description: "บันทึกการลากิลวอร์ของสมาชิก",
     options: [
-      {
-        type: 6, // USER type
-        name: "user",
-        description: "เลือกบุคคลที่ต้องการแจ้งลา (พิมพ์ @ชื่อ)",
-        required: true,
-      },
-      {
-        type: 3, // STRING type
-        name: "reason",
-        description: "เหตุผลที่ลา",
-        required: true,
-      }
+      { type: 6, name: "user", description: "เลือกบุคคลที่ต้องการแจ้งลา (พิมพ์ @ชื่อ)", required: true },
+      { type: 3, name: "วันลา", description: "วันที่ต้องการลา (เช่น 15/10 หรือ 2026-10-15)", required: true },
+      { type: 3, name: "reason", description: "เหตุผลที่ลา", required: true }
     ]
   },
   {
     name: "เปลี่ยนชื่อ",
-    description: "เปลี่ยนชื่อตัวละครในระบบเว็บ (กำลังพัฒนา)",
+    description: "เปลี่ยนชื่อตัวละครในระบบเว็บ",
     options: [
-      {
-        type: 6,
-        name: "user",
-        description: "เลือกบุคคลที่ต้องการเปลี่ยนชื่อ (พิมพ์ @ชื่อ)",
-        required: true,
-      },
-      {
-        type: 3,
-        name: "new_name",
-        description: "ชื่อใหม่ที่ต้องการเปลี่ยน",
-        required: true,
-      }
+      { type: 6, name: "user", description: "เลือกบุคคลที่ต้องการเปลี่ยนชื่อ (พิมพ์ @ชื่อ)", required: true },
+      { type: 3, name: "ชื่อเก่า", description: "ชื่อตัวละครเดิม", required: true },
+      { type: 3, name: "ชื่อใหม่", description: "ชื่อใหม่ที่ต้องการเปลี่ยน", required: true }
+    ]
+  },
+  // --- ENGLISH COMMANDS ---
+  {
+    name: "leave",
+    description: "Submit a leave request for GVG",
+    options: [
+      { type: 6, name: "user", description: "Select the user to put on leave (@name)", required: true },
+      { type: 3, name: "date", description: "Date of leave (e.g., 15/10 or 2026-10-15)", required: true },
+      { type: 3, name: "reason", description: "Reason for leave", required: true }
+    ]
+  },
+  {
+    name: "changename",
+    description: "Change character name in the web system",
+    options: [
+      { type: 6, name: "user", description: "Select the user (@name)", required: true },
+      { type: 3, name: "oldname", description: "Current character name", required: true },
+      { type: 3, name: "newname", description: "New character name", required: true }
     ]
   }
 ];

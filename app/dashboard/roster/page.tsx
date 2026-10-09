@@ -111,6 +111,23 @@ export default function RosterPage() {
   const handleAddMember = async () => {
     if (!addName || !addJob || !addPower) return useModalStore.getState().alert("กรุณากรอกข้อมูลให้ครบถ้วน");
     
+    // Check if name already exists
+    const normalizeName = (n: string) => n.replace(/[^a-zA-Z0-9ก-๙]/g, "").toLowerCase();
+    const searchName = normalizeName(addName);
+    let alreadyExists = false;
+    if (roster) {
+      Object.values(roster).forEach((members: any) => {
+        if (Array.isArray(members)) {
+           if (members.some((m: any) => normalizeName(m.name) === searchName)) {
+               alreadyExists = true;
+           }
+        }
+      });
+    }
+    if (alreadyExists) {
+      return useModalStore.getState().alert("ไม่สามารถเพิ่มได้: ชื่อ "" + addName + "" มีอยู่ในระบบแล้ว!");
+    }
+
     setIsSaving(true);
     try {
       await axios.post("/api/roster/member", {

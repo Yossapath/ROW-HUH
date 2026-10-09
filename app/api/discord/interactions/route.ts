@@ -179,6 +179,13 @@ export async function POST(req: Request) {
 
           // 3. เริ่มอัปเดตข้อมูลแบบ Batch / Transaction
           await db.runTransaction(async (t: any) => {
+             // --- READS FIRST (Firestore rule) ---
+             const tDoc = await t.get(teamsRef());
+             
+             const cRef = db.collection("settings").doc("castleTeams");
+             const cDoc = await t.get(cRef);
+             
+             // --- WRITES SECOND ---
              // 3.1 Roster
              if (foundInRoster) {
                 t.set(rosterRef(), rosterData);
@@ -190,7 +197,6 @@ export async function POST(req: Request) {
              }
              
              // 3.3 Teams / Castle Data
-             const tDoc = await t.get(teamsRef());
              if (tDoc.exists) {
                const { changed, updatedData } = updateMemberNameInTeamsData(tDoc.data(), oldName, newName);
                if (changed) {
@@ -198,8 +204,7 @@ export async function POST(req: Request) {
                  t.set(teamsRef(), { ...updatedData, version: nextVersion, updatedAt: Date.now() }, { merge: true });
                }
              }
-             const cRef = db.collection("settings").doc("castleTeams");
-             const cDoc = await t.get(cRef);
+
              if (cDoc.exists) {
                const { changed, updatedData } = updateMemberNameInTeamsData(cDoc.data(), oldName, newName);
                if (changed) {

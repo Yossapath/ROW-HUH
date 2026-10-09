@@ -19,6 +19,7 @@ export default function RosterPage() {
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
   const [showManualOnly, setShowManualOnly] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const importNewInputRef = useRef<HTMLInputElement>(null);
   
   // Alert Modal States
   const [showModal, setShowModal] = useState(false);
@@ -197,6 +198,94 @@ export default function RosterPage() {
     
     return result;
   }, [flatMembers, searchQuery, selectedJobs, showManualOnly]);
+
+  const handleImportNewMembers = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const arrayBuffer = evt.target?.result as ArrayBuffer;
+        const data = new Uint8Array(arrayBuffer);
+        const wb = XLSX.read(data, { type: "array" });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const jsonData = XLSX.utils.sheet_to_json<any>(ws);
+
+        if (!roster) return;
+
+        let newRoster = { ...roster };
+        let addedCount = 0;
+
+        const currentMembersMap = new Map();
+        const normalizeName = (name: string) => {
+            if (!name) return "";
+            return name.toString().replace(/[^a-zA-Z0-9ก-๙]/g, "").toLowerCase();
+        };
+
+        Object.keys(newRoster).forEach(job => {
+            if (Array.isArray(newRoster[job])) {
+                newRoster[job].forEach((m: any) => {
+                    currentMembersMap.set(normalizeName(m.name), true);
+                });
+            }
+        });
+
+        jsonData.forEach((row, idx) => {
+          const playerName = row["name"] || row["ชื่อ"] || row["Name"] || Object.values(row)[0];
+          if (!playerName) return;
+
+          const searchName = normalizeName(playerName);
+          if (!currentMembersMap.has(searchName)) {
+             const jobStr = row["class"] || row["อาชีพ"] || row["Class"] || "";
+             let job = mapClassName(jobStr);
+             if (!JOB_LIST.includes(job)) job = JOB_LIST[0]; // fallback
+
+             const power = Number(row["cp"] || row["พลังรบ"]) || 0;
+             const gvgRaw = row["สิทสนามหลัก หรือ รอง"] || row["สนาม"] || row["gvg"];
+             const gvgField = (String(gvgRaw).includes("หลัก") || String(gvgRaw).toLowerCase() === "main") ? "main" : "sub";
+
+             if (!newRoster[job]) newRoster[job] = [];
+             newRoster[job].push({
+               name: String(playerName).trim(),
+               job,
+               power,
+               gvgField,
+               discordId: "manual_" + Date.now() + "_" + Math.floor(Math.random() * 10000) + "_" + idx,
+               role: "อิสระ (ให้ระบบจัดให้)",
+               activity: 0,
+               weeklyCpDiff: 0
+             });
+             currentMembersMap.set(searchName, true);
+             addedCount++;
+          }
+        });
+
+        if (addedCount > 0) {
+           setIsSaving(true);
+           try {
+               await axios.put("/api/roster", newRoster);
+               queryClient.invalidateQueries({ queryKey: ["roster"] });
+               useModalStore.getState().alert("เพิ่มสมาชิกใหม่สำเร็จ " + addedCount + " คน!");
+           } catch (error: any) {
+               useModalStore.getState().alert("เกิดข้อผิดพลาดในการอัปเดต: " + (error.message || ""));
+           } finally {
+               setIsSaving(false);
+           }
+        } else {
+           useModalStore.getState().alert("ไม่มีรายชื่อใหม่ที่ถูกเพิ่ม (อาจมีในระบบแล้วทั้งหมด)");
+        }
+        
+      } catch (error) {
+        console.error(error);
+        useModalStore.getState().alert("เกิดข้อผิดพลาดในการอ่านไฟล์ Excel");
+      }
+      
+      if (importNewInputRef.current) importNewInputRef.current.value = "";
+    };
+    reader.readAsArrayBuffer(file);
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -420,6 +509,13 @@ export default function RosterPage() {
                 className="hidden" 
                 ref={fileInputRef} 
                 onChange={handleFileUpload} 
+              />
+              <input 
+                type="file" 
+                accept=".xlsx, .xls" 
+                className="hidden" 
+                ref={importNewInputRef} 
+                onChange={handleImportNewMembers} 
               />
               <button 
                 onClick={() => fileInputRef.current?.click()}
@@ -916,7 +1012,7 @@ export default function RosterPage() {
                   <button
                     onClick={() => {
                       setIsAddSelectionOpen(false);
-                      fileInputRef.current?.click();
+                      importNewInputRef.current?.click();
                     }}
                     className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-blue-100 dark:border-blue-900/30 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-left group"
                   >

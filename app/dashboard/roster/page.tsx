@@ -421,6 +421,14 @@ export default function RosterPage() {
                 ref={fileInputRef} 
                 onChange={handleFileUpload} 
               />
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isSaving}
+                className="flex items-center gap-2 px-4 py-2 bg-[#3B66D1] hover:bg-[#4D73CD] text-white rounded-xl font-bold transition-colors shadow-sm text-sm disabled:opacity-50"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                อัปเดต Excel
+              </button>
               
             </div>
           )}

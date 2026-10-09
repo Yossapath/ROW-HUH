@@ -125,7 +125,7 @@ export default function RosterPage() {
       });
     }
     if (alreadyExists) {
-      return useModalStore.getState().alert("ไม่สามารถเพิ่มได้: ชื่อ "" + addName + "" มีอยู่ในระบบแล้ว!");
+      return useModalStore.getState().alert("ไม่สามารถเพิ่มได้: ชื่อ " + addName + " มีอยู่ในระบบแล้ว!");
     }
 
     setIsSaving(true);

@@ -1,6 +1,7 @@
 ﻿export const dynamic = "force-dynamic";
 import { verifyKey } from "discord-interactions";
-import { getDb, COLL_USER, leaveRef } from "@/lib/firebase-admin";
+import { getDb, COLL_USER, leaveRef, rosterRef, teamsRef } from "@/lib/firebase-admin";
+import { updateMemberNameInTeamsData } from "@/lib/team-sync";
 import { logAction } from "@/lib/server-utils";
 
 function parseDateInput(input: string): string {
@@ -116,15 +117,139 @@ export async function POST(req: Request) {
         }), { headers: { "Content-Type": "application/json" } });
       }
 
-      // ---- Command: /เปลี่ยนชื่อ or /changename ----
+            // ---- Command: /เปลี่ยนชื่อ or /changename ----
       if (name === "เปลี่ยนชื่อ" || name === "changename") {
         const targetUserId = options?.find((o: any) => o.name === "user")?.value;
-        const newName = options?.find((o: any) => o.name === "ชื่อใหม่" || o.name === "newname")?.value;
+        let newName = options?.find((o: any) => o.name === "ชื่อใหม่" || o.name === "newname")?.value;
         
-        return new Response(JSON.stringify({
-          type: 4,
-          data: { content: `🚧 รับคำสั่งเปลี่ยนชื่อให้ใหม่เป็น **${newName}** แล้ว\n(ระบบแปลง Database อยู่ระหว่างพัฒนา จะใช้ได้เร็วๆ นี้ครับ)` }
-        }), { headers: { "Content-Type": "application/json" } });
+        if (!targetUserId || !newName) {
+          return new Response(JSON.stringify({
+            type: 4,
+            data: { content: "❌ ข้อมูลไม่ครบถ้วน กรุณาระบุ user และ ชื่อใหม่" }
+          }), { headers: { "Content-Type": "application/json" } });
+        }
+
+        newName = newName.trim();
+        const db = getDb();
+        
+        try {
+          let oldName = "";
+          let userClass = "";
+          
+          // 1. ค้นหาผู้เล่นจาก User Collection ก่อน
+          const userQuery = await db.collection(COLL_USER).where("discordId", "==", targetUserId).limit(1).get();
+          let userDocRef = null;
+          if (!userQuery.empty) {
+             const ud = userQuery.docs[0];
+             oldName = ud.data().gameUsername;
+             userClass = ud.data().class;
+             userDocRef = ud.ref;
+          }
+          
+          // 2. ไปหาใน Roster (เผื่อกรณี manual_ user)
+          const rDoc = await rosterRef.get();
+          let rosterData = rDoc.exists ? rDoc.data() : null;
+          let foundInRoster = false;
+          
+          if (rosterData) {
+            for (const job of Object.keys(rosterData)) {
+              if (Array.isArray(rosterData[job])) {
+                const idx = rosterData[job].findIndex((m: any) => m.discordId === targetUserId);
+                if (idx !== -1) {
+                   oldName = rosterData[job][idx].name;
+                   userClass = job;
+                   rosterData[job][idx].name = newName;
+                   foundInRoster = true;
+                   break;
+                }
+              }
+            }
+          }
+
+          if (!oldName) {
+            return new Response(JSON.stringify({
+              type: 4,
+              data: { content: `❌ ไม่พบข้อมูลของผู้เล่น <@${targetUserId}> ในระบบ (ยังไม่เคยเชื่อมต่อดิสคอร์ดหรือไม่มีในรายชื่อ)` }
+            }), { headers: { "Content-Type": "application/json" } });
+          }
+
+          // 3. เริ่มอัปเดตข้อมูลแบบ Batch / Transaction
+          await db.runTransaction(async (t: any) => {
+             // 3.1 Roster
+             if (foundInRoster) {
+                t.set(rosterRef, rosterData);
+             }
+             
+             // 3.2 User Collection
+             if (userDocRef) {
+                t.update(userDocRef, { gameUsername: newName });
+             }
+             
+             // 3.3 Teams / Castle Data
+             const tDoc = await t.get(teamsRef);
+             if (tDoc.exists) {
+               const { changed, updatedData } = updateMemberNameInTeamsData(tDoc.data(), oldName, newName);
+               if (changed) {
+                 const nextVersion = typeof tDoc.data()?.version === "number" ? tDoc.data().version + 1 : 1;
+                 t.set(teamsRef, { ...updatedData, version: nextVersion, updatedAt: Date.now() }, { merge: true });
+               }
+             }
+             const cRef = db.collection("settings").doc("castleTeams");
+             const cDoc = await t.get(cRef);
+             if (cDoc.exists) {
+               const { changed, updatedData } = updateMemberNameInTeamsData(cDoc.data(), oldName, newName);
+               if (changed) {
+                 const nextVersion = typeof cDoc.data()?.version === "number" ? cDoc.data().version + 1 : 1;
+                 t.set(cRef, { ...updatedData, version: nextVersion, updatedAt: Date.now() }, { merge: true });
+               }
+             }
+          });
+
+          // 3.4 อัปเดตตารางอื่นๆ แบบ Batch ธรรมดา
+          const b = db.batch();
+          let count = 0;
+          
+          const auctionDocs = new Map();
+          const byId = await db.collection("auctionReservations").where("userId", "==", targetUserId).get();
+          byId.docs.forEach((d: any) => auctionDocs.set(d.id, d));
+          const byName = await db.collection("auctionReservations").where("characterName", "==", oldName).get();
+          byName.docs.forEach((d: any) => auctionDocs.set(d.id, d));
+          auctionDocs.forEach((doc: any) => { b.update(doc.ref, { characterName: newName }); count++; });
+          
+          const dungeonDocs = new Map();
+          const dById = await db.collection("topguild-dun").doc("dungeons").collection("queues").where("userId", "==", targetUserId).get();
+          dById.docs.forEach((d: any) => dungeonDocs.set(d.id, d));
+          const dByName = await db.collection("topguild-dun").doc("dungeons").collection("queues").where("name", "==", oldName).get();
+          dByName.docs.forEach((d: any) => dungeonDocs.set(d.id, d));
+          dungeonDocs.forEach((doc: any) => { b.update(doc.ref, { name: newName }); count++; });
+          
+          const attendanceSnaps = await db.collection("topguild-system").doc("attendance").collection("records").where("name", "==", oldName).get();
+          attendanceSnaps.docs.forEach((doc: any) => { b.update(doc.ref, { name: newName }); count++; });
+          
+          if (count > 0) await b.commit();
+
+          // 4. Log การทำงาน
+          logAction({
+            module: "MEMBER",
+            action: "EDIT_MEMBER",
+            actor: "Discord Bot",
+            target: newName,
+            detail: `เปลี่ยนชื่อจาก ${oldName} -> ${newName}`,
+            extra: { oldName, newName, discordId: targetUserId, source: "discord_changename" }
+          });
+
+          return new Response(JSON.stringify({
+            type: 4,
+            data: { content: `✅ เปลี่ยนชื่อจาก **${oldName}** เป็น **${newName}** ในระบบเรียบร้อยแล้วครับ!` }
+          }), { headers: { "Content-Type": "application/json" } });
+
+        } catch (dbErr: any) {
+          console.error("Change Name DB Error:", dbErr);
+          return new Response(JSON.stringify({
+            type: 4,
+            data: { content: `❌ เกิดข้อผิดพลาดในการเปลี่ยนชื่อ: ${dbErr.message}` }
+          }), { headers: { "Content-Type": "application/json" } });
+        }
       }
     }
 

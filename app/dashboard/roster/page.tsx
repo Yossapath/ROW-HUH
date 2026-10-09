@@ -5,7 +5,7 @@ import { useState, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { JOB_LIST, JOB_COLORS, JOB_ICONS } from "@/lib/utils";
-import { Search, X, Users, Upload, FileSpreadsheet, Check, UserPlus } from "lucide-react";
+import { Search, X, Users, Upload, FileSpreadsheet, Check, UserPlus , AlertCircle } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import * as XLSX from "xlsx";
 import { MemberProfileModal } from "@/components/MemberProfileModal";
@@ -36,6 +36,7 @@ export default function RosterPage() {
   const [editGvgField, setEditGvgField] = useState("main");
 
   // Add Modal States
+  const [isAddSelectionOpen, setIsAddSelectionOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addName, setAddName] = useState("");
   const [addJob, setAddJob] = useState(JOB_LIST[0]);
@@ -389,12 +390,12 @@ export default function RosterPage() {
           {isAdmin && (
             <div className="flex items-center gap-2">
               <button 
-                onClick={() => setIsAddModalOpen(true)}
+                onClick={() => setIsAddSelectionOpen(true)}
                 disabled={isSaving}
                 className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-colors shadow-sm text-sm disabled:opacity-50"
               >
                 <UserPlus className="w-4 h-4" />
-                เพิ่ม (Manual)
+                เพิ่มสมาชิก
               </button>
 
               <button 
@@ -420,14 +421,7 @@ export default function RosterPage() {
                 ref={fileInputRef} 
                 onChange={handleFileUpload} 
               />
-              <button 
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isSaving}
-                className="flex items-center gap-2 px-4 py-2 bg-[#3B66D1] hover:bg-[#4D73CD] text-white rounded-xl font-bold transition-colors shadow-sm text-sm disabled:opacity-50"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                อัปเดต Excel
-              </button>
+              
             </div>
           )}
         </div>
@@ -875,7 +869,76 @@ export default function RosterPage() {
         </div>
       )}
       
-      {/* Excel Diff Modal */}
+      
+        {/* Add Selection Modal */}
+        {isAddSelectionOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+            <div className="bg-white dark:bg-[#232733] rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col font-prompt border border-slate-200 dark:border-[#2D3342] animate-in fade-in zoom-in duration-200">
+              <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100 dark:border-[#2D3342]">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 text-emerald-600 dark:text-emerald-400" /> 
+                  เลือกวิธีเพิ่มสมาชิก
+                </h2>
+                <button 
+                  onClick={() => setIsAddSelectionOpen(false)}
+                  className="text-slate-400 hover:bg-slate-100 dark:hover:bg-[#272C38] rounded-full p-1.5 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="p-6 flex flex-col gap-4">
+                <button
+                  onClick={() => {
+                    setIsAddSelectionOpen(false);
+                    setIsAddModalOpen(true);
+                  }}
+                  className="flex items-center gap-4 p-4 rounded-xl border-2 border-emerald-100 dark:border-emerald-900/30 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all text-left group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+                    <UserPlus className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-800 dark:text-white text-lg">เพิ่มคนเดียว (Manual)</h3>
+                    <p className="text-sm text-slate-500 dark:text-[#8B93A7] mt-1">เพิ่มข้อมูลสมาชิกใหม่ทีละคน</p>
+                  </div>
+                </button>
+
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      setIsAddSelectionOpen(false);
+                      fileInputRef.current?.click();
+                    }}
+                    className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-blue-100 dark:border-blue-900/30 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-left group"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center flex-shrink-0 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                      <FileSpreadsheet className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-800 dark:text-white text-lg">เพิ่มหลายคน (Excel)</h3>
+                      <p className="text-sm text-slate-500 dark:text-[#8B93A7] mt-1">อัปโหลดไฟล์ Excel เพิ่มทีละหลายคน</p>
+                    </div>
+                  </button>
+                  <div className="mt-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/50 rounded-lg flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
+                    <div className="text-xs text-amber-700 dark:text-amber-400">
+                      <strong>คำแนะนำก่อนอัปโหลด:</strong>
+                      <br/>ไฟล์ Excel จะต้องประกอบไปด้วย 4 คอลัมน์ต่อไปนี้:
+                      <br/>1. <code className="font-mono font-bold bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded">name</code> (ชื่อตัวละคร)
+                      <br/>2. <code className="font-mono font-bold bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded">class</code> (อาชีพ)
+                      <br/>3. <code className="font-mono font-bold bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded">cp</code> (พลังรบ)
+                      <br/>4. <code className="font-mono font-bold bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded">สิทสนามหลัก หรือ รอง</code> (สิทธิ์)
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+
+        {/* Excel Diff Modal */}
       {showExcelDiff && excelDiffData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowExcelDiff(false)} />

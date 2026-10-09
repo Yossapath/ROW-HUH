@@ -147,7 +147,7 @@ export async function POST(req: Request) {
           }
           
           // 2. ไปหาใน Roster (เผื่อกรณี manual_ user)
-          const rDoc = await rosterRef.get();
+          const rDoc = await rosterRef().get();
           let rosterData = rDoc.exists ? rDoc.data() : null;
           let foundInRoster = false;
           
@@ -177,7 +177,7 @@ export async function POST(req: Request) {
           await db.runTransaction(async (t: any) => {
              // 3.1 Roster
              if (foundInRoster) {
-                t.set(rosterRef, rosterData);
+                t.set(rosterRef(), rosterData);
              }
              
              // 3.2 User Collection
@@ -186,12 +186,12 @@ export async function POST(req: Request) {
              }
              
              // 3.3 Teams / Castle Data
-             const tDoc = await t.get(teamsRef);
+             const tDoc = await t.get(teamsRef());
              if (tDoc.exists) {
                const { changed, updatedData } = updateMemberNameInTeamsData(tDoc.data(), oldName, newName);
                if (changed) {
                  const nextVersion = typeof tDoc.data()?.version === "number" ? tDoc.data().version + 1 : 1;
-                 t.set(teamsRef, { ...updatedData, version: nextVersion, updatedAt: Date.now() }, { merge: true });
+                 t.set(teamsRef(), { ...updatedData, version: nextVersion, updatedAt: Date.now() }, { merge: true });
                }
              }
              const cRef = db.collection("settings").doc("castleTeams");

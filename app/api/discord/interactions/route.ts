@@ -91,7 +91,7 @@ export async function POST(req: Request) {
         const gameUsername = userDoc.data()?.gameUsername;
         const job = userDoc.data()?.class || "";
         
-        const DAY_LABEL = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
+        const DAY_LABEL = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัส", "ศุกร์", "เสาร์"];
         const d = new Date(formattedDate + "T00:00:00");
         const leaveDay = DAY_LABEL[d.getDay()] || "";
 

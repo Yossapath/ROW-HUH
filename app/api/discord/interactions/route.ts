@@ -91,11 +91,15 @@ export async function POST(req: Request) {
         const gameUsername = userDoc.data()?.gameUsername;
         const job = userDoc.data()?.class || "";
         
+        const DAY_LABEL = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
+        const d = new Date(formattedDate + "T00:00:00");
+        const leaveDay = DAY_LABEL[d.getDay()] || "";
+
         await leaveRef().collection("records").add({
           name: gameUsername,
           job,
           date: formattedDate,
-          day: "-", 
+          day: leaveDay, 
           reason,
           submittedBy: "Discord Bot",
           timestamp: Date.now(),

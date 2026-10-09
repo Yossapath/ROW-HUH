@@ -217,6 +217,7 @@ export default function RosterPage() {
 
         let newRoster = { ...roster };
         let addedCount = 0;
+        let skippedNames: string[] = [];
 
         const currentMembersMap = new Map();
         const normalizeName = (name: string) => {
@@ -237,7 +238,9 @@ export default function RosterPage() {
           if (!playerName) return;
 
           const searchName = normalizeName(playerName);
-          if (!currentMembersMap.has(searchName)) {
+          if (currentMembersMap.has(searchName)) {
+             skippedNames.push(String(playerName).trim());
+          } else {
              const jobStr = row["class"] || row["อาชีพ"] || row["Class"] || "";
              let job = mapClassName(jobStr);
              if (!JOB_LIST.includes(job)) job = JOB_LIST[0]; // fallback
@@ -267,14 +270,18 @@ export default function RosterPage() {
            try {
                await axios.put("/api/roster", newRoster);
                queryClient.invalidateQueries({ queryKey: ["roster"] });
-               useModalStore.getState().alert("เพิ่มสมาชิกใหม่สำเร็จ " + addedCount + " คน!");
+               let msg = "เพิ่มสมาชิกใหม่สำเร็จ " + addedCount + " คน!";
+               if (skippedNames.length > 0) msg += " (และข้ามรายชื่อซ้ำ " + skippedNames.length + " คนที่มีอยู่แล้ว)";
+               useModalStore.getState().alert(msg);
            } catch (error: any) {
                useModalStore.getState().alert("เกิดข้อผิดพลาดในการอัปเดต: " + (error.message || ""));
            } finally {
                setIsSaving(false);
            }
         } else {
-           useModalStore.getState().alert("ไม่มีรายชื่อใหม่ที่ถูกเพิ่ม (อาจมีในระบบแล้วทั้งหมด)");
+           let msg = "ไม่มีรายชื่อใหม่ที่ถูกเพิ่ม";
+           if (skippedNames.length > 0) msg += " (พบรายชื่อซ้ำ " + skippedNames.length + " คนที่มีอยู่ในระบบแล้วทั้งหมด)";
+           useModalStore.getState().alert(msg);
         }
         
       } catch (error) {

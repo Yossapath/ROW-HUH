@@ -25,6 +25,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
+    "discord-interactions": "^4.4.0",
     "firebase": "^12.18.0",
     "firebase-admin": "^12.3.0",
     "html2canvas": "^1.4.1",

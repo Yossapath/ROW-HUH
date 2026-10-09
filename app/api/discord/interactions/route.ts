@@ -5,24 +5,25 @@ import { getDb, COLL_USER, leaveRef } from "@/lib/firebase-admin";
 function parseDateInput(input: string): string {
   if (!input) return "";
   const parts = input.split(/[\/\-]/);
+  
+  // Format DD/MM -> YYYY-MM-DD
   if (parts.length === 2) {
     const day = parts[0].padStart(2, "0");
     const month = parts[1].padStart(2, "0");
-    const year = new Date().getFullYear();
+    const year = new Date(Date.now() + 7 * 3600 * 1000).getFullYear();
     return `${year}-${month}-${day}`;
   }
+  
+  // Format DD/MM/YYYY or YYYY-MM-DD
   if (parts.length === 3) {
     if (parts[0].length === 4) {
-      // YYYY-MM-DD or YYYY/MM/DD
       return `${parts[0]}-${parts[1].padStart(2, "0")}-${parts[2].padStart(2, "0")}`;
     } else {
-      // DD/MM/YYYY or DD/MM/YY
       const day = parts[0].padStart(2, "0");
       const month = parts[1].padStart(2, "0");
       let year = parts[2];
       if (year.length === 2) year = `20${year}`;
-      // Convert Thai year to AD if someone typed 2569
-      if (Number(year) > 2500) year = (Number(year) - 543).toString();
+      if (Number(year) > 2500) year = (Number(year) - 543).toString(); // Convert Thai year
       return `${year}-${month}-${day}`;
     }
   }
@@ -70,7 +71,7 @@ export async function POST(req: Request) {
         if (!targetUserId || !reason || !dateInput) {
           return new Response(JSON.stringify({
             type: 4,
-            data: { content: "❌ กรุณาระบุข้อมูลให้ครบถ้วนครับ (Missing arguments)" }
+            data: { content: "❌ กรุณาระบุข้อมูลให้ครบถ้วนครับ" }
           }), { headers: { "Content-Type": "application/json" } });
         }
 
@@ -81,7 +82,7 @@ export async function POST(req: Request) {
         if (!userDoc.exists || !userDoc.data()?.gameUsername) {
           return new Response(JSON.stringify({
             type: 4,
-            data: { content: "❌ ไม่พบตัวละครที่ผูกกับ Discord นี้ในระบบเว็บครับ (User not found in web)" }
+            data: { content: "❌ ไม่พบตัวละครที่ผูกกับ Discord นี้ในระบบเว็บครับ" }
           }), { headers: { "Content-Type": "application/json" } });
         }
 
@@ -92,7 +93,7 @@ export async function POST(req: Request) {
           name: gameUsername,
           job,
           date: formattedDate,
-          day: "-", // Can be left as dash, web doesn't strictly need it if date is correct
+          day: "-", 
           reason,
           submittedBy: "Discord Bot",
           timestamp: Date.now(),
@@ -100,19 +101,18 @@ export async function POST(req: Request) {
 
         return new Response(JSON.stringify({
           type: 4,
-          data: { content: `✅ บันทึกการลาให้ **${gameUsername}** เรียบร้อยแล้ว!\nวันที่: ${formattedDate}\nเหตุผล: ${reason}` }
+          data: { content: `✅ บันทึกการลาให้ **${gameUsername}** เรียบร้อยแล้ว!\n📅 วันที่: ${formattedDate}\n📝 เหตุผล: ${reason}` }
         }), { headers: { "Content-Type": "application/json" } });
       }
 
       // ---- Command: /เปลี่ยนชื่อ or /changename ----
       if (name === "เปลี่ยนชื่อ" || name === "changename") {
         const targetUserId = options?.find((o: any) => o.name === "user")?.value;
-        const oldName = options?.find((o: any) => o.name === "ชื่อเก่า" || o.name === "oldname")?.value;
         const newName = options?.find((o: any) => o.name === "ชื่อใหม่" || o.name === "newname")?.value;
         
         return new Response(JSON.stringify({
           type: 4,
-          data: { content: `🚧 ระบบเปลี่ยนชื่อผ่านบอทยังอยู่ระหว่างพัฒนาครับ\n(รับค่า: ${oldName} -> ${newName} เรียบร้อยแล้ว รออัปเดตโค้ดจัดการ Database)` }
+          data: { content: `🚧 รับคำสั่งเปลี่ยนชื่อให้ใหม่เป็น **${newName}** แล้ว\n(ระบบแปลง Database อยู่ระหว่างพัฒนา จะใช้ได้เร็วๆ นี้ครับ)` }
         }), { headers: { "Content-Type": "application/json" } });
       }
     }

@@ -14,7 +14,6 @@
     description: "เปลี่ยนชื่อตัวละครในระบบเว็บ",
     options: [
       { type: 6, name: "user", description: "เลือกบุคคลที่ต้องการเปลี่ยนชื่อ (พิมพ์ @ชื่อ)", required: true },
-      { type: 3, name: "ชื่อเก่า", description: "ชื่อตัวละครเดิม", required: true },
       { type: 3, name: "ชื่อใหม่", description: "ชื่อใหม่ที่ต้องการเปลี่ยน", required: true }
     ]
   },
@@ -33,7 +32,6 @@
     description: "Change character name in the web system",
     options: [
       { type: 6, name: "user", description: "Select the user (@name)", required: true },
-      { type: 3, name: "oldname", description: "Current character name", required: true },
       { type: 3, name: "newname", description: "New character name", required: true }
     ]
   }

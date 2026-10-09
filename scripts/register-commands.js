@@ -1,6 +1,4 @@
-﻿require("dotenv").config({ path: ".env.local" });
-
-const commands = [
+﻿const commands = [
   {
     name: "ลา",
     description: "บันทึกการลากิลวอร์ของสมาชิก (ใช้งานโดยแอดมินหรือตัวผู้เล่นเอง)",

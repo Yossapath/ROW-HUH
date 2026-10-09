@@ -73,7 +73,7 @@ export async function POST(req: Request) {
         if (!targetUserId || !reason || !dateInput) {
           return new Response(JSON.stringify({
             type: 4,
-            data: { content: "❌ กรุณาระบุข้อมูลให้ครบถ้วนครับ" }
+            data: { content: "กรุณาระบุข้อมูลให้ครบถ้วนครับ" }
           }), { headers: { "Content-Type": "application/json" } });
         }
 
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
         if (!userDoc.exists || !userDoc.data()?.gameUsername) {
           return new Response(JSON.stringify({
             type: 4,
-            data: { content: "❌ ไม่พบตัวละครที่ผูกกับ Discord นี้ในระบบเว็บครับ" }
+            data: { content: "ไม่พบตัวละครที่ผูกกับ Discord นี้ในระบบเว็บครับ" }
           }), { headers: { "Content-Type": "application/json" } });
         }
 
@@ -117,7 +117,7 @@ export async function POST(req: Request) {
 
         return new Response(JSON.stringify({
           type: 4,
-          data: { content: `✅ บันทึกการลาให้ **${gameUsername}** เรียบร้อยแล้ว!\n📅 วันที่: ${formattedDate}\n📝 เหตุผล: ${reason}` }
+          data: { content: `บันทึกการลาให้ **${gameUsername}** เรียบร้อยแล้ว!\nวันที่ : ${formattedDate}\nเหตุผล : ${reason}` }
         }), { headers: { "Content-Type": "application/json" } });
       }
 
@@ -129,7 +129,7 @@ export async function POST(req: Request) {
         if (!targetUserId || !newName) {
           return new Response(JSON.stringify({
             type: 4,
-            data: { content: "❌ ข้อมูลไม่ครบถ้วน กรุณาระบุ user และ ชื่อใหม่" }
+            data: { content: "ข้อมูลไม่ครบถ้วน กรุณาระบุ user และ ชื่อใหม่" }
           }), { headers: { "Content-Type": "application/json" } });
         }
 
@@ -173,7 +173,7 @@ export async function POST(req: Request) {
           if (!oldName) {
             return new Response(JSON.stringify({
               type: 4,
-              data: { content: `❌ ไม่พบข้อมูลของผู้เล่น <@${targetUserId}> ในระบบ (ยังไม่เคยเชื่อมต่อดิสคอร์ดหรือไม่มีในรายชื่อ)` }
+              data: { content: `ไม่พบข้อมูลของผู้เล่น <@${targetUserId}> ในระบบ (ยังไม่เคยเชื่อมต่อดิสคอร์ด หรือไม่มีในรายชื่อ)` }
             }), { headers: { "Content-Type": "application/json" } });
           }
 
@@ -244,14 +244,14 @@ export async function POST(req: Request) {
 
           return new Response(JSON.stringify({
             type: 4,
-            data: { content: `✅ เปลี่ยนชื่อจาก **${oldName}** เป็น **${newName}** ในระบบเรียบร้อยแล้วครับ!` }
+            data: { content: `เปลี่ยนชื่อจาก **${oldName}** เป็น **${newName}** ในระบบเรียบร้อยแล้วครับ!` }
           }), { headers: { "Content-Type": "application/json" } });
 
         } catch (dbErr: any) {
           console.error("Change Name DB Error:", dbErr);
           return new Response(JSON.stringify({
             type: 4,
-            data: { content: `❌ เกิดข้อผิดพลาดในการเปลี่ยนชื่อ: ${dbErr.message}` }
+            data: { content: `เกิดข้อผิดพลาดในการเปลี่ยนชื่อ : ${dbErr.message}` }
           }), { headers: { "Content-Type": "application/json" } });
         }
       }

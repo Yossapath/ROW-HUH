@@ -1,6 +1,7 @@
 ﻿export const dynamic = "force-dynamic";
 import { verifyKey } from "discord-interactions";
 import { getDb, COLL_USER, leaveRef } from "@/lib/firebase-admin";
+import { logAction } from "@/lib/server-utils";
 
 function parseDateInput(input: string): string {
   if (!input) return "";
@@ -97,6 +98,16 @@ export async function POST(req: Request) {
           reason,
           submittedBy: "Discord Bot",
           timestamp: Date.now(),
+        });
+
+        // Add to System Log
+        logAction({
+          module: "LEAVE",
+          action: "SUBMIT_LEAVE",
+          actor: "Discord Bot",
+          target: gameUsername,
+          detail: `แจ้งลาวอ วันที่ ${formattedDate} (เหตุผล: ${reason})`,
+          extra: { name: gameUsername, job, date: formattedDate, reason, submittedBy: "Discord Bot" }
         });
 
         return new Response(JSON.stringify({
